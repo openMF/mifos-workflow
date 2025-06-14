@@ -11,9 +11,10 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "workflow")
-public class WorkflowProperties {
+public class WorkflowConfig {
 
     private Engine engine = new Engine();
+    private Fineract fineract = new Fineract();
 
     @Data
     public static class Engine {
@@ -25,6 +26,14 @@ public class WorkflowProperties {
     public static class Flowable {
         private boolean asyncExecutorEnabled = true;
         private boolean databaseSchemaUpdate = true;
+    }
+
+    @Data
+    public static class Fineract {
+        private String baseUrl = "http://localhost:8443/fineract-provider/api/v1/";
+        private String username = "mifos";
+        private String password = "password";
+        private String tenantId = "default";
     }
 
 }

@@ -1,6 +1,6 @@
 package org.mifos.workflow.engine.flowable;
 
-import org.mifos.workflow.config.WorkflowProperties;
+import org.mifos.workflow.config.WorkflowConfig;
 import org.mifos.workflow.core.engine.WorkflowEngine;
 import org.mifos.workflow.core.engine.enums.EngineType;
 import org.mifos.workflow.core.model.DeploymentInfo;
@@ -20,12 +20,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * FlowableWorkflowEngine is an implementation of the WorkflowEngine interface
+ * that integrates with the Flowable workflow engine.
+ * This class provides methods to manage process definitions, deployments,
+ * process instances, tasks, and historical data.
+ */
 public class FlowableWorkflowEngine implements WorkflowEngine {
 
     private static final Logger logger = LoggerFactory.getLogger(FlowableWorkflowEngine.class);
-    private final WorkflowProperties properties;
+    private final WorkflowConfig properties;
 
-    public FlowableWorkflowEngine(WorkflowProperties properties) {
+    public FlowableWorkflowEngine(WorkflowConfig properties) {
         this.properties = properties;
         logger.info("FlowableWorkflowEngine initialized with properties: {}", properties.getEngine().getType());
     }

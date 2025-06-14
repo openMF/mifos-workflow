@@ -2,7 +2,7 @@ package org.mifos.workflow.core.engine;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
-import org.mifos.workflow.config.WorkflowProperties;
+import org.mifos.workflow.config.WorkflowConfig;
 import org.mifos.workflow.engine.flowable.FlowableWorkflowEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +19,13 @@ public class WorkflowEngineFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowEngineFactory.class);
 
-    private final WorkflowProperties properties;
+    private final WorkflowConfig properties;
 
     @Getter
     private WorkflowEngine workflowEngine;
 
     @Autowired
-    public WorkflowEngineFactory(WorkflowProperties properties) {
+    public WorkflowEngineFactory(WorkflowConfig properties) {
         this.properties = properties;
     }
 
