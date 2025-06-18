@@ -1,9 +1,8 @@
 package org.mifos.workflow.dto.fineract.auth;
 
+import org.mifos.fineract.client.models.PostAuthenticationResponse;
 import lombok.Builder;
 import lombok.Data;
-import org.apache.fineract.client.models.PostAuthenticationResponse;
-
 /**
  * Represents the response from the Fineract authentication API.
  * This class encapsulates the authentication response data.

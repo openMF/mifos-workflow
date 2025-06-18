@@ -2,6 +2,13 @@ package org.mifos.workflow.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Credentials;
@@ -10,7 +17,7 @@ import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 import org.mifos.workflow.api.auth.AuthenticationApi;
-import org.mifos.workflow.api.client.ClientApi;
+import org.mifos.workflow.api.client.ClientsApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import retrofit2.Retrofit;
@@ -18,8 +25,11 @@ import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import javax.net.ssl.*;
+import java.lang.reflect.Type;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 /* * Configuration class for setting up Retrofit and OkHttpClient for Fineract API communication.
@@ -87,7 +97,6 @@ public class FineractApiConfig {
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS);
 
-
         builder.sslSocketFactory(trustAllSslSocketFactory, (X509TrustManager) trustAllCerts[0])
                 .hostnameVerifier((hostname, session) -> true);
 
@@ -95,9 +104,17 @@ public class FineractApiConfig {
     }
 
     @Bean
-    public Retrofit retrofit(OkHttpClient okHttpClient) {
+    public Gson gson() {
+        return new GsonBuilder()
+                .setLenient()
+                .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) -> new JsonPrimitive(src.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))))
+                .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>) (json, typeOfT, context) -> LocalDate.parse(json.getAsString(), DateTimeFormatter.ofPattern("dd MMMM yyyy")))
+                .create();
+    }
+
+    @Bean
+    public Retrofit retrofit(OkHttpClient okHttpClient, Gson gson) {
         log.info("Creating Retrofit instance with base URL: {}", properties.getFineract().getBaseUrl());
-        Gson gson = new GsonBuilder().setLenient().create();
 
         return new Retrofit.Builder()
                 .baseUrl(properties.getFineract().getBaseUrl())
@@ -114,8 +131,8 @@ public class FineractApiConfig {
     }
 
     @Bean
-    public ClientApi clientApi(Retrofit retrofit) {
-        log.info("Creating ClientApi bean");
-        return retrofit.create(ClientApi.class);
+    public ClientsApi clientApi(Retrofit retrofit) {
+        log.info("Creating ClientsApi bean");
+        return retrofit.create(ClientsApi.class);
     }
 }

@@ -1,18 +1,19 @@
 package org.mifos.workflow.service.fineract.auth;
 
-import jakarta.annotation.PostConstruct;
+
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.fineract.client.models.PostAuthenticationRequest;
+import org.mifos.fineract.client.models.PostAuthenticationRequest;
+
 import org.mifos.workflow.api.auth.AuthenticationApi;
 import org.mifos.workflow.dto.fineract.auth.AuthenticationRequest;
 import org.mifos.workflow.dto.fineract.auth.AuthenticationResponse;
 import org.springframework.stereotype.Service;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 
+import jakarta.annotation.PostConstruct;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,53 +31,50 @@ public class FineractAuthService {
 
     @PostConstruct
     public void init() {
-        log.info("FineractAuthService initialized");
+        log.info("Initializing FineractAuthService");
     }
 
     public CompletableFuture<AuthenticationResponse> authenticate(AuthenticationRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Authentication request cannot be null");
+        }
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty() ||
+            request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Username and password cannot be empty");
+        }
+
         log.info("Starting Fineract authentication for user: {}", request.getUsername());
 
-        PostAuthenticationRequest authRequest = new PostAuthenticationRequest()
-                .username(request.getUsername())
-                .password(request.getPassword());
+        PostAuthenticationRequest authRequest = new PostAuthenticationRequest(
+                request.getPassword(),
+                request.getUsername()
+        );
 
         CompletableFuture<AuthenticationResponse> future = new CompletableFuture<>();
-        CountDownLatch latch = new CountDownLatch(1);
 
         authenticationApi.authenticate(authRequest, false)
-                .observeOn(Schedulers.newThread())
                 .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.computation())
+                .map(response -> {
+                    if (response == null || !response.getAuthenticated() || 
+                        response.getBase64EncodedAuthenticationKey() == null) {
+                        throw new RuntimeException("Invalid authentication response");
+                    }
+                    log.info("Authentication successful!");
+                    cachedAuthKey = response.getBase64EncodedAuthenticationKey();
+                    return AuthenticationResponse.from(response);
+                })
+                .doOnError(error -> {
+                    log.error("Authentication failed: {}", error.getMessage());
+                    future.completeExceptionally(new RuntimeException("Authentication failed: " + error.getMessage()));
+                })
+                .doOnComplete(() -> log.info("Authentication request completed"))
+                .timeout(5, TimeUnit.SECONDS)
                 .subscribe(
-                        response -> {
-                            log.info("Authentication successful!");
-                            cachedAuthKey = response.getBase64EncodedAuthenticationKey();
-                            future.complete(AuthenticationResponse.from(response));
-                            latch.countDown();
-                        },
-                        throwable -> {
-                            log.error("Authentication failed: {}", throwable.getMessage(), throwable);
-                            future.completeExceptionally(new RuntimeException(throwable));
-                            latch.countDown();
-                        },
-                        () -> {
-                            log.info("Authentication request completed");
-                            latch.countDown();
-                        }
+                    response -> future.complete(response),
+                    error -> future.completeExceptionally(error)
                 );
-
-        try {
-            if (!latch.await(30, TimeUnit.SECONDS)) {
-                String errorMsg = "Authentication operation timed out";
-                log.error(errorMsg);
-                future.completeExceptionally(new RuntimeException(errorMsg));
-            }
-        } catch (InterruptedException e) {
-            log.error("Wait interrupted: {}", e.getMessage());
-            Thread.currentThread().interrupt();
-            future.completeExceptionally(new RuntimeException(e));
-        }
 
         return future;
     }
-
 }
