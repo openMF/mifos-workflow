@@ -1,8 +1,8 @@
 package org.mifos.workflow.api.auth;
 
 import io.reactivex.rxjava3.core.Observable;
-import org.apache.fineract.client.models.PostAuthenticationRequest;
-import org.apache.fineract.client.models.PostAuthenticationResponse;
+import org.mifos.fineract.client.models.PostAuthenticationRequest;
+import org.mifos.fineract.client.models.PostAuthenticationResponse;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
