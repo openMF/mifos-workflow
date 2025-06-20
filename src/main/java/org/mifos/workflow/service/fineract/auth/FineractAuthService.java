@@ -13,8 +13,9 @@ import org.mifos.workflow.dto.fineract.auth.AuthenticationResponse;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Observable;
 
 /**
  * Service for handling authentication with the Fineract API.
@@ -34,7 +35,7 @@ public class FineractAuthService {
         log.info("Initializing FineractAuthService");
     }
 
-    public CompletableFuture<AuthenticationResponse> authenticate(AuthenticationRequest request) {
+    public Observable<AuthenticationResponse> authenticate(AuthenticationRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Authentication request cannot be null");
         }
@@ -50,9 +51,7 @@ public class FineractAuthService {
                 request.getUsername()
         );
 
-        CompletableFuture<AuthenticationResponse> future = new CompletableFuture<>();
-
-        authenticationApi.authenticate(authRequest, false)
+        return authenticationApi.authenticate(authRequest, false)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.computation())
                 .map(response -> {
@@ -64,17 +63,8 @@ public class FineractAuthService {
                     cachedAuthKey = response.getBase64EncodedAuthenticationKey();
                     return AuthenticationResponse.from(response);
                 })
-                .doOnError(error -> {
-                    log.error("Authentication failed: {}", error.getMessage());
-                    future.completeExceptionally(new RuntimeException("Authentication failed: " + error.getMessage()));
-                })
+                .doOnError(error -> log.error("Authentication failed: {}", error.getMessage()))
                 .doOnComplete(() -> log.info("Authentication request completed"))
-                .timeout(5, TimeUnit.SECONDS)
-                .subscribe(
-                    response -> future.complete(response),
-                    error -> future.completeExceptionally(error)
-                );
-
-        return future;
+                .timeout(5, TimeUnit.SECONDS);
     }
 }
