@@ -1,6 +1,7 @@
 package org.mifos.workflow.service.fineract.auth;
 
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,8 +18,6 @@ import retrofit2.Response;
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -48,7 +47,7 @@ class FineractAuthServiceTest {
     }
 
     @Test
-    void authenticate_Success() throws Exception {
+    void authenticate_Success() {
         // Arrange
         successResponse = mock(PostAuthenticationResponse.class);
         when(successResponse.getBase64EncodedAuthenticationKey()).thenReturn("test-key");
@@ -59,8 +58,7 @@ class FineractAuthServiceTest {
                 .thenReturn(Observable.just(successResponse));
 
         // Act
-        CompletableFuture<AuthenticationResponse> future = authService.authenticate(validRequest);
-        AuthenticationResponse response = future.get(5, TimeUnit.SECONDS);
+        AuthenticationResponse response = authService.authenticate(validRequest).blockingFirst();
 
         // Assert
         assertNotNull(response);
@@ -97,10 +95,9 @@ class FineractAuthServiceTest {
                 .thenReturn(Observable.error(new HttpException(errorResponse)));
 
         // Act & Assert
-        assertThrows(ExecutionException.class, () -> {
-            CompletableFuture<AuthenticationResponse> future = authService.authenticate(validRequest);
-            future.get(5, TimeUnit.SECONDS);
-        });
+        TestObserver<AuthenticationResponse> testObserver = authService.authenticate(validRequest).test();
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertError(HttpException.class);
     }
 
     @Test
@@ -110,15 +107,14 @@ class FineractAuthServiceTest {
                 .thenReturn(Observable.error(new RuntimeException("Network error")));
 
         // Act & Assert
-        assertThrows(ExecutionException.class, () -> {
-            CompletableFuture<AuthenticationResponse> future = authService.authenticate(validRequest);
-            future.get(5, TimeUnit.SECONDS);
-        });
+        TestObserver<AuthenticationResponse> testObserver = authService.authenticate(validRequest).test();
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertError(RuntimeException.class);
     }
 
 
     @Test
-    void authenticate_ConcurrentRequests_HandlesCorrectly() throws Exception {
+    void authenticate_ConcurrentRequests_HandlesCorrectly() {
         // Arrange
         successResponse = mock(PostAuthenticationResponse.class);
         when(successResponse.getBase64EncodedAuthenticationKey()).thenReturn("test-key");
@@ -129,13 +125,10 @@ class FineractAuthServiceTest {
                 .thenReturn(Observable.just(successResponse));
 
         // Act
-        CompletableFuture<AuthenticationResponse> future1 = authService.authenticate(validRequest);
-        CompletableFuture<AuthenticationResponse> future2 = authService.authenticate(validRequest);
+        AuthenticationResponse response1 = authService.authenticate(validRequest).blockingFirst();
+        AuthenticationResponse response2 = authService.authenticate(validRequest).blockingFirst();
 
         // Assert
-        AuthenticationResponse response1 = future1.get(5, TimeUnit.SECONDS);
-        AuthenticationResponse response2 = future2.get(5, TimeUnit.SECONDS);
-
         assertNotNull(response1);
         assertNotNull(response2);
         assertEquals(response1.getBase64EncodedAuthenticationKey(), response2.getBase64EncodedAuthenticationKey());
