@@ -2,8 +2,6 @@ package org.mifos.workflow.dto.fineract.client;
 
 import lombok.Builder;
 import lombok.Data;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 

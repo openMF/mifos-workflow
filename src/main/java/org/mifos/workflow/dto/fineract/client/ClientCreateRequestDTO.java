@@ -46,6 +46,9 @@ public class ClientCreateRequestDTO {
     // Family members information
     private String familyMembers;
 
+    // Submission date
+    private LocalDate submissionDate;
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("firstname", firstName);
@@ -60,6 +63,10 @@ public class ClientCreateRequestDTO {
         if (dateOfBirth != null) {
             String format = dateFormat != null ? dateFormat : "dd MMMM yyyy";
             map.put("dateOfBirth", dateOfBirth.format(DateTimeFormatter.ofPattern(format)));
+        }
+        if (submissionDate != null) {
+            String format = dateFormat != null ? dateFormat : "dd MMMM yyyy";
+            map.put("submittedOnDate", submissionDate.format(DateTimeFormatter.ofPattern(format)));
         }
         map.put("clientClassificationId", clientClassificationId);
         map.put("familyMembers", familyMembers);

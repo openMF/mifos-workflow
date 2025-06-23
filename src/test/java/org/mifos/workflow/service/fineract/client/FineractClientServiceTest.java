@@ -341,6 +341,7 @@ class FineractClientServiceTest {
         ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
                 .transferDate(LocalDate.of(2023, 1, 1))
                 .destinationOfficeId(2L)
+                .dateFormat(DATE_FORMAT)
                 .build();
         GetClientTransferProposalDateResponse template = mock(GetClientTransferProposalDateResponse.class);
         PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
@@ -359,8 +360,9 @@ class FineractClientServiceTest {
 
         verify(clientsApi).retrieveTransferTemplate(123L);
         verify(clientsApi).applyCommand(eq("123"), argThat(map ->
-                map.get("transferDate").equals(LocalDate.of(2023, 1, 1)) &&
-                        map.get("destinationOfficeId").equals(2L)
+                map.get("transferDate").equals(LocalDate.of(2023, 1, 1).format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("destinationOfficeId").equals(2L) &&
+                        map.get("dateFormat").equals(DATE_FORMAT)
         ), eq("transfer"));
     }
 
@@ -406,7 +408,7 @@ class FineractClientServiceTest {
         testObserver.assertComplete();
 
         verify(clientsApi).applyCommand(eq("123"), argThat(map ->
-                map.get("rejectionDate").equals(LocalDate.of(2023, 1, 1)) &&
+                map.get("rejectionDate").equals(LocalDate.of(2023, 1, 1).format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
                         map.get("rejectionReasonId").equals(1L) &&
                         map.get("dateFormat").equals(DATE_FORMAT) &&
                         map.get("locale").equals(LOCALE)
@@ -455,7 +457,7 @@ class FineractClientServiceTest {
         testObserver.assertComplete();
 
         verify(clientsApi).applyCommand(eq("123"), argThat(map ->
-                map.get("closureDate").equals(LocalDate.of(2023, 1, 1)) &&
+                map.get("closureDate").equals(LocalDate.of(2023, 1, 1).format(java.time.format.DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
                         map.get("closureReasonId").equals(1L) &&
                         map.get("dateFormat").equals(DATE_FORMAT) &&
                         map.get("locale").equals(LOCALE)

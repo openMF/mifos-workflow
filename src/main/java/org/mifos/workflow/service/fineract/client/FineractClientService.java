@@ -88,6 +88,7 @@ public class FineractClientService {
                 .dateOfBirth(request.getDateOfBirth())
                 .externalId(request.getExternalId())
                 .address(getAddressList(request, addressTypeId))
+                .submissionDate(LocalDate.now())
                 .build();
 
         log.info("Sending request to Fineract: {}", clientRequest.toMap());
@@ -195,13 +196,16 @@ public class FineractClientService {
 
         log.info("Sending reject command request: {}", rejectRequest.toMap());
 
-        return clientsApi.applyCommand(clientId.toString(), rejectRequest.toMap(), command)
+        return handleError(
+            clientsApi.applyCommand(clientId.toString(), rejectRequest.toMap(), command)
                 .subscribeOn(Schedulers.io())
                 .doOnNext(response -> log.info("Command {} applied successfully to client: {}", command, clientId))
                 .doOnError(error -> {
                     log.error("Error applying command {} to client: {}", command, error.getMessage(), error);
                     logHttpErrorDetails(error);
-                });
+                }),
+            "client reject"
+        );
     }
 
     public Observable<PostClientsClientIdResponse> closeClient(Long clientId, String command, ClientCloseRequestDTO closeRequest) {
