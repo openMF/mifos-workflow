@@ -8,7 +8,7 @@ import lombok.Data;
  * This class encapsulates the properties of a code, including its ID, name, and whether it is system-defined.
  */
 @Data
-public class CodeData {
+public class CodeDataDTO {
     @SerializedName("id")
     private Long id;
 

@@ -13,17 +13,23 @@ import org.mifos.fineract.client.models.PostClientsClientIdResponse;
 import org.mifos.fineract.client.models.PostClientsResponse;
 import org.mifos.fineract.client.models.PutClientsClientIdResponse;
 import org.mifos.workflow.api.client.ClientsApi;
-import org.mifos.workflow.dto.fineract.client.ClientCreateRequest;
-import org.mifos.workflow.dto.fineract.code.CodeData;
+import org.mifos.workflow.dto.fineract.client.AddressDTO;
+import org.mifos.workflow.dto.fineract.client.BasicClientCreateRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientActivationRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientCloseRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientCreateRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientRejectRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientTransferRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientUpdateRequestDTO;
+import org.mifos.workflow.dto.fineract.client.CodeValueCreateRequestDTO;
+import org.mifos.workflow.dto.fineract.code.CodeDataDTO;
 import org.springframework.stereotype.Service;
 import retrofit2.HttpException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.mifos.workflow.dto.fineract.office.OfficeDTO;
@@ -54,7 +60,7 @@ public class FineractClientService {
                 });
     }
 
-    private void validateClientRequest(ClientCreateRequest request) {
+    private void validateClientRequest(ClientCreateRequestDTO request) {
         if (request == null) {
             throw new IllegalArgumentException("Client creation request cannot be null");
         }
@@ -66,50 +72,42 @@ public class FineractClientService {
         }
     }
 
-    private Map<String, Object> createBaseRequestMap(String dateFormat, String locale) {
-        Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("dateFormat", dateFormat);
-        requestMap.put("locale", locale);
-        return requestMap;
-    }
-
-    public Observable<PostClientsResponse> createClient(ClientCreateRequest request, String dateFormat, String locale, Long addressTypeId) {
+    public Observable<PostClientsResponse> createClient(ClientCreateRequestDTO request, String dateFormat, String locale, Long addressTypeId) {
         validateClientRequest(request);
         log.info("Creating client with name: {}", request.getFirstName() + " " + request.getLastName());
 
-        Map<String, Object> requestMap = createBaseRequestMap(dateFormat, locale);
-        requestMap.put("firstname", request.getFirstName());
-        requestMap.put("lastname", request.getLastName());
-        requestMap.put("officeId", request.getOfficeId());
-        requestMap.put("active", request.isActive());
-        requestMap.put("legalFormId", request.getLegalFormId());
-        requestMap.put("mobileNo", request.getMobileNo());
+        ClientCreateRequestDTO clientRequest = ClientCreateRequestDTO.builder()
+                .dateFormat(dateFormat)
+                .locale(locale)
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .officeId(request.getOfficeId())
+                .active(request.isActive())
+                .legalFormId(request.getLegalFormId())
+                .mobileNo(request.getMobileNo())
+                .dateOfBirth(request.getDateOfBirth())
+                .externalId(request.getExternalId())
+                .address(getAddressList(request, addressTypeId))
+                .build();
 
-        if (request.getDateOfBirth() != null) {
-            requestMap.put("dateOfBirth", request.getDateOfBirth().format(DateTimeFormatter.ofPattern(dateFormat)));
-        }
+        log.info("Sending request to Fineract: {}", clientRequest.toMap());
 
-        requestMap.put("externalId", request.getExternalId());
-        requestMap.put("address", getMaps(request, addressTypeId));
-        requestMap.put("submittedOnDate", LocalDate.now().format(DateTimeFormatter.ofPattern(dateFormat)));
-
-        log.info("Sending request to Fineract: {}", requestMap);
-
-        return handleError(clientsApi.createClient(requestMap), "client creation");
+        return handleError(clientsApi.createClient(clientRequest.toMap()), "client creation");
     }
 
     @NotNull
-    private static List<Map<String, Object>> getMaps(ClientCreateRequest request, Long addressTypeId) {
-        List<Map<String, Object>> addressList = new ArrayList<>();
-        Map<String, Object> addressMap = new HashMap<>();
-        addressMap.put("addressTypeId", addressTypeId);
-        addressMap.put("addressLine1", request.getAddressLine1());
-        addressMap.put("addressLine2", request.getAddressLine2());
-        addressMap.put("city", request.getCity());
-        addressMap.put("stateProvinceId", request.getStateProvinceId() != null ? Long.parseLong(request.getStateProvinceId()) : null);
-        addressMap.put("countryId", request.getCountryId() != null ? Long.parseLong(request.getCountryId()) : null);
-        addressMap.put("postalCode", request.getPostalCode());
-        addressList.add(addressMap);
+    private static List<AddressDTO> getAddressList(ClientCreateRequestDTO request, Long addressTypeId) {
+        List<AddressDTO> addressList = new ArrayList<>();
+        AddressDTO address = AddressDTO.builder()
+                .addressTypeId(addressTypeId)
+                .addressLine1(request.getAddressLine1())
+                .addressLine2(request.getAddressLine2())
+                .city(request.getCity())
+                .stateProvinceId(request.getStateProvinceId() != null ? Long.parseLong(request.getStateProvinceId()) : null)
+                .countryId(request.getCountryId() != null ? Long.parseLong(request.getCountryId()) : null)
+                .postalCode(request.getPostalCode())
+                .build();
+        addressList.add(address);
         return addressList;
     }
 
@@ -119,18 +117,21 @@ public class FineractClientService {
             return Observable.error(new IllegalArgumentException("Mandatory fields (firstname, lastname, officeId) cannot be null"));
         }
 
-        Map<String, Object> requestMap = createBaseRequestMap(dateFormat, locale);
-        requestMap.put("firstname", firstname);
-        requestMap.put("lastname", lastname);
-        requestMap.put("mobileNo", mobileNo);
-        requestMap.put("officeId", officeId);
-        requestMap.put("active", false);
-        requestMap.put("legalFormId", legalFormId);
-        requestMap.put("submittedOnDate", LocalDate.now().format(DateTimeFormatter.ofPattern(dateFormat)));
+        BasicClientCreateRequestDTO basicClientRequest = BasicClientCreateRequestDTO.builder()
+                .dateFormat(dateFormat)
+                .locale(locale)
+                .firstname(firstname)
+                .lastname(lastname)
+                .mobileNo(mobileNo)
+                .officeId(officeId)
+                .active(false)
+                .legalFormId(legalFormId)
+                .submittedOnDate(LocalDate.now().format(DateTimeFormatter.ofPattern(dateFormat)))
+                .build();
 
-        log.info("Creating basic client with request: {}", requestMap);
+        log.info("Creating basic client with request: {}", basicClientRequest.toMap());
 
-        return handleError(clientsApi.createClient(requestMap), "basic client creation");
+        return handleError(clientsApi.createClient(basicClientRequest.toMap()), "basic client creation");
     }
 
     public Observable<PostClientsClientIdResponse> activateClient(Long clientId, String dateFormat, String locale) {
@@ -143,10 +144,13 @@ public class FineractClientService {
         }
         log.info("Activating client with ID: {}, activation date: {}", clientId, activationDate);
 
-        Map<String, Object> request = createBaseRequestMap(dateFormat, locale);
-        request.put("activationDate", activationDate.format(DateTimeFormatter.ofPattern(dateFormat)));
+        ClientActivationRequestDTO activationRequest = ClientActivationRequestDTO.builder()
+                .dateFormat(dateFormat)
+                .locale(locale)
+                .activationDate(activationDate)
+                .build();
 
-        return handleError(clientsApi.activateClient(clientId, ACTIVATE_COMMAND, request), "client activation");
+        return handleError(clientsApi.activateClient(clientId, ACTIVATE_COMMAND, activationRequest.toMap(dateFormat)), "client activation");
     }
 
     public Observable<GetClientsClientIdResponse> retrieveClient(Long clientId) {
@@ -158,18 +162,18 @@ public class FineractClientService {
         return handleError(clientsApi.retrieveClient(clientId), "client retrieval");
     }
 
-    public Observable<PutClientsClientIdResponse> updateClientWithMap(Long clientId, Map<String, Object> updateData) {
-        if (clientId == null || updateData == null) {
-            return Observable.error(new IllegalArgumentException("Client ID or update data cannot be null"));
+    public Observable<PutClientsClientIdResponse> updateClient(Long clientId, ClientUpdateRequestDTO updateRequest) {
+        if (clientId == null || updateRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID or update request cannot be null"));
         }
-        log.info("Updating client with ID: {} using map data", clientId);
+        log.info("Updating client with ID: {} using update request", clientId);
 
-        return handleError(clientsApi.updateClient(clientId, updateData), "client update");
+        return handleError(clientsApi.updateClient(clientId, updateRequest.toMap()), "client update");
     }
 
-    public Observable<PostClientsClientIdResponse> transferClient(Long clientId, String command, Map<String, Object> request) {
-        if (clientId == null || command == null || request == null) {
-            return Observable.error(new IllegalArgumentException("Client ID, command, or request cannot be null"));
+    public Observable<PostClientsClientIdResponse> transferClient(Long clientId, String command, ClientTransferRequestDTO transferRequest) {
+        if (clientId == null || command == null || transferRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or transfer request cannot be null"));
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
@@ -177,31 +181,21 @@ public class FineractClientService {
                 clientsApi.retrieveTransferTemplate(clientId)
                         .flatMap(template -> {
                             log.info("Retrieved transfer template for client: {}", clientId);
-                            Map<String, Object> commandRequest = new HashMap<>(request);
-                            if (commandRequest.containsKey("transferDate")) {
-                                commandRequest.put("proposedTransferDate", commandRequest.remove("transferDate"));
-                            }
-                            return clientsApi.applyCommand(clientId.toString(), commandRequest, command);
+                            return clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), command);
                         }),
                 "client transfer"
         );
     }
 
-    public Observable<PostClientsClientIdResponse> rejectClient(Long clientId, String command, Map<String, Object> request, String dateFormat, String locale) {
-        if (clientId == null || command == null || request == null) {
-            return Observable.error(new IllegalArgumentException("Client ID, command, or request cannot be null"));
+    public Observable<PostClientsClientIdResponse> rejectClient(Long clientId, String command, ClientRejectRequestDTO rejectRequest) {
+        if (clientId == null || command == null || rejectRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or reject request cannot be null"));
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
-        Map<String, Object> commandRequest = new HashMap<>();
-        commandRequest.put("rejectionDate", request.get("rejectionDate"));
-        commandRequest.put("rejectionReasonId", request.get("rejectionReasonId"));
-        commandRequest.put("dateFormat", dateFormat);
-        commandRequest.put("locale", locale);
+        log.info("Sending reject command request: {}", rejectRequest.toMap());
 
-        log.info("Sending reject command request: {}", commandRequest);
-
-        return clientsApi.applyCommand(clientId.toString(), commandRequest, command)
+        return clientsApi.applyCommand(clientId.toString(), rejectRequest.toMap(), command)
                 .subscribeOn(Schedulers.io())
                 .doOnNext(response -> log.info("Command {} applied successfully to client: {}", command, clientId))
                 .doOnError(error -> {
@@ -210,21 +204,13 @@ public class FineractClientService {
                 });
     }
 
-    public Observable<PostClientsClientIdResponse> closeClient(Long clientId, String command, Map<String, Object> request, String dateFormat, String locale) {
-        if (clientId == null || command == null || request == null) {
-            return Observable.error(new IllegalArgumentException("Client ID, command, or request cannot be null"));
+    public Observable<PostClientsClientIdResponse> closeClient(Long clientId, String command, ClientCloseRequestDTO closeRequest) {
+        if (clientId == null || command == null || closeRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or close request cannot be null"));
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
-        Map<String, Object> commandRequest = new HashMap<>(request);
-        if (!commandRequest.containsKey("dateFormat")) {
-            commandRequest.put("dateFormat", dateFormat);
-        }
-        if (!commandRequest.containsKey("locale")) {
-            commandRequest.put("locale", locale);
-        }
-
-        return handleError(clientsApi.applyCommand(clientId.toString(), commandRequest, command), "client closure");
+        return handleError(clientsApi.applyCommand(clientId.toString(), closeRequest.toMap(), command), "client closure");
     }
 
     public Observable<GetClientsResponse> retrieveAllClients(Long officeId, String searchText, String status, Integer limit, Integer offset) {
@@ -259,7 +245,7 @@ public class FineractClientService {
 
                     if (rejectionCodeId == null) {
                         log.error("Code 'ClientRejectReason' not found in the system. Available codes: {}",
-                                codes.stream().map(CodeData::getName).collect(Collectors.joining(", ")));
+                                codes.stream().map(CodeDataDTO::getName).collect(Collectors.joining(", ")));
                         return Observable.error(new IllegalStateException("Client rejection reason code not found in the system"));
                     }
 
@@ -295,20 +281,20 @@ public class FineractClientService {
 
                     if (rejectionCodeId == null) {
                         log.error("Code 'ClientRejectReason' not found in the system. Available codes: {}",
-                                codes.stream().map(CodeData::getName).collect(Collectors.joining(", ")));
+                                codes.stream().map(CodeDataDTO::getName).collect(Collectors.joining(", ")));
                         return Observable.error(new IllegalStateException("Client rejection reason code not found in the system"));
                     }
 
                     log.info("Found client rejection reason code ID: {}", rejectionCodeId);
 
+                    CodeValueCreateRequestDTO codeValueRequest = CodeValueCreateRequestDTO.builder()
+                            .name(name)
+                            .description(description)
+                            .position(1)
+                            .isActive(true)
+                            .build();
 
-                    Map<String, Object> request = new HashMap<>();
-                    request.put("name", name);
-                    request.put("description", description);
-                    request.put("position", 1);
-                    request.put("isActive", true);
-
-                    return clientsApi.createCodeValue(rejectionCodeId, request);
+                    return clientsApi.createCodeValue(rejectionCodeId, codeValueRequest.toMap());
                 })
                 .doOnNext(response -> {
                     if (response != null) {
@@ -341,7 +327,7 @@ public class FineractClientService {
 
                     if (closureCodeId == null) {
                         log.error("Code 'ClientClosureReason' not found in the system. Available codes: {}",
-                                codes.stream().map(CodeData::getName).collect(Collectors.joining(", ")));
+                                codes.stream().map(CodeDataDTO::getName).collect(Collectors.joining(", ")));
                         return Observable.error(new IllegalStateException("Client closure reason code not found in the system"));
                     }
 
@@ -378,20 +364,20 @@ public class FineractClientService {
 
                     if (closureCodeId == null) {
                         log.error("Code 'ClientClosureReason' not found in the system. Available codes: {}",
-                                codes.stream().map(CodeData::getName).collect(Collectors.joining(", ")));
+                                codes.stream().map(CodeDataDTO::getName).collect(Collectors.joining(", ")));
                         return Observable.error(new IllegalStateException("Client closure reason code not found in the system"));
                     }
 
                     log.info("Found client closure reason code ID: {}", closureCodeId);
 
+                    CodeValueCreateRequestDTO codeValueRequest = CodeValueCreateRequestDTO.builder()
+                            .name(name)
+                            .description(description)
+                            .position(1)
+                            .isActive(true)
+                            .build();
 
-                    Map<String, Object> request = new HashMap<>();
-                    request.put("name", name);
-                    request.put("description", description);
-                    request.put("position", 1);
-                    request.put("isActive", true);
-
-                    return clientsApi.createCodeValue(closureCodeId, request);
+                    return clientsApi.createCodeValue(closureCodeId, codeValueRequest.toMap());
                 })
                 .doOnNext(response -> {
                     if (response != null) {

@@ -10,7 +10,7 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import org.mifos.workflow.dto.fineract.office.OfficeDTO;
-import org.mifos.workflow.dto.fineract.code.CodeData;
+import org.mifos.workflow.dto.fineract.code.CodeDataDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -60,7 +60,7 @@ public interface ClientsApi {
     Observable<List<OfficeDTO>> retrieveAllOffices();
 
     @GET("codes")
-    Observable<List<CodeData>> retrieveCodes();
+    Observable<List<CodeDataDTO>> retrieveCodes();
 
     @GET("codes/{codeId}/codevalues")
     Observable<List<CodeValueData>> retrieveAllCodeValues(@Path("codeId") Long codeId);
