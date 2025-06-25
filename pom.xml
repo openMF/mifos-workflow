@@ -165,6 +165,36 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <version>2.2.1</version>
+                <configuration>
+                    <sourceDirectory>docs/asciidoc</sourceDirectory>
+                    <outputDirectory>docs/generated</outputDirectory>
+                    <backend>html5</backend>
+                    <doctype>book</doctype>
+                    <attributes>
+                        <toc>left</toc>
+                        <toclevels>3</toclevels>
+                        <sectnums>true</sectnums>
+                        <sectanchors>true</sectanchors>
+                        <source-highlighter>highlightjs</source-highlighter>
+                        <highlightjs-theme>github</highlightjs-theme>
+                        <icons>font</icons>
+                        <experimental>true</experimental>
+                    </attributes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-docs</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
