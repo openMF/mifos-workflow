@@ -1,0 +1,33 @@
+= Mifos-Workflow Project Documentation
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: github
+:toc: left
+:toclevels: 3
+:sectnums:
+:sectanchors:
+
+== Introduction
+
+Add your project introduction here.
+
+== Getting Started
+
+Add getting started information here.
+
+== Configuration
+
+Add configuration details here.
+
+== API Reference
+
+Add API documentation here.
+
+== Development
+
+Add development guidelines here.
+
+== Contributing
+
+Add contribution guidelines here. 
