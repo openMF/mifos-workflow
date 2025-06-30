@@ -104,7 +104,7 @@ public class FineractClientService {
                     "locale", locale,
                     "addressTypeId", addressTypeId
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         validateClientRequest(request);
@@ -157,7 +157,7 @@ public class FineractClientService {
                     "locale", locale,
                     "legalFormId", legalFormId
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
 
@@ -185,7 +185,7 @@ public class FineractClientService {
                     "dateFormat", dateFormat,
                     "locale", locale
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         return activateClient(clientId, LocalDate.now(), dateFormat, locale);
@@ -199,7 +199,7 @@ public class FineractClientService {
                     "dateFormat", dateFormat,
                     "locale", locale
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Activating client with ID: {}, activation date: {}", clientId, activationDate);
@@ -216,7 +216,7 @@ public class FineractClientService {
     public Observable<GetClientsClientIdResponse> retrieveClient(Long clientId) {
         try {
             requireParamsNonNull(Map.of("clientId", clientId));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Retrieving client with ID: {}", clientId);
@@ -230,7 +230,7 @@ public class FineractClientService {
                     "clientId", clientId,
                     "updateRequest", updateRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Updating client with ID: {} using update request", clientId);
@@ -245,7 +245,7 @@ public class FineractClientService {
                     "command", command,
                     "transferRequest", transferRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
@@ -267,7 +267,7 @@ public class FineractClientService {
                     "command", command,
                     "rejectRequest", rejectRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
@@ -293,7 +293,7 @@ public class FineractClientService {
                     "command", command,
                     "closeRequest", closeRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
@@ -303,7 +303,7 @@ public class FineractClientService {
     public Observable<GetClientsResponse> retrieveAllClients(Long officeId, String searchText, String status, Integer limit, Integer offset) {
         try {
             requireParamsNonNull(Map.of("officeId", officeId));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Retrieving all clients with filters - officeId: {}, searchText: {}, status: {}, limit: {}, offset: {}",
@@ -327,7 +327,7 @@ public class FineractClientService {
     public Observable<GetClientsClientIdAccountsResponse> retrieveClientAccounts(Long clientId) {
         try {
             requireParamsNonNull(Map.of("clientId", clientId));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Retrieving accounts for client with ID: {}", clientId);
@@ -508,7 +508,7 @@ public class FineractClientService {
                     "command", command,
                     "withdrawRequest", withdrawRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying withdraw command {} to client with ID: {}", command, clientId);
@@ -523,7 +523,7 @@ public class FineractClientService {
                     "command", command,
                     "reactivateRequest", reactivateRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying reactivate command {} to client with ID: {}", command, clientId);
@@ -538,7 +538,7 @@ public class FineractClientService {
                     "command", command,
                     "undoRejectRequest", undoRejectRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying undo reject command {} to client with ID: {}", command, clientId);
@@ -553,7 +553,7 @@ public class FineractClientService {
                     "command", command,
                     "undoWithdrawRequest", undoWithdrawRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying undo withdraw command {} to client with ID: {}", command, clientId);
@@ -568,7 +568,7 @@ public class FineractClientService {
                     "command", command,
                     "assignStaffRequest", assignStaffRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying assign staff command {} to client with ID: {}", command, clientId);
@@ -583,7 +583,7 @@ public class FineractClientService {
                     "command", command,
                     "unassignStaffRequest", unassignStaffRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying unassign staff command {} to client with ID: {}", command, clientId);
@@ -598,7 +598,7 @@ public class FineractClientService {
                     "command", command,
                     "updateSavingsRequest", updateSavingsRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying update default savings account command {} to client with ID: {}", command, clientId);
@@ -612,7 +612,7 @@ public class FineractClientService {
                     "clientId", clientId,
                     "transferRequest", transferRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Proposing transfer for client with ID: {}", clientId);
@@ -634,7 +634,7 @@ public class FineractClientService {
                     "command", command,
                     "withdrawTransferRequest", withdrawTransferRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying withdraw transfer command {} to client with ID: {}", command, clientId);
@@ -649,7 +649,7 @@ public class FineractClientService {
                     "command", command,
                     "rejectTransferRequest", rejectTransferRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying reject transfer command {} to client with ID: {}", command, clientId);
@@ -664,7 +664,7 @@ public class FineractClientService {
                     "command", command,
                     "acceptTransferRequest", acceptTransferRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying accept transfer command {} to client with ID: {}", command, clientId);
@@ -679,7 +679,7 @@ public class FineractClientService {
                     "transferRequest", transferRequest,
                     "acceptRequest", acceptRequest
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Proposing and accepting transfer for client with ID: {}", clientId);
@@ -705,7 +705,7 @@ public class FineractClientService {
     public Observable<DeleteClientsClientIdResponse> deleteClient(Long clientId) {
         try {
             requireParamsNonNull(Map.of("clientId", clientId));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Deleting client with ID: {}", clientId);
@@ -719,7 +719,7 @@ public class FineractClientService {
                     "command", command,
                     "request", request
             ));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying command {} to client with external ID: {}", command, externalId);
