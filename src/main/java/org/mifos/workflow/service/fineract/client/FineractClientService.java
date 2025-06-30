@@ -7,20 +7,31 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.jetbrains.annotations.NotNull;
+import org.mifos.fineract.client.models.DeleteClientsClientIdResponse;
 import org.mifos.fineract.client.models.GetClientsClientIdResponse;
 import org.mifos.fineract.client.models.GetClientsResponse;
 import org.mifos.fineract.client.models.PostClientsClientIdResponse;
 import org.mifos.fineract.client.models.PostClientsResponse;
 import org.mifos.fineract.client.models.PutClientsClientIdResponse;
 import org.mifos.workflow.api.client.ClientsApi;
-import org.mifos.workflow.dto.fineract.client.AddressDTO;
+import org.mifos.workflow.dto.fineract.address.AddressDTO;
 import org.mifos.workflow.dto.fineract.client.BasicClientCreateRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientAcceptTransferRequestDTO;
 import org.mifos.workflow.dto.fineract.client.ClientActivationRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientAssignStaffRequestDTO;
 import org.mifos.workflow.dto.fineract.client.ClientCloseRequestDTO;
 import org.mifos.workflow.dto.fineract.client.ClientCreateRequestDTO;
 import org.mifos.workflow.dto.fineract.client.ClientRejectRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientRejectTransferRequestDTO;
 import org.mifos.workflow.dto.fineract.client.ClientTransferRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientUndoRejectRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientUndoWithdrawRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientUnassignStaffRequestDTO;
 import org.mifos.workflow.dto.fineract.client.ClientUpdateRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientUpdateSavingsRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientWithdrawRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientWithdrawTransferRequestDTO;
+import org.mifos.workflow.dto.fineract.client.ClientReactivateRequestDTO;
 import org.mifos.workflow.dto.fineract.client.CodeValueCreateRequestDTO;
 import org.mifos.workflow.dto.fineract.code.CodeDataDTO;
 import org.springframework.stereotype.Service;
@@ -29,11 +40,15 @@ import retrofit2.HttpException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.mifos.workflow.dto.fineract.office.OfficeDTO;
 import org.mifos.fineract.client.models.CodeValueData;
+import org.mifos.fineract.client.models.StaffData;
+import org.mifos.fineract.client.models.GetClientsClientIdAccountsResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -197,14 +212,14 @@ public class FineractClientService {
         log.info("Sending reject command request: {}", rejectRequest.toMap());
 
         return handleError(
-            clientsApi.applyCommand(clientId.toString(), rejectRequest.toMap(), command)
-                .subscribeOn(Schedulers.io())
-                .doOnNext(response -> log.info("Command {} applied successfully to client: {}", command, clientId))
-                .doOnError(error -> {
-                    log.error("Error applying command {} to client: {}", command, error.getMessage(), error);
-                    logHttpErrorDetails(error);
-                }),
-            "client reject"
+                clientsApi.applyCommand(clientId.toString(), rejectRequest.toMap(), command)
+                        .subscribeOn(Schedulers.io())
+                        .doOnNext(response -> log.info("Command {} applied successfully to client: {}", command, clientId))
+                        .doOnError(error -> {
+                            log.error("Error applying command {} to client: {}", command, error.getMessage(), error);
+                            logHttpErrorDetails(error);
+                        }),
+                "client reject"
         );
     }
 
@@ -228,6 +243,21 @@ public class FineractClientService {
         log.info("Retrieving all offices");
 
         return handleError(clientsApi.retrieveAllOffices(), "office retrieval");
+    }
+
+    public Observable<List<StaffData>> retrieveAllStaff() {
+        log.info("Retrieving all staff");
+
+        return handleError(clientsApi.retrieveAllStaff(), "staff retrieval");
+    }
+
+    public Observable<GetClientsClientIdAccountsResponse> retrieveClientAccounts(Long clientId) {
+        if (clientId == null) {
+            return Observable.error(new IllegalArgumentException("Client ID cannot be null"));
+        }
+        log.info("Retrieving accounts for client with ID: {}", clientId);
+
+        return handleError(clientsApi.retrieveClientAccounts(clientId), "client accounts retrieval");
     }
 
     public Observable<List<CodeValueData>> retrieveClientRejectionReasons() {
@@ -394,6 +424,151 @@ public class FineractClientService {
                     log.error("Error creating closure reason: {}", error.getMessage(), error);
                     logHttpErrorDetails(error);
                 });
+    }
+
+    public Observable<PostClientsClientIdResponse> withdrawClient(Long clientId, String command, ClientWithdrawRequestDTO withdrawRequest) {
+        if (clientId == null || command == null || withdrawRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or withdraw request cannot be null"));
+        }
+        log.info("Applying withdraw command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), withdrawRequest.toMap(), command), "client withdrawal");
+    }
+
+    public Observable<PostClientsClientIdResponse> reactivateClient(Long clientId, String command, ClientReactivateRequestDTO reactivateRequest) {
+        if (clientId == null || command == null || reactivateRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or reactivate request cannot be null"));
+        }
+        log.info("Applying reactivate command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), reactivateRequest.toMap(), command), "client reactivation");
+    }
+
+    public Observable<PostClientsClientIdResponse> undoRejectClient(Long clientId, String command, ClientUndoRejectRequestDTO undoRejectRequest) {
+        if (clientId == null || command == null || undoRejectRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or undo reject request cannot be null"));
+        }
+        log.info("Applying undo reject command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), undoRejectRequest.toMap(), command), "client undo reject");
+    }
+
+    public Observable<PostClientsClientIdResponse> undoWithdrawClient(Long clientId, String command, ClientUndoWithdrawRequestDTO undoWithdrawRequest) {
+        if (clientId == null || command == null || undoWithdrawRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or undo withdraw request cannot be null"));
+        }
+        log.info("Applying undo withdraw command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), undoWithdrawRequest.toMap(), command), "client undo withdraw");
+    }
+
+    public Observable<PostClientsClientIdResponse> assignStaff(Long clientId, String command, ClientAssignStaffRequestDTO assignStaffRequest) {
+        if (clientId == null || command == null || assignStaffRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or assign staff request cannot be null"));
+        }
+        log.info("Applying assign staff command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), assignStaffRequest.toMap(), command), "client staff assignment");
+    }
+
+    public Observable<PostClientsClientIdResponse> unassignStaff(Long clientId, String command, ClientUnassignStaffRequestDTO unassignStaffRequest) {
+        if (clientId == null || command == null || unassignStaffRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or unassign staff request cannot be null"));
+        }
+        log.info("Applying unassign staff command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), unassignStaffRequest.toMap(), command), "client staff unassignment");
+    }
+
+    public Observable<PostClientsClientIdResponse> updateDefaultSavingsAccount(Long clientId, String command, ClientUpdateSavingsRequestDTO updateSavingsRequest) {
+        if (clientId == null || command == null || updateSavingsRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or update savings request cannot be null"));
+        }
+        log.info("Applying update default savings account command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), updateSavingsRequest.toMap(), command), "client default savings account update");
+    }
+
+    public Observable<PostClientsClientIdResponse> proposeClientTransfer(Long clientId, ClientTransferRequestDTO transferRequest) {
+        if (clientId == null || transferRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID or transfer request cannot be null"));
+        }
+        log.info("Proposing transfer for client with ID: {}", clientId);
+
+        return handleError(
+                clientsApi.retrieveTransferTemplate(clientId)
+                        .flatMap(template -> {
+                            log.info("Retrieved transfer template for client: {}", clientId);
+                            return clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), "proposeTransfer");
+                        }),
+                "client transfer proposal"
+        );
+    }
+
+    public Observable<PostClientsClientIdResponse> withdrawClientTransfer(Long clientId, String command, ClientWithdrawTransferRequestDTO withdrawTransferRequest) {
+        if (clientId == null || command == null || withdrawTransferRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or withdraw transfer request cannot be null"));
+        }
+        log.info("Applying withdraw transfer command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), withdrawTransferRequest.toMap(), command), "client transfer withdrawal");
+    }
+
+    public Observable<PostClientsClientIdResponse> rejectClientTransfer(Long clientId, String command, ClientRejectTransferRequestDTO rejectTransferRequest) {
+        if (clientId == null || command == null || rejectTransferRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or reject transfer request cannot be null"));
+        }
+        log.info("Applying reject transfer command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), rejectTransferRequest.toMap(), command), "client transfer rejection");
+    }
+
+    public Observable<PostClientsClientIdResponse> acceptClientTransfer(Long clientId, String command, ClientAcceptTransferRequestDTO acceptTransferRequest) {
+        if (clientId == null || command == null || acceptTransferRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, command, or accept transfer request cannot be null"));
+        }
+        log.info("Applying accept transfer command {} to client with ID: {}", command, clientId);
+
+        return handleError(clientsApi.applyCommand(clientId.toString(), acceptTransferRequest.toMap(), command), "client transfer acceptance");
+    }
+
+    public Observable<PostClientsClientIdResponse> proposeAndAcceptClientTransfer(Long clientId, ClientTransferRequestDTO transferRequest, ClientAcceptTransferRequestDTO acceptRequest) {
+        if (clientId == null || transferRequest == null || acceptRequest == null) {
+            return Observable.error(new IllegalArgumentException("Client ID, transfer request, or accept request cannot be null"));
+        }
+        log.info("Proposing and accepting transfer for client with ID: {}", clientId);
+
+        return handleError(
+                clientsApi.retrieveTransferTemplate(clientId)
+                        .flatMap(template -> {
+                            log.info("Retrieved transfer template for client: {}", clientId);
+                            return clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), "proposeAndAcceptTransfer")
+                                    .flatMap(response -> {
+                                        // Create a new map combining transfer and acceptance details
+                                        Map<String, Object> combinedRequest = new HashMap<>(transferRequest.toMap());
+                                        combinedRequest.putAll(acceptRequest.toMap());
+                                        return clientsApi.applyCommand(clientId.toString(), combinedRequest, "acceptTransfer");
+                                    });
+                        }),
+                "client transfer proposal and acceptance"
+        );
+    }
+
+    public Observable<DeleteClientsClientIdResponse> deleteClient(Long clientId) {
+        if (clientId == null) {
+            return Observable.error(new IllegalArgumentException("Client ID cannot be null"));
+        }
+        log.info("Deleting client with ID: {}", clientId);
+        return handleError(clientsApi.deleteClient(clientId), "client deletion");
+    }
+
+    public Observable<PostClientsClientIdResponse> applyCommandByExternalId(String externalId, String command, Map<String, Object> request) {
+        if (externalId == null || command == null || request == null) {
+            return Observable.error(new IllegalArgumentException("External ID, command, or request cannot be null"));
+        }
+        log.info("Applying command {} to client with external ID: {}", command, externalId);
+
+        return handleError(clientsApi.applyCommandByExternalId(externalId, request, command), "client command by external ID");
     }
 
     private void logHttpErrorDetails(Throwable error) {

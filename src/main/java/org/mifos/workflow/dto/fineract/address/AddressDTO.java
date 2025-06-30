@@ -1,4 +1,4 @@
-package org.mifos.workflow.dto.fineract.client;
+package org.mifos.workflow.dto.fineract.address;
 
 import lombok.Builder;
 import lombok.Data;

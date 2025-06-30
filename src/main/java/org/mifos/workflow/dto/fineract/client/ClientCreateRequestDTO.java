@@ -2,6 +2,7 @@ package org.mifos.workflow.dto.fineract.client;
 
 import lombok.Builder;
 import lombok.Data;
+import org.mifos.workflow.dto.fineract.address.AddressDTO;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

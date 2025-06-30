@@ -2,6 +2,7 @@ package org.mifos.workflow.dto.fineract.client;
 
 import lombok.Builder;
 import lombok.Data;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ public class ClientCloseRequestDTO {
     private String locale;
     private LocalDate closureDate;
     private Long closureReasonId;
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         if (dateFormat != null) map.put("dateFormat", dateFormat);
