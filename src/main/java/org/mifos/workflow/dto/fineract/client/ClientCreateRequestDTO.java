@@ -30,7 +30,7 @@ public class ClientCreateRequestDTO {
     @NotNull
     private String locale;
     @NotNull
-    private boolean active;
+    private Boolean active;
     @NotNull
     private Long legalFormId;
 

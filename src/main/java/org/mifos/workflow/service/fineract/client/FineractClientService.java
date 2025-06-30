@@ -115,7 +115,7 @@ public class FineractClientService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .officeId(request.getOfficeId())
-                .active(request.isActive())
+                .active(request.getActive())
                 .legalFormId(request.getLegalFormId())
                 .mobileNo(request.getMobileNo())
                 .dateOfBirth(request.getDateOfBirth())
