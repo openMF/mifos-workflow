@@ -2,6 +2,7 @@ package org.mifos.workflow.dto.fineract.client;
 
 import lombok.Builder;
 import lombok.Data;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,9 +14,13 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class ClientRejectRequestDTO {
+    @NotNull
     private String dateFormat;
+    @NotNull
     private String locale;
+    @NotNull
     private LocalDate rejectionDate;
+    @NotNull
     private Long rejectionReasonId;
 
     public Map<String, Object> toMap() {

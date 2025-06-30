@@ -2,6 +2,7 @@ package org.mifos.workflow.dto.fineract.client;
 
 import lombok.Builder;
 import lombok.Data;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,13 +13,20 @@ import java.util.Map;
 @Data
 @Builder
 public class BasicClientCreateRequestDTO {
+    @NotNull
     private String dateFormat;
+    @NotNull
     private String locale;
+    @NotNull
     private String firstname;
+    @NotNull
     private String lastname;
     private String mobileNo;
+    @NotNull
     private Long officeId;
+    @NotNull
     private Boolean active;
+    @NotNull
     private Long legalFormId;
     private String submittedOnDate;
 

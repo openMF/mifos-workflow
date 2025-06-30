@@ -3,6 +3,7 @@ package org.mifos.workflow.dto.fineract.client;
 import lombok.Builder;
 import lombok.Data;
 import org.mifos.workflow.dto.fineract.address.AddressDTO;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -18,12 +19,19 @@ import java.util.stream.Collectors;
 @Data
 @Builder
 public class ClientCreateRequestDTO {
+    @NotNull
     private String firstName;
+    @NotNull
     private String lastName;
+    @NotNull
     private Long officeId;
+    @NotNull
     private String dateFormat;
+    @NotNull
     private String locale;
+    @NotNull
     private boolean active;
+    @NotNull
     private Long legalFormId;
 
     // Additional fields for complete client information
