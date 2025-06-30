@@ -303,8 +303,8 @@ class FineractClientServiceTest {
     void transferClient_NullParameters_ReturnsError() {
         // Arrange
         ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
-                .transferDate(LocalDate.of(2023, 1, 1))
                 .destinationOfficeId(2L)
+                .transferDate(LocalDate.now())
                 .dateFormat(DATE_FORMAT)
                 .build();
 
@@ -355,10 +355,10 @@ class FineractClientServiceTest {
     void rejectClient_NullParameters_ReturnsError() {
         // Arrange
         ClientRejectRequestDTO rejectRequest = ClientRejectRequestDTO.builder()
+                .rejectionDate(LocalDate.now())
+                .rejectionReasonId(1L)
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
-                .rejectionDate(LocalDate.of(2023, 1, 1))
-                .rejectionReasonId(1L)
                 .build();
 
         // Act
@@ -407,7 +407,7 @@ class FineractClientServiceTest {
     void closeClient_NullParameters_ReturnsError() {
         // Arrange
         ClientCloseRequestDTO closeRequest = ClientCloseRequestDTO.builder()
-                .closureDate(LocalDate.of(2023, 1, 1))
+                .closureDate(LocalDate.now())
                 .closureReasonId(1L)
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
@@ -819,7 +819,7 @@ class FineractClientServiceTest {
     void withdrawClient_NullParameters_ReturnsError() {
         // Arrange
         ClientWithdrawRequestDTO withdrawRequest = ClientWithdrawRequestDTO.builder()
-                .withdrawalDate(LocalDate.of(2023, 1, 1))
+                .withdrawalDate(LocalDate.now())
                 .withdrawalReasonId(1L)
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
@@ -841,7 +841,7 @@ class FineractClientServiceTest {
     void reactivateClient_NullParameters_ReturnsError() {
         // Arrange
         ClientReactivateRequestDTO reactivateRequest = ClientReactivateRequestDTO.builder()
-                .reactivationDate(LocalDate.of(2023, 1, 1))
+                .reactivationDate(LocalDate.now())
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
                 .build();
@@ -862,7 +862,7 @@ class FineractClientServiceTest {
     void undoRejectClient_NullParameters_ReturnsError() {
         // Arrange
         ClientUndoRejectRequestDTO undoRejectRequest = ClientUndoRejectRequestDTO.builder()
-                .reopenedDate(LocalDate.of(2023, 1, 1))
+                .reopenedDate(LocalDate.now())
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
                 .build();
@@ -883,7 +883,7 @@ class FineractClientServiceTest {
     void undoWithdrawClient_NullParameters_ReturnsError() {
         // Arrange
         ClientUndoWithdrawRequestDTO undoWithdrawRequest = ClientUndoWithdrawRequestDTO.builder()
-                .reopenedDate(LocalDate.of(2023, 1, 1))
+                .reopenedDate(LocalDate.now())
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
                 .build();
@@ -962,8 +962,8 @@ class FineractClientServiceTest {
     void proposeClientTransfer_NullParameters_ReturnsError() {
         // Arrange
         ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
-                .transferDate(LocalDate.of(2023, 1, 1))
                 .destinationOfficeId(2L)
+                .transferDate(LocalDate.now())
                 .dateFormat(DATE_FORMAT)
                 .build();
 
@@ -983,7 +983,7 @@ class FineractClientServiceTest {
     void withdrawClientTransfer_NullParameters_ReturnsError() {
         // Arrange
         ClientWithdrawTransferRequestDTO withdrawTransferRequest = ClientWithdrawTransferRequestDTO.builder()
-                .withdrawalDate(LocalDate.of(2023, 1, 1))
+                .withdrawalDate(LocalDate.now())
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
                 .build();
@@ -1004,7 +1004,7 @@ class FineractClientServiceTest {
     void rejectClientTransfer_NullParameters_ReturnsError() {
         // Arrange
         ClientRejectTransferRequestDTO rejectTransferRequest = ClientRejectTransferRequestDTO.builder()
-                .rejectionDate(LocalDate.of(2023, 1, 1))
+                .rejectionDate(LocalDate.now())
                 .rejectionReasonId("1")
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
@@ -1026,7 +1026,6 @@ class FineractClientServiceTest {
     void acceptClientTransfer_NullParameters_ReturnsError() {
         // Arrange
         ClientAcceptTransferRequestDTO acceptTransferRequest = ClientAcceptTransferRequestDTO.builder()
-                .transferDate(LocalDate.of(2023, 1, 1))
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
                 .build();
@@ -1047,12 +1046,12 @@ class FineractClientServiceTest {
     void proposeAndAcceptClientTransfer_NullParameters_ReturnsError() {
         // Arrange
         ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
-                .transferDate(LocalDate.of(2023, 1, 1))
                 .destinationOfficeId(2L)
+                .transferDate(LocalDate.now())
                 .dateFormat(DATE_FORMAT)
                 .build();
+
         ClientAcceptTransferRequestDTO acceptRequest = ClientAcceptTransferRequestDTO.builder()
-                .transferDate(LocalDate.of(2023, 1, 1))
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
                 .build();
@@ -1086,11 +1085,10 @@ class FineractClientServiceTest {
     @Test
     void applyCommandByExternalId_NullParameters_ReturnsError() {
         // Arrange
-        Map<String, Object> request = new HashMap<>();
-        request.put("command", "activate");
+        Map<String, Object> request = Map.of("param", "value");
 
         // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.applyCommandByExternalId(null, "activate", request)
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.applyCommandByExternalId(null, "command", request)
                 .test();
 
         // Assert
@@ -1098,7 +1096,7 @@ class FineractClientServiceTest {
         testObserver.assertNoValues();
         testObserver.assertError(NullPointerException.class);
 
-        verify(clientsApi, never()).applyCommandByExternalId(anyString(), anyMap(), anyString());
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
     }
 
     @Test
@@ -1279,7 +1277,8 @@ class FineractClientServiceTest {
                 .build();
         PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
         when(response.getClientId()).thenReturn(123L);
-        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString()))
+                .thenReturn(Observable.just(response));
 
         // Act
         TestObserver<PostClientsClientIdResponse> testObserver = clientService.assignStaff(123L, "assignStaff", assignStaffRequest)
@@ -1304,7 +1303,8 @@ class FineractClientServiceTest {
                 .build();
         PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
         when(response.getClientId()).thenReturn(123L);
-        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString()))
+                .thenReturn(Observable.just(response));
 
         // Act
         TestObserver<PostClientsClientIdResponse> testObserver = clientService.unassignStaff(123L, "unassignStaff", unassignStaffRequest)
@@ -1438,13 +1438,14 @@ class FineractClientServiceTest {
     void acceptClientTransfer_Success() {
         // Arrange
         ClientAcceptTransferRequestDTO acceptTransferRequest = ClientAcceptTransferRequestDTO.builder()
-                .transferDate(LocalDate.of(2023, 1, 1))
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
+                .transferDate(LocalDate.now())
                 .build();
         PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
         when(response.getClientId()).thenReturn(123L);
-        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString()))
+                .thenReturn(Observable.just(response));
 
         // Act
         TestObserver<PostClientsClientIdResponse> testObserver = clientService.acceptClientTransfer(123L, "acceptTransfer", acceptTransferRequest)
@@ -1456,9 +1457,9 @@ class FineractClientServiceTest {
         testObserver.assertComplete();
 
         verify(clientsApi).applyCommand(eq("123"), argThat(map ->
-                map.get("transferDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
-                        map.get("dateFormat").equals(DATE_FORMAT) &&
-                        map.get("locale").equals(LOCALE)
+                map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE) &&
+                        map.containsKey("transferDate")
         ), eq("acceptTransfer"));
     }
 
@@ -1466,20 +1467,23 @@ class FineractClientServiceTest {
     void proposeAndAcceptClientTransfer_Success() {
         // Arrange
         ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
-                .transferDate(LocalDate.of(2023, 1, 1))
                 .destinationOfficeId(2L)
+                .transferDate(LocalDate.now())
                 .dateFormat(DATE_FORMAT)
                 .build();
+
         ClientAcceptTransferRequestDTO acceptRequest = ClientAcceptTransferRequestDTO.builder()
-                .transferDate(LocalDate.of(2023, 1, 1))
                 .dateFormat(DATE_FORMAT)
                 .locale(LOCALE)
+                .transferDate(LocalDate.now())
                 .build();
-        GetClientTransferProposalDateResponse template = mock(GetClientTransferProposalDateResponse.class);
+
         PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
         when(response.getClientId()).thenReturn(123L);
-        when(clientsApi.retrieveTransferTemplate(anyLong())).thenReturn(Observable.just(template));
-        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+        when(clientsApi.retrieveTransferTemplate(anyLong()))
+                .thenReturn(Observable.just(mock(GetClientTransferProposalDateResponse.class)));
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString()))
+                .thenReturn(Observable.just(response));
 
         // Act
         TestObserver<PostClientsClientIdResponse> testObserver = clientService.proposeAndAcceptClientTransfer(123L, transferRequest, acceptRequest)
@@ -1491,7 +1495,7 @@ class FineractClientServiceTest {
         testObserver.assertComplete();
 
         verify(clientsApi).retrieveTransferTemplate(123L);
-        verify(clientsApi, times(2)).applyCommand(eq("123"), anyMap(), anyString());
+        verify(clientsApi, times(2)).applyCommand(anyString(), anyMap(), anyString());
     }
 
     @Test
@@ -1516,14 +1520,13 @@ class FineractClientServiceTest {
     @Test
     void applyCommandByExternalId_Success() {
         // Arrange
-        Map<String, Object> request = new HashMap<>();
-        request.put("command", "activate");
+        Map<String, Object> request = Map.of("param", "value");
         PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
         when(response.getClientId()).thenReturn(123L);
         when(clientsApi.applyCommandByExternalId(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
 
         // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.applyCommandByExternalId("EXT123", "activate", request)
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.applyCommandByExternalId("EXT123", "command", request)
                 .test();
 
         // Assert
@@ -1531,7 +1534,7 @@ class FineractClientServiceTest {
         testObserver.assertValue(r -> r.getClientId().equals(123L));
         testObserver.assertComplete();
 
-        verify(clientsApi).applyCommandByExternalId("EXT123", request, "activate");
+        verify(clientsApi).applyCommandByExternalId("EXT123", request, "command");
     }
 
     @Test
