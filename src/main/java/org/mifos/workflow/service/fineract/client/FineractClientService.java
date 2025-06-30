@@ -52,7 +52,6 @@ import org.mifos.fineract.client.models.CodeValueData;
 import org.mifos.fineract.client.models.StaffData;
 import org.mifos.fineract.client.models.GetClientsClientIdAccountsResponse;
 
-import java.util.Objects;
 
 /**
  * Service class for handling client-related operations in the Fineract system.
@@ -102,7 +101,19 @@ public class FineractClientService {
     private List<AddressDTO> getAddressList(ClientCreateRequestDTO request, Long addressTypeId) {
         List<AddressDTO> addressList = new ArrayList<>();
         if (request.getAddress() != null && !request.getAddress().isEmpty()) {
-            addressList.addAll(request.getAddress());
+            // Set the addressTypeId on each address
+            for (AddressDTO address : request.getAddress()) {
+                AddressDTO addressWithType = AddressDTO.builder()
+                        .addressTypeId(addressTypeId)
+                        .addressLine1(address.getAddressLine1())
+                        .addressLine2(address.getAddressLine2())
+                        .city(address.getCity())
+                        .stateProvinceId(address.getStateProvinceId())
+                        .countryId(address.getCountryId())
+                        .postalCode(address.getPostalCode())
+                        .build();
+                addressList.add(addressWithType);
+            }
         }
         return addressList;
     }
