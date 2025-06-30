@@ -97,12 +97,16 @@ public class FineractClientService {
     }
 
     public Observable<PostClientsResponse> createClient(@Valid ClientCreateRequestDTO request, String dateFormat, String locale, Long addressTypeId) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "request", request,
                 "dateFormat", dateFormat,
                 "locale", locale,
                 "addressTypeId", addressTypeId
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         validateClientRequest(request);
         log.info("Creating client with name: {}", request.getFirstName() + " " + request.getLastName());
 
@@ -144,14 +148,18 @@ public class FineractClientService {
 
     public Observable<PostClientsResponse> createBasicClient(String firstname, String lastname, String mobileNo, Long officeId,
                                                              String dateFormat, String locale, Long legalFormId) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "firstname", firstname,
                 "lastname", lastname,
                 "officeId", officeId,
                 "dateFormat", dateFormat,
                 "locale", locale,
                 "legalFormId", legalFormId
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
 
         BasicClientCreateRequestDTO basicClientRequest = BasicClientCreateRequestDTO.builder()
                 .dateFormat(dateFormat)
@@ -171,21 +179,29 @@ public class FineractClientService {
     }
 
     public Observable<PostClientsClientIdResponse> activateClient(Long clientId, String dateFormat, String locale) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "dateFormat", dateFormat,
                 "locale", locale
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         return activateClient(clientId, LocalDate.now(), dateFormat, locale);
     }
 
     public Observable<PostClientsClientIdResponse> activateClient(Long clientId, LocalDate activationDate, String dateFormat, String locale) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "activationDate", activationDate,
                 "dateFormat", dateFormat,
                 "locale", locale
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Activating client with ID: {}, activation date: {}", clientId, activationDate);
 
         ClientActivationRequestDTO activationRequest = ClientActivationRequestDTO.builder()
@@ -198,28 +214,40 @@ public class FineractClientService {
     }
 
     public Observable<GetClientsClientIdResponse> retrieveClient(Long clientId) {
-        requireParamsNonNull(Map.of("clientId", clientId));
+        try {
+            requireParamsNonNull(Map.of("clientId", clientId));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Retrieving client with ID: {}", clientId);
 
         return handleError(clientsApi.retrieveClient(clientId), "client retrieval");
     }
 
     public Observable<PutClientsClientIdResponse> updateClient(Long clientId, @Valid ClientUpdateRequestDTO updateRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "updateRequest", updateRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Updating client with ID: {} using update request", clientId);
 
         return handleError(clientsApi.updateClient(clientId, updateRequest.toMap()), "client update");
     }
 
     public Observable<PostClientsClientIdResponse> transferClient(Long clientId, String command, @Valid ClientTransferRequestDTO transferRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "transferRequest", transferRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
         return handleError(
@@ -233,11 +261,15 @@ public class FineractClientService {
     }
 
     public Observable<PostClientsClientIdResponse> rejectClient(Long clientId, String command, @Valid ClientRejectRequestDTO rejectRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "rejectRequest", rejectRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
         log.info("Sending reject command request: {}", rejectRequest.toMap());
@@ -255,16 +287,11 @@ public class FineractClientService {
     }
 
     public Observable<PostClientsClientIdResponse> closeClient(Long clientId, String command, @Valid ClientCloseRequestDTO closeRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "closeRequest", closeRequest
-        ));
-        try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "closeRequest", closeRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -274,7 +301,11 @@ public class FineractClientService {
     }
 
     public Observable<GetClientsResponse> retrieveAllClients(Long officeId, String searchText, String status, Integer limit, Integer offset) {
-        requireParamsNonNull(Map.of("officeId", officeId));
+        try {
+            requireParamsNonNull(Map.of("officeId", officeId));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Retrieving all clients with filters - officeId: {}, searchText: {}, status: {}, limit: {}, offset: {}",
                 officeId, searchText, status, limit, offset);
 
@@ -294,7 +325,11 @@ public class FineractClientService {
     }
 
     public Observable<GetClientsClientIdAccountsResponse> retrieveClientAccounts(Long clientId) {
-        requireParamsNonNull(Map.of("clientId", clientId));
+        try {
+            requireParamsNonNull(Map.of("clientId", clientId));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Retrieving accounts for client with ID: {}", clientId);
 
         return handleError(clientsApi.retrieveClientAccounts(clientId), "client accounts retrieval");
@@ -467,87 +502,119 @@ public class FineractClientService {
     }
 
     public Observable<PostClientsClientIdResponse> withdrawClient(Long clientId, String command, @Valid ClientWithdrawRequestDTO withdrawRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "withdrawRequest", withdrawRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying withdraw command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), withdrawRequest.toMap(), command), "client withdrawal");
     }
 
     public Observable<PostClientsClientIdResponse> reactivateClient(Long clientId, String command, @Valid ClientReactivateRequestDTO reactivateRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "reactivateRequest", reactivateRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying reactivate command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), reactivateRequest.toMap(), command), "client reactivation");
     }
 
     public Observable<PostClientsClientIdResponse> undoRejectClient(Long clientId, String command, @Valid ClientUndoRejectRequestDTO undoRejectRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "undoRejectRequest", undoRejectRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying undo reject command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), undoRejectRequest.toMap(), command), "client undo reject");
     }
 
     public Observable<PostClientsClientIdResponse> undoWithdrawClient(Long clientId, String command, @Valid ClientUndoWithdrawRequestDTO undoWithdrawRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "undoWithdrawRequest", undoWithdrawRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying undo withdraw command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), undoWithdrawRequest.toMap(), command), "client undo withdraw");
     }
 
     public Observable<PostClientsClientIdResponse> assignStaff(Long clientId, String command, @Valid ClientAssignStaffRequestDTO assignStaffRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "assignStaffRequest", assignStaffRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying assign staff command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), assignStaffRequest.toMap(), command), "client staff assignment");
     }
 
     public Observable<PostClientsClientIdResponse> unassignStaff(Long clientId, String command, @Valid ClientUnassignStaffRequestDTO unassignStaffRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "unassignStaffRequest", unassignStaffRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying unassign staff command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), unassignStaffRequest.toMap(), command), "client staff unassignment");
     }
 
     public Observable<PostClientsClientIdResponse> updateDefaultSavingsAccount(Long clientId, String command, @Valid ClientUpdateSavingsRequestDTO updateSavingsRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "updateSavingsRequest", updateSavingsRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying update default savings account command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), updateSavingsRequest.toMap(), command), "client default savings account update");
     }
 
     public Observable<PostClientsClientIdResponse> proposeClientTransfer(Long clientId, @Valid ClientTransferRequestDTO transferRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "transferRequest", transferRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Proposing transfer for client with ID: {}", clientId);
 
         return handleError(
@@ -561,44 +628,60 @@ public class FineractClientService {
     }
 
     public Observable<PostClientsClientIdResponse> withdrawClientTransfer(Long clientId, String command, @Valid ClientWithdrawTransferRequestDTO withdrawTransferRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "withdrawTransferRequest", withdrawTransferRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying withdraw transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), withdrawTransferRequest.toMap(), command), "client transfer withdrawal");
     }
 
     public Observable<PostClientsClientIdResponse> rejectClientTransfer(Long clientId, String command, @Valid ClientRejectTransferRequestDTO rejectTransferRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "rejectTransferRequest", rejectTransferRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying reject transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), rejectTransferRequest.toMap(), command), "client transfer rejection");
     }
 
     public Observable<PostClientsClientIdResponse> acceptClientTransfer(Long clientId, String command, @Valid ClientAcceptTransferRequestDTO acceptTransferRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "command", command,
                 "acceptTransferRequest", acceptTransferRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying accept transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), acceptTransferRequest.toMap(), command), "client transfer acceptance");
     }
 
     public Observable<PostClientsClientIdResponse> proposeAndAcceptClientTransfer(Long clientId, @Valid ClientTransferRequestDTO transferRequest, @Valid ClientAcceptTransferRequestDTO acceptRequest) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "clientId", clientId,
                 "transferRequest", transferRequest,
                 "acceptRequest", acceptRequest
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Proposing and accepting transfer for client with ID: {}", clientId);
 
         return handleError(
@@ -620,17 +703,25 @@ public class FineractClientService {
     }
 
     public Observable<DeleteClientsClientIdResponse> deleteClient(Long clientId) {
-        requireParamsNonNull(Map.of("clientId", clientId));
+        try {
+            requireParamsNonNull(Map.of("clientId", clientId));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Deleting client with ID: {}", clientId);
         return handleError(clientsApi.deleteClient(clientId), "client deletion");
     }
 
     public Observable<PostClientsClientIdResponse> applyCommandByExternalId(String externalId, String command, Map<String, Object> request) {
-        requireParamsNonNull(Map.of(
+        try {
+            requireParamsNonNull(Map.of(
                 "externalId", externalId,
                 "command", command,
                 "request", request
-        ));
+            ));
+        } catch (IllegalArgumentException e) {
+            return Observable.error(e);
+        }
         log.info("Applying command {} to client with external ID: {}", command, externalId);
 
         return handleError(clientsApi.applyCommandByExternalId(externalId, request, command), "client command by external ID");
