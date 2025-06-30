@@ -692,7 +692,7 @@ public class FineractClientService {
     }
 
     private Observable<PostClientsClientIdResponse> proposeTransfer(Long clientId, ClientTransferRequestDTO transferRequest, ClientAcceptTransferRequestDTO acceptRequest) {
-        return clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), "proposeAndAcceptTransfer")
+        return clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), "proposeTransfer")
                 .flatMap(response -> acceptTransfer(clientId, transferRequest, acceptRequest));
     }
 
