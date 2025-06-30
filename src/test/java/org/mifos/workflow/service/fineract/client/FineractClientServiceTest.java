@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.lenient;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class FineractClientServiceTest {
@@ -93,16 +94,9 @@ class FineractClientServiceTest {
 
     @Test
     void createBasicClient_NullFields_ReturnsError() {
-        // Act
-        TestObserver<PostClientsResponse> testObserver = clientService.createBasicClient(null, "Doe", "1234567890", 1L, DATE_FORMAT, LOCALE, LEGAL_FORM_ID)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).createClient(anyMap());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.createBasicClient(null, "Doe", "1234567890", 1L, DATE_FORMAT, LOCALE, LEGAL_FORM_ID);
+        });
     }
 
     @Test
@@ -134,16 +128,9 @@ class FineractClientServiceTest {
 
     @Test
     void activateClient_NullClientId_ReturnsError() {
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.activateClient(null, DATE_FORMAT, LOCALE)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).activateClient(anyLong(), anyString(), anyMap());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.activateClient(null, DATE_FORMAT, LOCALE);
+        });
     }
 
     @Test
@@ -197,16 +184,9 @@ class FineractClientServiceTest {
 
     @Test
     void retrieveClient_NullClientId_ReturnsError() {
-        // Act
-        TestObserver<GetClientsClientIdResponse> testObserver = clientService.retrieveClient(null)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).retrieveClient(anyLong());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.retrieveClient(null);
+        });
     }
 
     @Test
@@ -244,30 +224,16 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PutClientsClientIdResponse> testObserver = clientService.updateClient(null, updateRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).updateClient(anyLong(), anyMap());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.updateClient(null, updateRequest);
+        });
     }
 
     @Test
     void updateClient_NullUpdateRequest_ReturnsError() {
-        // Act
-        TestObserver<PutClientsClientIdResponse> testObserver = clientService.updateClient(123L, null)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).updateClient(anyLong(), anyMap());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.updateClient(123L, null);
+        });
     }
 
     @Test
@@ -308,16 +274,9 @@ class FineractClientServiceTest {
                 .dateFormat(DATE_FORMAT)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.transferClient(null, "transfer", transferRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).retrieveTransferTemplate(anyLong());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.transferClient(null, "transfer", transferRequest);
+        });
     }
 
     @Test
@@ -361,16 +320,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.rejectClient(null, "reject", rejectRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.rejectClient(null, "reject", rejectRequest);
+        });
     }
 
     @Test
@@ -413,16 +365,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.closeClient(null, "close", closeRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.closeClient(null, "close", closeRequest);
+        });
     }
 
     @Test
@@ -825,16 +770,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.withdrawClient(null, "withdraw", withdrawRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.withdrawClient(null, "withdraw", withdrawRequest);
+        });
     }
 
     @Test
@@ -846,16 +784,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.reactivateClient(null, "reactivate", reactivateRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.reactivateClient(null, "reactivate", reactivateRequest);
+        });
     }
 
     @Test
@@ -867,16 +798,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.undoRejectClient(null, "undoRejection", undoRejectRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.undoRejectClient(null, "undoRejection", undoRejectRequest);
+        });
     }
 
     @Test
@@ -888,16 +812,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.undoWithdrawClient(null, "undoWithdrawal", undoWithdrawRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.undoWithdrawClient(null, "undoWithdrawal", undoWithdrawRequest);
+        });
     }
 
     @Test
@@ -907,16 +824,9 @@ class FineractClientServiceTest {
                 .staffId(1L)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.assignStaff(null, "assignStaff", assignStaffRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.assignStaff(null, "assignStaff", assignStaffRequest);
+        });
     }
 
     @Test
@@ -927,16 +837,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.unassignStaff(null, "unassignStaff", unassignStaffRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.unassignStaff(null, "unassignStaff", unassignStaffRequest);
+        });
     }
 
     @Test
@@ -946,16 +849,9 @@ class FineractClientServiceTest {
                 .savingsAccountId(1L)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.updateDefaultSavingsAccount(null, "updateSavingsAccount", updateSavingsRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.updateDefaultSavingsAccount(null, "updateSavingsAccount", updateSavingsRequest);
+        });
     }
 
     @Test
@@ -967,16 +863,9 @@ class FineractClientServiceTest {
                 .dateFormat(DATE_FORMAT)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.proposeClientTransfer(null, transferRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).retrieveTransferTemplate(anyLong());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.proposeClientTransfer(null, transferRequest);
+        });
     }
 
     @Test
@@ -988,16 +877,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.withdrawClientTransfer(null, "withdrawTransfer", withdrawTransferRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.withdrawClientTransfer(null, "withdrawTransfer", withdrawTransferRequest);
+        });
     }
 
     @Test
@@ -1010,16 +892,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.rejectClientTransfer(null, "rejectTransfer", rejectTransferRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.rejectClientTransfer(null, "rejectTransfer", rejectTransferRequest);
+        });
     }
 
     @Test
@@ -1030,16 +905,9 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.acceptClientTransfer(null, "acceptTransfer", acceptTransferRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.acceptClientTransfer(null, "acceptTransfer", acceptTransferRequest);
+        });
     }
 
     @Test
@@ -1056,30 +924,16 @@ class FineractClientServiceTest {
                 .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.proposeAndAcceptClientTransfer(null, transferRequest, acceptRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).retrieveTransferTemplate(anyLong());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.proposeAndAcceptClientTransfer(null, transferRequest, acceptRequest);
+        });
     }
 
     @Test
     void deleteClient_NullClientId_ReturnsError() {
-        // Act
-        TestObserver<DeleteClientsClientIdResponse> testObserver = clientService.deleteClient(null)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).deleteClient(anyLong());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.deleteClient(null);
+        });
     }
 
     @Test
@@ -1087,16 +941,9 @@ class FineractClientServiceTest {
         // Arrange
         Map<String, Object> request = Map.of("param", "value");
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.applyCommandByExternalId(null, "command", request)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.applyCommandByExternalId(null, "command", request);
+        });
     }
 
     @Test
@@ -1129,30 +976,16 @@ class FineractClientServiceTest {
 
     @Test
     void retrieveClientAccounts_NullClientId_ReturnsError() {
-        // Act
-        TestObserver<GetClientsClientIdAccountsResponse> testObserver = clientService.retrieveClientAccounts(null)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).retrieveClientAccounts(anyLong());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.retrieveClientAccounts(null);
+        });
     }
 
     @Test
     void retrieveAllClients_NullOfficeId_ReturnsError() {
-        // Act
-        TestObserver<GetClientsResponse> testObserver = clientService.retrieveAllClients(null, "search", "active", 10, 0)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(NullPointerException.class);
-
-        verify(clientsApi, never()).retrieveAllClients(anyLong(), anyString(), anyString(), anyInt(), anyInt());
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.retrieveAllClients(null, "search", "active", 10, 0);
+        });
     }
 
     @Test
@@ -1553,5 +1386,33 @@ class FineractClientServiceTest {
         testObserver.assertComplete();
 
         verify(clientsApi).retrieveClientAccounts(123L);
+    }
+
+    @Test
+    void createClient_WithNullRequest_ShouldReturnError() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.createClient(null, "dd/MM/yyyy", "en", 1L);
+        });
+    }
+
+    @Test
+    void createClient_WithNullDateFormat_ShouldReturnError() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.createClient(createRequest, null, "en", 1L);
+        });
+    }
+
+    @Test
+    void createClient_WithNullLocale_ShouldReturnError() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.createClient(createRequest, "dd/MM/yyyy", null, 1L);
+        });
+    }
+
+    @Test
+    void createClient_WithNullAddressTypeId_ShouldReturnError() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            clientService.createClient(createRequest, "dd/MM/yyyy", "en", null);
+        });
     }
 }

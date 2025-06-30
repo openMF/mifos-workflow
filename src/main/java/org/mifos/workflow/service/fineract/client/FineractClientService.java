@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 
 import org.mifos.fineract.client.models.DeleteClientsClientIdResponse;
 import org.mifos.fineract.client.models.GetClientsClientIdResponse;
@@ -50,9 +51,15 @@ import org.mifos.workflow.dto.fineract.office.OfficeDTO;
 import org.mifos.fineract.client.models.CodeValueData;
 import org.mifos.fineract.client.models.StaffData;
 import org.mifos.fineract.client.models.GetClientsClientIdAccountsResponse;
+
 import java.util.Objects;
 
+/**
+ * Service class for handling client-related operations in the Fineract system.
+ * Provides methods for creating, updating, and managing clients.
+ */
 @Service
+@Validated
 @RequiredArgsConstructor
 @Slf4j
 public class FineractClientService {
@@ -78,34 +85,41 @@ public class FineractClientService {
     }
 
     private void validateClientRequest(ClientCreateRequestDTO request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Client creation request cannot be null");
+        if (request.getFirstName() == null || request.getFirstName().trim().isEmpty()) {
+            throw new IllegalArgumentException("First name is required and cannot be empty");
+        }
+        if (request.getLastName() == null || request.getLastName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Last name is required and cannot be empty");
         }
         if (request.getOfficeId() == null) {
-            throw new IllegalArgumentException("Office ID cannot be null");
+            throw new IllegalArgumentException("Office ID is required");
         }
         if (request.getLegalFormId() == null) {
-            throw new IllegalArgumentException("Legal form ID cannot be null");
+            throw new IllegalArgumentException("Legal form ID is required");
         }
     }
 
-    private void requireParamsNonNull(Map<String, Object> params) {
-        params.forEach((name, value) -> {
-            Objects.requireNonNull(value, name + " cannot be null");
-        });
+    private List<AddressDTO> getAddressList(ClientCreateRequestDTO request, Long addressTypeId) {
+        List<AddressDTO> addressList = new ArrayList<>();
+        if (request.getAddress() != null && !request.getAddress().isEmpty()) {
+            addressList.addAll(request.getAddress());
+        }
+        return addressList;
     }
 
-    public Observable<PostClientsResponse> createClient(@Valid ClientCreateRequestDTO request, String dateFormat, String locale, Long addressTypeId) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("request", request);
-            params.put("dateFormat", dateFormat);
-            params.put("locale", locale);
-            params.put("addressTypeId", addressTypeId);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    private static void requireNotNull(Object param, String name) {
+        if (param == null) throw new IllegalArgumentException(name + " must not be null");
+    }
+
+    public Observable<PostClientsResponse> createClient(
+            @Valid @NotNull ClientCreateRequestDTO request,
+            @NotNull String dateFormat,
+            @NotNull String locale,
+            @NotNull Long addressTypeId) {
+        requireNotNull(request, "request");
+        requireNotNull(dateFormat, "dateFormat");
+        requireNotNull(locale, "locale");
+        requireNotNull(addressTypeId, "addressTypeId");
         validateClientRequest(request);
         log.info("Creating client with name: {}", request.getFirstName() + " " + request.getLastName());
 
@@ -129,37 +143,20 @@ public class FineractClientService {
         return handleError(clientsApi.createClient(clientRequest.toMap()), "client creation");
     }
 
-    @NotNull
-    private static List<AddressDTO> getAddressList(ClientCreateRequestDTO request, Long addressTypeId) {
-        List<AddressDTO> addressList = new ArrayList<>();
-        AddressDTO address = AddressDTO.builder()
-                .addressTypeId(addressTypeId)
-                .addressLine1(request.getAddressLine1())
-                .addressLine2(request.getAddressLine2())
-                .city(request.getCity())
-                .stateProvinceId(request.getStateProvinceId() != null ? Long.parseLong(request.getStateProvinceId()) : null)
-                .countryId(request.getCountryId() != null ? Long.parseLong(request.getCountryId()) : null)
-                .postalCode(request.getPostalCode())
-                .build();
-        addressList.add(address);
-        return addressList;
-    }
-
-    public Observable<PostClientsResponse> createBasicClient(String firstname, String lastname, String mobileNo, Long officeId,
-                                                             String dateFormat, String locale, Long legalFormId) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("firstname", firstname);
-            params.put("lastname", lastname);
-            params.put("officeId", officeId);
-            params.put("dateFormat", dateFormat);
-            params.put("locale", locale);
-            params.put("legalFormId", legalFormId);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
-
+    public Observable<PostClientsResponse> createBasicClient(
+            @NotNull String firstname,
+            @NotNull String lastname,
+            String mobileNo,
+            @NotNull Long officeId,
+            @NotNull String dateFormat,
+            @NotNull String locale,
+            @NotNull Long legalFormId) {
+        requireNotNull(firstname, "firstname");
+        requireNotNull(lastname, "lastname");
+        requireNotNull(officeId, "officeId");
+        requireNotNull(dateFormat, "dateFormat");
+        requireNotNull(locale, "locale");
+        requireNotNull(legalFormId, "legalFormId");
         BasicClientCreateRequestDTO basicClientRequest = BasicClientCreateRequestDTO.builder()
                 .dateFormat(dateFormat)
                 .locale(locale)
@@ -177,30 +174,25 @@ public class FineractClientService {
         return handleError(clientsApi.createClient(basicClientRequest.toMap()), "basic client creation");
     }
 
-    public Observable<PostClientsClientIdResponse> activateClient(Long clientId, String dateFormat, String locale) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("dateFormat", dateFormat);
-            params.put("locale", locale);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> activateClient(
+            @NotNull Long clientId,
+            @NotNull String dateFormat,
+            @NotNull String locale) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(dateFormat, "dateFormat");
+        requireNotNull(locale, "locale");
         return activateClient(clientId, LocalDate.now(), dateFormat, locale);
     }
 
-    public Observable<PostClientsClientIdResponse> activateClient(Long clientId, LocalDate activationDate, String dateFormat, String locale) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("activationDate", activationDate);
-            params.put("dateFormat", dateFormat);
-            params.put("locale", locale);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> activateClient(
+            @NotNull Long clientId,
+            @NotNull LocalDate activationDate,
+            @NotNull String dateFormat,
+            @NotNull String locale) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(activationDate, "activationDate");
+        requireNotNull(dateFormat, "dateFormat");
+        requireNotNull(locale, "locale");
         log.info("Activating client with ID: {}, activation date: {}", clientId, activationDate);
 
         ClientActivationRequestDTO activationRequest = ClientActivationRequestDTO.builder()
@@ -212,43 +204,30 @@ public class FineractClientService {
         return handleError(clientsApi.activateClient(clientId, ACTIVATE_COMMAND, activationRequest.toMap(dateFormat)), "client activation");
     }
 
-    public Observable<GetClientsClientIdResponse> retrieveClient(Long clientId) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<GetClientsClientIdResponse> retrieveClient(@NotNull Long clientId) {
+        requireNotNull(clientId, "clientId");
         log.info("Retrieving client with ID: {}", clientId);
 
         return handleError(clientsApi.retrieveClient(clientId), "client retrieval");
     }
 
-    public Observable<PutClientsClientIdResponse> updateClient(Long clientId, @Valid ClientUpdateRequestDTO updateRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("updateRequest", updateRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PutClientsClientIdResponse> updateClient(
+            @NotNull Long clientId,
+            @Valid @NotNull ClientUpdateRequestDTO updateRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(updateRequest, "updateRequest");
         log.info("Updating client with ID: {} using update request", clientId);
 
         return handleError(clientsApi.updateClient(clientId, updateRequest.toMap()), "client update");
     }
 
-    public Observable<PostClientsClientIdResponse> transferClient(Long clientId, String command, @Valid ClientTransferRequestDTO transferRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("transferRequest", transferRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> transferClient(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientTransferRequestDTO transferRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(transferRequest, "transferRequest");
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
         return handleError(
@@ -261,16 +240,13 @@ public class FineractClientService {
         );
     }
 
-    public Observable<PostClientsClientIdResponse> rejectClient(Long clientId, String command, @Valid ClientRejectRequestDTO rejectRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("rejectRequest", rejectRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> rejectClient(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientRejectRequestDTO rejectRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(rejectRequest, "rejectRequest");
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
         log.info("Sending reject command request: {}", rejectRequest.toMap());
@@ -287,28 +263,24 @@ public class FineractClientService {
         );
     }
 
-    public Observable<PostClientsClientIdResponse> closeClient(Long clientId, String command, @Valid ClientCloseRequestDTO closeRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("closeRequest", closeRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> closeClient(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientCloseRequestDTO closeRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(closeRequest, "closeRequest");
         log.info("Applying command {} to client with ID: {}", command, clientId);
         return handleError(clientsApi.applyCommand(clientId.toString(), closeRequest.toMap(), command), "client closure");
     }
 
-    public Observable<GetClientsResponse> retrieveAllClients(Long officeId, String searchText, String status, Integer limit, Integer offset) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("officeId", officeId);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<GetClientsResponse> retrieveAllClients(
+            @NotNull Long officeId,
+            String searchText,
+            String status,
+            Integer limit,
+            Integer offset) {
+        requireNotNull(officeId, "officeId");
         log.info("Retrieving all clients with filters - officeId: {}, searchText: {}, status: {}, limit: {}, offset: {}",
                 officeId, searchText, status, limit, offset);
 
@@ -327,14 +299,8 @@ public class FineractClientService {
         return handleError(clientsApi.retrieveAllStaff(), "staff retrieval");
     }
 
-    public Observable<GetClientsClientIdAccountsResponse> retrieveClientAccounts(Long clientId) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<GetClientsClientIdAccountsResponse> retrieveClientAccounts(@NotNull Long clientId) {
+        requireNotNull(clientId, "clientId");
         log.info("Retrieving accounts for client with ID: {}", clientId);
 
         return handleError(clientsApi.retrieveClientAccounts(clientId), "client accounts retrieval");
@@ -506,120 +472,95 @@ public class FineractClientService {
                 });
     }
 
-    public Observable<PostClientsClientIdResponse> withdrawClient(Long clientId, String command, @Valid ClientWithdrawRequestDTO withdrawRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("withdrawRequest", withdrawRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> withdrawClient(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientWithdrawRequestDTO withdrawRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(withdrawRequest, "withdrawRequest");
         log.info("Applying withdraw command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), withdrawRequest.toMap(), command), "client withdrawal");
     }
 
-    public Observable<PostClientsClientIdResponse> reactivateClient(Long clientId, String command, @Valid ClientReactivateRequestDTO reactivateRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("reactivateRequest", reactivateRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> reactivateClient(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientReactivateRequestDTO reactivateRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(reactivateRequest, "reactivateRequest");
         log.info("Applying reactivate command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), reactivateRequest.toMap(), command), "client reactivation");
     }
 
-    public Observable<PostClientsClientIdResponse> undoRejectClient(Long clientId, String command, @Valid ClientUndoRejectRequestDTO undoRejectRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("undoRejectRequest", undoRejectRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> undoRejectClient(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientUndoRejectRequestDTO undoRejectRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(undoRejectRequest, "undoRejectRequest");
         log.info("Applying undo reject command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), undoRejectRequest.toMap(), command), "client undo reject");
     }
 
-    public Observable<PostClientsClientIdResponse> undoWithdrawClient(Long clientId, String command, @Valid ClientUndoWithdrawRequestDTO undoWithdrawRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("undoWithdrawRequest", undoWithdrawRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> undoWithdrawClient(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientUndoWithdrawRequestDTO undoWithdrawRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(undoWithdrawRequest, "undoWithdrawRequest");
         log.info("Applying undo withdraw command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), undoWithdrawRequest.toMap(), command), "client undo withdraw");
     }
 
-    public Observable<PostClientsClientIdResponse> assignStaff(Long clientId, String command, @Valid ClientAssignStaffRequestDTO assignStaffRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("assignStaffRequest", assignStaffRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> assignStaff(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientAssignStaffRequestDTO assignStaffRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(assignStaffRequest, "assignStaffRequest");
         log.info("Applying assign staff command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), assignStaffRequest.toMap(), command), "client staff assignment");
     }
 
-    public Observable<PostClientsClientIdResponse> unassignStaff(Long clientId, String command, @Valid ClientUnassignStaffRequestDTO unassignStaffRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("unassignStaffRequest", unassignStaffRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> unassignStaff(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientUnassignStaffRequestDTO unassignStaffRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(unassignStaffRequest, "unassignStaffRequest");
         log.info("Applying unassign staff command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), unassignStaffRequest.toMap(), command), "client staff unassignment");
     }
 
-    public Observable<PostClientsClientIdResponse> updateDefaultSavingsAccount(Long clientId, String command, @Valid ClientUpdateSavingsRequestDTO updateSavingsRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("updateSavingsRequest", updateSavingsRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> updateDefaultSavingsAccount(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientUpdateSavingsRequestDTO updateSavingsRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(updateSavingsRequest, "updateSavingsRequest");
         log.info("Applying update default savings account command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), updateSavingsRequest.toMap(), command), "client default savings account update");
     }
 
-    public Observable<PostClientsClientIdResponse> proposeClientTransfer(Long clientId, @Valid ClientTransferRequestDTO transferRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("transferRequest", transferRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> proposeClientTransfer(
+            @NotNull Long clientId,
+            @Valid @NotNull ClientTransferRequestDTO transferRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(transferRequest, "transferRequest");
         log.info("Proposing transfer for client with ID: {}", clientId);
 
         return handleError(
@@ -632,61 +573,49 @@ public class FineractClientService {
         );
     }
 
-    public Observable<PostClientsClientIdResponse> withdrawClientTransfer(Long clientId, String command, @Valid ClientWithdrawTransferRequestDTO withdrawTransferRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("withdrawTransferRequest", withdrawTransferRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> withdrawClientTransfer(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientWithdrawTransferRequestDTO withdrawTransferRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(withdrawTransferRequest, "withdrawTransferRequest");
         log.info("Applying withdraw transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), withdrawTransferRequest.toMap(), command), "client transfer withdrawal");
     }
 
-    public Observable<PostClientsClientIdResponse> rejectClientTransfer(Long clientId, String command, @Valid ClientRejectTransferRequestDTO rejectTransferRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("rejectTransferRequest", rejectTransferRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> rejectClientTransfer(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientRejectTransferRequestDTO rejectTransferRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(rejectTransferRequest, "rejectTransferRequest");
         log.info("Applying reject transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), rejectTransferRequest.toMap(), command), "client transfer rejection");
     }
 
-    public Observable<PostClientsClientIdResponse> acceptClientTransfer(Long clientId, String command, @Valid ClientAcceptTransferRequestDTO acceptTransferRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("command", command);
-            params.put("acceptTransferRequest", acceptTransferRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> acceptClientTransfer(
+            @NotNull Long clientId,
+            @NotNull String command,
+            @Valid @NotNull ClientAcceptTransferRequestDTO acceptTransferRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(command, "command");
+        requireNotNull(acceptTransferRequest, "acceptTransferRequest");
         log.info("Applying accept transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), acceptTransferRequest.toMap(), command), "client transfer acceptance");
     }
 
-    public Observable<PostClientsClientIdResponse> proposeAndAcceptClientTransfer(Long clientId, @Valid ClientTransferRequestDTO transferRequest, @Valid ClientAcceptTransferRequestDTO acceptRequest) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            params.put("transferRequest", transferRequest);
-            params.put("acceptRequest", acceptRequest);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> proposeAndAcceptClientTransfer(
+            @NotNull Long clientId,
+            @Valid @NotNull ClientTransferRequestDTO transferRequest,
+            @Valid @NotNull ClientAcceptTransferRequestDTO acceptRequest) {
+        requireNotNull(clientId, "clientId");
+        requireNotNull(transferRequest, "transferRequest");
+        requireNotNull(acceptRequest, "acceptRequest");
         log.info("Proposing and accepting transfer for client with ID: {}", clientId);
 
         return handleError(
@@ -707,28 +636,19 @@ public class FineractClientService {
         return clientsApi.applyCommand(clientId.toString(), combinedRequest, "acceptTransfer");
     }
 
-    public Observable<DeleteClientsClientIdResponse> deleteClient(Long clientId) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("clientId", clientId);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<DeleteClientsClientIdResponse> deleteClient(@NotNull Long clientId) {
+        requireNotNull(clientId, "clientId");
         log.info("Deleting client with ID: {}", clientId);
         return handleError(clientsApi.deleteClient(clientId), "client deletion");
     }
 
-    public Observable<PostClientsClientIdResponse> applyCommandByExternalId(String externalId, String command, Map<String, Object> request) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("externalId", externalId);
-            params.put("command", command);
-            params.put("request", request);
-            requireParamsNonNull(params);
-        } catch (NullPointerException e) {
-            return Observable.error(e);
-        }
+    public Observable<PostClientsClientIdResponse> applyCommandByExternalId(
+            @NotNull String externalId,
+            @NotNull String command,
+            @NotNull Map<String, Object> request) {
+        requireNotNull(externalId, "externalId");
+        requireNotNull(command, "command");
+        requireNotNull(request, "request");
         log.info("Applying command {} to client with external ID: {}", command, externalId);
 
         return handleError(clientsApi.applyCommandByExternalId(externalId, request, command), "client command by external ID");
