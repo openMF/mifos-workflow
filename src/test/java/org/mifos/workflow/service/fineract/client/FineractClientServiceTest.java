@@ -10,13 +10,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mifos.fineract.client.models.*;
 import org.mifos.workflow.api.client.ClientsApi;
-import org.mifos.workflow.dto.fineract.client.ClientCreateRequestDTO;
-import org.mifos.workflow.dto.fineract.client.ClientUpdateRequestDTO;
+import org.mifos.workflow.dto.fineract.client.*;
 import org.mifos.workflow.dto.fineract.code.CodeDataDTO;
-import org.mifos.workflow.dto.fineract.client.ClientTransferRequestDTO;
-import org.mifos.workflow.dto.fineract.client.ClientRejectRequestDTO;
-import org.mifos.workflow.dto.fineract.client.ClientCloseRequestDTO;
-
 import org.mifos.workflow.service.fineract.auth.FineractAuthService;
 import org.mifos.workflow.dto.fineract.office.OfficeDTO;
 
@@ -27,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -96,18 +92,12 @@ class FineractClientServiceTest {
     }
 
     @Test
-    void createBasicClient_NullFields_ReturnsError() {
-
-        // Act
-        TestObserver<PostClientsResponse> testObserver = clientService.createBasicClient(null, "Doe", "1234567890", 1L, DATE_FORMAT, LOCALE, LEGAL_FORM_ID)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(IllegalArgumentException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Mandatory fields (firstname, lastname, officeId) cannot be null"));
+    void createBasicClient_NullFields_ThrowsNullPointerException() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.createBasicClient(null, "Doe", "1234567890", 1L, DATE_FORMAT, LOCALE, LEGAL_FORM_ID)
+                    .blockingFirst();
+        });
 
         verify(clientsApi, never()).createClient(anyMap());
     }
@@ -140,20 +130,12 @@ class FineractClientServiceTest {
     }
 
     @Test
-    void activateClient_NullClientId_ReturnsError() {
-        // Arrange
-        // No specific arrangement needed for this test
-
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.activateClient(null, DATE_FORMAT, LOCALE)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(error ->
-                error instanceof IllegalArgumentException &&
-                        error.getMessage().equals("Client ID or activation date cannot be null"));
+    void activateClient_NullClientId_ThrowsNullPointerException() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.activateClient(null, DATE_FORMAT, LOCALE)
+                    .blockingFirst();
+        });
 
         verify(clientsApi, never()).activateClient(anyLong(), anyString(), anyMap());
     }
@@ -208,20 +190,12 @@ class FineractClientServiceTest {
     }
 
     @Test
-    void retrieveClient_NullClientId_ReturnsError() {
-        // Arrange
-        // No specific arrangement needed for this test
-
-        // Act
-        TestObserver<GetClientsClientIdResponse> testObserver = clientService.retrieveClient(null)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(IllegalArgumentException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client ID cannot be null"));
+    void retrieveClient_NullClientId_ThrowsNullPointerException() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.retrieveClient(null)
+                    .blockingFirst();
+        });
 
         verify(clientsApi, never()).retrieveClient(anyLong());
     }
@@ -247,42 +221,36 @@ class FineractClientServiceTest {
     }
 
     @Test
-    void updateClient_NullClientId_ReturnsError() {
+    void updateClient_NullClientId_ThrowsNullPointerException() {
         // Arrange
         ClientUpdateRequestDTO updateRequest = ClientUpdateRequestDTO.builder()
                 .firstName("Updated")
                 .lastName("Name")
+                .mobileNo("1234567890")
+                .externalId("EXT123")
+                .active(true)
+                .officeId(1L)
+                .legalFormId(1L)
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
                 .build();
 
-        // Act
-        TestObserver<PutClientsClientIdResponse> testObserver = clientService.updateClient(null, updateRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(IllegalArgumentException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client ID or update request cannot be null"));
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.updateClient(null, updateRequest)
+                    .blockingFirst();
+        });
 
         verify(clientsApi, never()).updateClient(anyLong(), anyMap());
     }
 
     @Test
-    void updateClient_NullUpdateRequest_ReturnsError() {
-        // Arrange
-        // No specific arrangement needed for this test
-
-        // Act
-        TestObserver<PutClientsClientIdResponse> testObserver = clientService.updateClient(123L, null)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(IllegalArgumentException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client ID or update request cannot be null"));
+    void updateClient_NullUpdateRequest_ThrowsNullPointerException() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.updateClient(123L, null)
+                    .blockingFirst();
+        });
 
         verify(clientsApi, never()).updateClient(anyLong(), anyMap());
     }
@@ -317,20 +285,19 @@ class FineractClientServiceTest {
     }
 
     @Test
-    void transferClient_NullParameters_ReturnsError() {
+    void transferClient_NullParameters_ThrowsNullPointerException() {
         // Arrange
-        ClientTransferRequestDTO transferRequest = null;
+        ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .destinationOfficeId(2L)
+                .dateFormat(DATE_FORMAT)
+                .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.transferClient(null, "transfer", transferRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(IllegalArgumentException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client ID, command, or transfer request cannot be null"));
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.transferClient(null, "transfer", transferRequest)
+                    .blockingFirst();
+        });
 
         verify(clientsApi, never()).retrieveTransferTemplate(anyLong());
     }
@@ -367,20 +334,20 @@ class FineractClientServiceTest {
     }
 
     @Test
-    void rejectClient_NullParameters_ReturnsError() {
+    void rejectClient_NullParameters_ThrowsNullPointerException() {
         // Arrange
-        ClientRejectRequestDTO rejectRequest = null;
+        ClientRejectRequestDTO rejectRequest = ClientRejectRequestDTO.builder()
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .rejectionDate(LocalDate.of(2023, 1, 1))
+                .rejectionReasonId(1L)
+                .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.rejectClient(null, "reject", rejectRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(IllegalArgumentException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client ID, command, or reject request cannot be null"));
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.rejectClient(null, "reject", rejectRequest)
+                    .blockingFirst();
+        });
 
         verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
     }
@@ -416,20 +383,20 @@ class FineractClientServiceTest {
     }
 
     @Test
-    void closeClient_NullParameters_ReturnsError() {
+    void closeClient_NullParameters_ThrowsNullPointerException() {
         // Arrange
-        ClientCloseRequestDTO closeRequest = null;
+        ClientCloseRequestDTO closeRequest = ClientCloseRequestDTO.builder()
+                .closureDate(LocalDate.of(2023, 1, 1))
+                .closureReasonId(1L)
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
 
-        // Act
-        TestObserver<PostClientsClientIdResponse> testObserver = clientService.closeClient(null, "close", closeRequest)
-                .test();
-
-        // Assert
-        testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertNoValues();
-        testObserver.assertError(IllegalArgumentException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client ID, command, or close request cannot be null"));
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.closeClient(null, "close", closeRequest)
+                    .blockingFirst();
+        });
 
         verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
     }
@@ -822,5 +789,694 @@ class FineractClientServiceTest {
 
         verify(clientsApi).retrieveCodes();
         verify(clientsApi, never()).createCodeValue(anyLong(), anyMap());
+    }
+
+    @Test
+    void withdrawClient_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientWithdrawRequestDTO withdrawRequest = ClientWithdrawRequestDTO.builder()
+                .withdrawalDate(LocalDate.of(2023, 1, 1))
+                .withdrawalReasonId(1L)
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.withdrawClient(null, "withdraw", withdrawRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void reactivateClient_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientReactivateRequestDTO reactivateRequest = ClientReactivateRequestDTO.builder()
+                .reactivationDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.reactivateClient(null, "reactivate", reactivateRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void undoRejectClient_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientUndoRejectRequestDTO undoRejectRequest = ClientUndoRejectRequestDTO.builder()
+                .reopenedDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.undoRejectClient(null, "undoRejection", undoRejectRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void undoWithdrawClient_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientUndoWithdrawRequestDTO undoWithdrawRequest = ClientUndoWithdrawRequestDTO.builder()
+                .reopenedDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.undoWithdrawClient(null, "undoWithdrawal", undoWithdrawRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void assignStaff_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientAssignStaffRequestDTO assignStaffRequest = ClientAssignStaffRequestDTO.builder()
+                .staffId(1L)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.assignStaff(null, "assignStaff", assignStaffRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void unassignStaff_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientUnassignStaffRequestDTO unassignStaffRequest = ClientUnassignStaffRequestDTO.builder()
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.unassignStaff(null, "unassignStaff", unassignStaffRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void updateDefaultSavingsAccount_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientUpdateSavingsRequestDTO updateSavingsRequest = ClientUpdateSavingsRequestDTO.builder()
+                .savingsAccountId(1L)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.updateDefaultSavingsAccount(null, "updateSavingsAccount", updateSavingsRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void proposeClientTransfer_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .destinationOfficeId(2L)
+                .dateFormat(DATE_FORMAT)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.proposeClientTransfer(null, transferRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).retrieveTransferTemplate(anyLong());
+    }
+
+    @Test
+    void withdrawClientTransfer_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientWithdrawTransferRequestDTO withdrawTransferRequest = ClientWithdrawTransferRequestDTO.builder()
+                .withdrawalDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.withdrawClientTransfer(null, "withdrawTransfer", withdrawTransferRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void rejectClientTransfer_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientRejectTransferRequestDTO rejectTransferRequest = ClientRejectTransferRequestDTO.builder()
+                .rejectionDate(LocalDate.of(2023, 1, 1))
+                .rejectionReasonId("1")
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.rejectClientTransfer(null, "rejectTransfer", rejectTransferRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void acceptClientTransfer_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientAcceptTransferRequestDTO acceptTransferRequest = ClientAcceptTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.acceptClientTransfer(null, "acceptTransfer", acceptTransferRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommand(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void proposeAndAcceptClientTransfer_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .destinationOfficeId(2L)
+                .dateFormat(DATE_FORMAT)
+                .build();
+        ClientAcceptTransferRequestDTO acceptRequest = ClientAcceptTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.proposeAndAcceptClientTransfer(null, transferRequest, acceptRequest)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).retrieveTransferTemplate(anyLong());
+    }
+
+    @Test
+    void deleteClient_NullClientId_ThrowsNullPointerException() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.deleteClient(null)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).deleteClient(anyLong());
+    }
+
+    @Test
+    void applyCommandByExternalId_NullParameters_ThrowsNullPointerException() {
+        // Arrange
+        Map<String, Object> request = new HashMap<>();
+        request.put("command", "activate");
+
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.applyCommandByExternalId(null, "activate", request)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).applyCommandByExternalId(anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    void retrieveAllStaff_Success() {
+        // Arrange
+        List<StaffData> staffList = new ArrayList<>();
+        StaffData staff1 = mock(StaffData.class);
+        lenient().when(staff1.getId()).thenReturn(1L);
+        lenient().when(staff1.getDisplayName()).thenReturn("Staff 1");
+        staffList.add(staff1);
+
+        StaffData staff2 = mock(StaffData.class);
+        lenient().when(staff2.getId()).thenReturn(2L);
+        lenient().when(staff2.getDisplayName()).thenReturn("Staff 2");
+        staffList.add(staff2);
+
+        when(clientsApi.retrieveAllStaff()).thenReturn(Observable.just(staffList));
+
+        // Act
+        TestObserver<List<StaffData>> testObserver = clientService.retrieveAllStaff()
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(staffList);
+        testObserver.assertComplete();
+
+        verify(clientsApi).retrieveAllStaff();
+    }
+
+    @Test
+    void retrieveClientAccounts_Success() {
+        // Arrange
+        GetClientsClientIdAccountsResponse response = mock(GetClientsClientIdAccountsResponse.class);
+        when(clientsApi.retrieveClientAccounts(anyLong())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<GetClientsClientIdAccountsResponse> testObserver = clientService.retrieveClientAccounts(123L)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(response);
+        testObserver.assertComplete();
+
+        verify(clientsApi).retrieveClientAccounts(123L);
+    }
+
+    @Test
+    void retrieveClientAccounts_NullClientId_ThrowsNullPointerException() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.retrieveClientAccounts(null)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).retrieveClientAccounts(anyLong());
+    }
+
+    @Test
+    void retrieveAllClients_NullOfficeId_ThrowsNullPointerException() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> {
+            clientService.retrieveAllClients(null, "search", "active", 10, 0)
+                    .blockingFirst();
+        });
+
+        verify(clientsApi, never()).retrieveAllClients(anyLong(), anyString(), anyString(), anyInt(), anyInt());
+    }
+
+    @Test
+    void withdrawClient_Success() {
+        // Arrange
+        ClientWithdrawRequestDTO withdrawRequest = ClientWithdrawRequestDTO.builder()
+                .withdrawalDate(LocalDate.of(2023, 1, 1))
+                .withdrawalReasonId(1L)
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.withdrawClient(123L, "withdraw", withdrawRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("withdrawalDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("withdrawalReasonId").equals(1L) &&
+                        map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE)
+        ), eq("withdraw"));
+    }
+
+    @Test
+    void reactivateClient_Success() {
+        // Arrange
+        ClientReactivateRequestDTO reactivateRequest = ClientReactivateRequestDTO.builder()
+                .reactivationDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.reactivateClient(123L, "reactivate", reactivateRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("reactivationDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE)
+        ), eq("reactivate"));
+    }
+
+    @Test
+    void undoRejectClient_Success() {
+        // Arrange
+        ClientUndoRejectRequestDTO undoRejectRequest = ClientUndoRejectRequestDTO.builder()
+                .reopenedDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.undoRejectClient(123L, "undoRejection", undoRejectRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("reopenedDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE)
+        ), eq("undoRejection"));
+    }
+
+    @Test
+    void undoWithdrawClient_Success() {
+        // Arrange
+        ClientUndoWithdrawRequestDTO undoWithdrawRequest = ClientUndoWithdrawRequestDTO.builder()
+                .reopenedDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.undoWithdrawClient(123L, "undoWithdrawal", undoWithdrawRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("reopenedDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE)
+        ), eq("undoWithdrawal"));
+    }
+
+    @Test
+    void assignStaff_Success() {
+        // Arrange
+        ClientAssignStaffRequestDTO assignStaffRequest = ClientAssignStaffRequestDTO.builder()
+                .staffId(1L)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.assignStaff(123L, "assignStaff", assignStaffRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("staffId").equals(1L)
+        ), eq("assignStaff"));
+    }
+
+    @Test
+    void unassignStaff_Success() {
+        // Arrange
+        ClientUnassignStaffRequestDTO unassignStaffRequest = ClientUnassignStaffRequestDTO.builder()
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.unassignStaff(123L, "unassignStaff", unassignStaffRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE)
+        ), eq("unassignStaff"));
+    }
+
+    @Test
+    void updateDefaultSavingsAccount_Success() {
+        // Arrange
+        ClientUpdateSavingsRequestDTO updateSavingsRequest = ClientUpdateSavingsRequestDTO.builder()
+                .savingsAccountId(1L)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.updateDefaultSavingsAccount(123L, "updateSavingsAccount", updateSavingsRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("savingsAccountId").equals(1L)
+        ), eq("updateSavingsAccount"));
+    }
+
+    @Test
+    void proposeClientTransfer_Success() {
+        // Arrange
+        ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .destinationOfficeId(2L)
+                .dateFormat(DATE_FORMAT)
+                .build();
+        GetClientTransferProposalDateResponse template = mock(GetClientTransferProposalDateResponse.class);
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.retrieveTransferTemplate(anyLong())).thenReturn(Observable.just(template));
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.proposeClientTransfer(123L, transferRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).retrieveTransferTemplate(123L);
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("transferDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("destinationOfficeId").equals(2L) &&
+                        map.get("dateFormat").equals(DATE_FORMAT)
+        ), eq("proposeTransfer"));
+    }
+
+    @Test
+    void withdrawClientTransfer_Success() {
+        // Arrange
+        ClientWithdrawTransferRequestDTO withdrawTransferRequest = ClientWithdrawTransferRequestDTO.builder()
+                .withdrawalDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.withdrawClientTransfer(123L, "withdrawTransfer", withdrawTransferRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("withdrawalDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE)
+        ), eq("withdrawTransfer"));
+    }
+
+    @Test
+    void rejectClientTransfer_Success() {
+        // Arrange
+        ClientRejectTransferRequestDTO rejectTransferRequest = ClientRejectTransferRequestDTO.builder()
+                .rejectionDate(LocalDate.of(2023, 1, 1))
+                .rejectionReasonId("1")
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.rejectClientTransfer(123L, "rejectTransfer", rejectTransferRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("rejectionDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("rejectionReasonId").equals("1") &&
+                        map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE)
+        ), eq("rejectTransfer"));
+    }
+
+    @Test
+    void acceptClientTransfer_Success() {
+        // Arrange
+        ClientAcceptTransferRequestDTO acceptTransferRequest = ClientAcceptTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.acceptClientTransfer(123L, "acceptTransfer", acceptTransferRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommand(eq("123"), argThat(map ->
+                map.get("transferDate").equals(LocalDate.of(2023, 1, 1).format(DateTimeFormatter.ofPattern(DATE_FORMAT))) &&
+                        map.get("dateFormat").equals(DATE_FORMAT) &&
+                        map.get("locale").equals(LOCALE)
+        ), eq("acceptTransfer"));
+    }
+
+    @Test
+    void proposeAndAcceptClientTransfer_Success() {
+        // Arrange
+        ClientTransferRequestDTO transferRequest = ClientTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .destinationOfficeId(2L)
+                .dateFormat(DATE_FORMAT)
+                .build();
+        ClientAcceptTransferRequestDTO acceptRequest = ClientAcceptTransferRequestDTO.builder()
+                .transferDate(LocalDate.of(2023, 1, 1))
+                .dateFormat(DATE_FORMAT)
+                .locale(LOCALE)
+                .build();
+        GetClientTransferProposalDateResponse template = mock(GetClientTransferProposalDateResponse.class);
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.retrieveTransferTemplate(anyLong())).thenReturn(Observable.just(template));
+        when(clientsApi.applyCommand(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.proposeAndAcceptClientTransfer(123L, transferRequest, acceptRequest)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).retrieveTransferTemplate(123L);
+        verify(clientsApi, times(2)).applyCommand(eq("123"), anyMap(), anyString());
+    }
+
+    @Test
+    void deleteClient_Success() {
+        // Arrange
+        DeleteClientsClientIdResponse response = mock(DeleteClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.deleteClient(anyLong())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<DeleteClientsClientIdResponse> testObserver = clientService.deleteClient(123L)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).deleteClient(123L);
+    }
+
+    @Test
+    void applyCommandByExternalId_Success() {
+        // Arrange
+        Map<String, Object> request = new HashMap<>();
+        request.put("command", "activate");
+        PostClientsClientIdResponse response = mock(PostClientsClientIdResponse.class);
+        when(response.getClientId()).thenReturn(123L);
+        when(clientsApi.applyCommandByExternalId(anyString(), anyMap(), anyString())).thenReturn(Observable.just(response));
+
+        // Act
+        TestObserver<PostClientsClientIdResponse> testObserver = clientService.applyCommandByExternalId("EXT123", "activate", request)
+                .test();
+
+        // Assert
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertValue(r -> r.getClientId().equals(123L));
+        testObserver.assertComplete();
+
+        verify(clientsApi).applyCommandByExternalId("EXT123", request, "activate");
     }
 }

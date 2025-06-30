@@ -99,10 +99,10 @@ public class FineractClientService {
     public Observable<PostClientsResponse> createClient(@Valid ClientCreateRequestDTO request, String dateFormat, String locale, Long addressTypeId) {
         try {
             requireParamsNonNull(Map.of(
-                "request", request,
-                "dateFormat", dateFormat,
-                "locale", locale,
-                "addressTypeId", addressTypeId
+                    "request", request,
+                    "dateFormat", dateFormat,
+                    "locale", locale,
+                    "addressTypeId", addressTypeId
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -150,12 +150,12 @@ public class FineractClientService {
                                                              String dateFormat, String locale, Long legalFormId) {
         try {
             requireParamsNonNull(Map.of(
-                "firstname", firstname,
-                "lastname", lastname,
-                "officeId", officeId,
-                "dateFormat", dateFormat,
-                "locale", locale,
-                "legalFormId", legalFormId
+                    "firstname", firstname,
+                    "lastname", lastname,
+                    "officeId", officeId,
+                    "dateFormat", dateFormat,
+                    "locale", locale,
+                    "legalFormId", legalFormId
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -181,9 +181,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> activateClient(Long clientId, String dateFormat, String locale) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "dateFormat", dateFormat,
-                "locale", locale
+                    "clientId", clientId,
+                    "dateFormat", dateFormat,
+                    "locale", locale
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -194,10 +194,10 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> activateClient(Long clientId, LocalDate activationDate, String dateFormat, String locale) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "activationDate", activationDate,
-                "dateFormat", dateFormat,
-                "locale", locale
+                    "clientId", clientId,
+                    "activationDate", activationDate,
+                    "dateFormat", dateFormat,
+                    "locale", locale
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -227,8 +227,8 @@ public class FineractClientService {
     public Observable<PutClientsClientIdResponse> updateClient(Long clientId, @Valid ClientUpdateRequestDTO updateRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "updateRequest", updateRequest
+                    "clientId", clientId,
+                    "updateRequest", updateRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -241,9 +241,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> transferClient(Long clientId, String command, @Valid ClientTransferRequestDTO transferRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "transferRequest", transferRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "transferRequest", transferRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -263,9 +263,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> rejectClient(Long clientId, String command, @Valid ClientRejectRequestDTO rejectRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "rejectRequest", rejectRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "rejectRequest", rejectRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -289,9 +289,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> closeClient(Long clientId, String command, @Valid ClientCloseRequestDTO closeRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "closeRequest", closeRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "closeRequest", closeRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -504,9 +504,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> withdrawClient(Long clientId, String command, @Valid ClientWithdrawRequestDTO withdrawRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "withdrawRequest", withdrawRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "withdrawRequest", withdrawRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -519,9 +519,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> reactivateClient(Long clientId, String command, @Valid ClientReactivateRequestDTO reactivateRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "reactivateRequest", reactivateRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "reactivateRequest", reactivateRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -534,9 +534,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> undoRejectClient(Long clientId, String command, @Valid ClientUndoRejectRequestDTO undoRejectRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "undoRejectRequest", undoRejectRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "undoRejectRequest", undoRejectRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -549,9 +549,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> undoWithdrawClient(Long clientId, String command, @Valid ClientUndoWithdrawRequestDTO undoWithdrawRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "undoWithdrawRequest", undoWithdrawRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "undoWithdrawRequest", undoWithdrawRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -564,9 +564,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> assignStaff(Long clientId, String command, @Valid ClientAssignStaffRequestDTO assignStaffRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "assignStaffRequest", assignStaffRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "assignStaffRequest", assignStaffRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -579,9 +579,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> unassignStaff(Long clientId, String command, @Valid ClientUnassignStaffRequestDTO unassignStaffRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "unassignStaffRequest", unassignStaffRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "unassignStaffRequest", unassignStaffRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -594,9 +594,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> updateDefaultSavingsAccount(Long clientId, String command, @Valid ClientUpdateSavingsRequestDTO updateSavingsRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "updateSavingsRequest", updateSavingsRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "updateSavingsRequest", updateSavingsRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -609,8 +609,8 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> proposeClientTransfer(Long clientId, @Valid ClientTransferRequestDTO transferRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "transferRequest", transferRequest
+                    "clientId", clientId,
+                    "transferRequest", transferRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -630,9 +630,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> withdrawClientTransfer(Long clientId, String command, @Valid ClientWithdrawTransferRequestDTO withdrawTransferRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "withdrawTransferRequest", withdrawTransferRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "withdrawTransferRequest", withdrawTransferRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -645,9 +645,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> rejectClientTransfer(Long clientId, String command, @Valid ClientRejectTransferRequestDTO rejectTransferRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "rejectTransferRequest", rejectTransferRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "rejectTransferRequest", rejectTransferRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -660,9 +660,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> acceptClientTransfer(Long clientId, String command, @Valid ClientAcceptTransferRequestDTO acceptTransferRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "command", command,
-                "acceptTransferRequest", acceptTransferRequest
+                    "clientId", clientId,
+                    "command", command,
+                    "acceptTransferRequest", acceptTransferRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -675,9 +675,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> proposeAndAcceptClientTransfer(Long clientId, @Valid ClientTransferRequestDTO transferRequest, @Valid ClientAcceptTransferRequestDTO acceptRequest) {
         try {
             requireParamsNonNull(Map.of(
-                "clientId", clientId,
-                "transferRequest", transferRequest,
-                "acceptRequest", acceptRequest
+                    "clientId", clientId,
+                    "transferRequest", transferRequest,
+                    "acceptRequest", acceptRequest
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
@@ -685,15 +685,15 @@ public class FineractClientService {
         log.info("Proposing and accepting transfer for client with ID: {}", clientId);
 
         return handleError(
-            clientsApi.retrieveTransferTemplate(clientId)
-                .flatMap(template -> proposeTransfer(clientId, transferRequest, acceptRequest)),
-            "client transfer proposal and acceptance"
+                clientsApi.retrieveTransferTemplate(clientId)
+                        .flatMap(template -> proposeTransfer(clientId, transferRequest, acceptRequest)),
+                "client transfer proposal and acceptance"
         );
     }
 
     private Observable<PostClientsClientIdResponse> proposeTransfer(Long clientId, ClientTransferRequestDTO transferRequest, ClientAcceptTransferRequestDTO acceptRequest) {
         return clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), "proposeAndAcceptTransfer")
-            .flatMap(response -> acceptTransfer(clientId, transferRequest, acceptRequest));
+                .flatMap(response -> acceptTransfer(clientId, transferRequest, acceptRequest));
     }
 
     private Observable<PostClientsClientIdResponse> acceptTransfer(Long clientId, ClientTransferRequestDTO transferRequest, ClientAcceptTransferRequestDTO acceptRequest) {
@@ -715,9 +715,9 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> applyCommandByExternalId(String externalId, String command, Map<String, Object> request) {
         try {
             requireParamsNonNull(Map.of(
-                "externalId", externalId,
-                "command", command,
-                "request", request
+                    "externalId", externalId,
+                    "command", command,
+                    "request", request
             ));
         } catch (IllegalArgumentException e) {
             return Observable.error(e);
