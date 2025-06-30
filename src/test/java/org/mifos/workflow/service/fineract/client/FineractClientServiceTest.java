@@ -4,9 +4,10 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mifos.fineract.client.models.*;
 import org.mifos.workflow.api.client.ClientsApi;
 import org.mifos.workflow.dto.fineract.client.*;
@@ -25,16 +26,16 @@ import static org.mockito.Mockito.lenient;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class FineractClientServiceTest {
 
-    @MockBean
+    @Mock
     private ClientsApi clientsApi;
 
-    @MockBean
+    @Mock
     private FineractAuthService authService;
 
-    @Autowired
+    @InjectMocks
     private FineractClientService clientService;
 
     private static final String DATE_FORMAT = "dd MMMM yyyy";
