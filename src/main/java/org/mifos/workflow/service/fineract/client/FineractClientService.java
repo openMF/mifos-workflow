@@ -50,6 +50,7 @@ import org.mifos.workflow.dto.fineract.office.OfficeDTO;
 import org.mifos.fineract.client.models.CodeValueData;
 import org.mifos.fineract.client.models.StaffData;
 import org.mifos.fineract.client.models.GetClientsClientIdAccountsResponse;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -90,21 +91,19 @@ public class FineractClientService {
 
     private void requireParamsNonNull(Map<String, Object> params) {
         params.forEach((name, value) -> {
-            if (value == null) {
-                throw new IllegalArgumentException(name + " cannot be null");
-            }
+            Objects.requireNonNull(value, name + " cannot be null");
         });
     }
 
     public Observable<PostClientsResponse> createClient(@Valid ClientCreateRequestDTO request, String dateFormat, String locale, Long addressTypeId) {
         try {
-            requireParamsNonNull(Map.of(
-                    "request", request,
-                    "dateFormat", dateFormat,
-                    "locale", locale,
-                    "addressTypeId", addressTypeId
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("request", request);
+            params.put("dateFormat", dateFormat);
+            params.put("locale", locale);
+            params.put("addressTypeId", addressTypeId);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         validateClientRequest(request);
@@ -149,15 +148,15 @@ public class FineractClientService {
     public Observable<PostClientsResponse> createBasicClient(String firstname, String lastname, String mobileNo, Long officeId,
                                                              String dateFormat, String locale, Long legalFormId) {
         try {
-            requireParamsNonNull(Map.of(
-                    "firstname", firstname,
-                    "lastname", lastname,
-                    "officeId", officeId,
-                    "dateFormat", dateFormat,
-                    "locale", locale,
-                    "legalFormId", legalFormId
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("firstname", firstname);
+            params.put("lastname", lastname);
+            params.put("officeId", officeId);
+            params.put("dateFormat", dateFormat);
+            params.put("locale", locale);
+            params.put("legalFormId", legalFormId);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
 
@@ -180,12 +179,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> activateClient(Long clientId, String dateFormat, String locale) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "dateFormat", dateFormat,
-                    "locale", locale
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("dateFormat", dateFormat);
+            params.put("locale", locale);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         return activateClient(clientId, LocalDate.now(), dateFormat, locale);
@@ -193,13 +192,13 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> activateClient(Long clientId, LocalDate activationDate, String dateFormat, String locale) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "activationDate", activationDate,
-                    "dateFormat", dateFormat,
-                    "locale", locale
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("activationDate", activationDate);
+            params.put("dateFormat", dateFormat);
+            params.put("locale", locale);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Activating client with ID: {}, activation date: {}", clientId, activationDate);
@@ -215,8 +214,10 @@ public class FineractClientService {
 
     public Observable<GetClientsClientIdResponse> retrieveClient(Long clientId) {
         try {
-            requireParamsNonNull(Map.of("clientId", clientId));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Retrieving client with ID: {}", clientId);
@@ -226,11 +227,11 @@ public class FineractClientService {
 
     public Observable<PutClientsClientIdResponse> updateClient(Long clientId, @Valid ClientUpdateRequestDTO updateRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "updateRequest", updateRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("updateRequest", updateRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Updating client with ID: {} using update request", clientId);
@@ -240,12 +241,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> transferClient(Long clientId, String command, @Valid ClientTransferRequestDTO transferRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "transferRequest", transferRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("transferRequest", transferRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
@@ -262,12 +263,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> rejectClient(Long clientId, String command, @Valid ClientRejectRequestDTO rejectRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "rejectRequest", rejectRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("rejectRequest", rejectRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
@@ -288,12 +289,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> closeClient(Long clientId, String command, @Valid ClientCloseRequestDTO closeRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "closeRequest", closeRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("closeRequest", closeRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying command {} to client with ID: {}", command, clientId);
@@ -302,8 +303,10 @@ public class FineractClientService {
 
     public Observable<GetClientsResponse> retrieveAllClients(Long officeId, String searchText, String status, Integer limit, Integer offset) {
         try {
-            requireParamsNonNull(Map.of("officeId", officeId));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("officeId", officeId);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Retrieving all clients with filters - officeId: {}, searchText: {}, status: {}, limit: {}, offset: {}",
@@ -326,8 +329,10 @@ public class FineractClientService {
 
     public Observable<GetClientsClientIdAccountsResponse> retrieveClientAccounts(Long clientId) {
         try {
-            requireParamsNonNull(Map.of("clientId", clientId));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Retrieving accounts for client with ID: {}", clientId);
@@ -503,12 +508,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> withdrawClient(Long clientId, String command, @Valid ClientWithdrawRequestDTO withdrawRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "withdrawRequest", withdrawRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("withdrawRequest", withdrawRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying withdraw command {} to client with ID: {}", command, clientId);
@@ -518,12 +523,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> reactivateClient(Long clientId, String command, @Valid ClientReactivateRequestDTO reactivateRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "reactivateRequest", reactivateRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("reactivateRequest", reactivateRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying reactivate command {} to client with ID: {}", command, clientId);
@@ -533,12 +538,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> undoRejectClient(Long clientId, String command, @Valid ClientUndoRejectRequestDTO undoRejectRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "undoRejectRequest", undoRejectRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("undoRejectRequest", undoRejectRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying undo reject command {} to client with ID: {}", command, clientId);
@@ -548,12 +553,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> undoWithdrawClient(Long clientId, String command, @Valid ClientUndoWithdrawRequestDTO undoWithdrawRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "undoWithdrawRequest", undoWithdrawRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("undoWithdrawRequest", undoWithdrawRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying undo withdraw command {} to client with ID: {}", command, clientId);
@@ -563,12 +568,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> assignStaff(Long clientId, String command, @Valid ClientAssignStaffRequestDTO assignStaffRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "assignStaffRequest", assignStaffRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("assignStaffRequest", assignStaffRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying assign staff command {} to client with ID: {}", command, clientId);
@@ -578,12 +583,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> unassignStaff(Long clientId, String command, @Valid ClientUnassignStaffRequestDTO unassignStaffRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "unassignStaffRequest", unassignStaffRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("unassignStaffRequest", unassignStaffRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying unassign staff command {} to client with ID: {}", command, clientId);
@@ -593,12 +598,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> updateDefaultSavingsAccount(Long clientId, String command, @Valid ClientUpdateSavingsRequestDTO updateSavingsRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "updateSavingsRequest", updateSavingsRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("updateSavingsRequest", updateSavingsRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying update default savings account command {} to client with ID: {}", command, clientId);
@@ -608,11 +613,11 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> proposeClientTransfer(Long clientId, @Valid ClientTransferRequestDTO transferRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "transferRequest", transferRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("transferRequest", transferRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Proposing transfer for client with ID: {}", clientId);
@@ -629,12 +634,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> withdrawClientTransfer(Long clientId, String command, @Valid ClientWithdrawTransferRequestDTO withdrawTransferRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "withdrawTransferRequest", withdrawTransferRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("withdrawTransferRequest", withdrawTransferRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying withdraw transfer command {} to client with ID: {}", command, clientId);
@@ -644,12 +649,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> rejectClientTransfer(Long clientId, String command, @Valid ClientRejectTransferRequestDTO rejectTransferRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "rejectTransferRequest", rejectTransferRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("rejectTransferRequest", rejectTransferRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying reject transfer command {} to client with ID: {}", command, clientId);
@@ -659,12 +664,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> acceptClientTransfer(Long clientId, String command, @Valid ClientAcceptTransferRequestDTO acceptTransferRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "command", command,
-                    "acceptTransferRequest", acceptTransferRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("command", command);
+            params.put("acceptTransferRequest", acceptTransferRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying accept transfer command {} to client with ID: {}", command, clientId);
@@ -674,12 +679,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> proposeAndAcceptClientTransfer(Long clientId, @Valid ClientTransferRequestDTO transferRequest, @Valid ClientAcceptTransferRequestDTO acceptRequest) {
         try {
-            requireParamsNonNull(Map.of(
-                    "clientId", clientId,
-                    "transferRequest", transferRequest,
-                    "acceptRequest", acceptRequest
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            params.put("transferRequest", transferRequest);
+            params.put("acceptRequest", acceptRequest);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Proposing and accepting transfer for client with ID: {}", clientId);
@@ -704,8 +709,10 @@ public class FineractClientService {
 
     public Observable<DeleteClientsClientIdResponse> deleteClient(Long clientId) {
         try {
-            requireParamsNonNull(Map.of("clientId", clientId));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("clientId", clientId);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Deleting client with ID: {}", clientId);
@@ -714,12 +721,12 @@ public class FineractClientService {
 
     public Observable<PostClientsClientIdResponse> applyCommandByExternalId(String externalId, String command, Map<String, Object> request) {
         try {
-            requireParamsNonNull(Map.of(
-                    "externalId", externalId,
-                    "command", command,
-                    "request", request
-            ));
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("externalId", externalId);
+            params.put("command", command);
+            params.put("request", request);
+            requireParamsNonNull(params);
+        } catch (NullPointerException e) {
             return Observable.error(e);
         }
         log.info("Applying command {} to client with external ID: {}", command, externalId);
