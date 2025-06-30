@@ -107,19 +107,12 @@ public class FineractClientService {
         return addressList;
     }
 
-    private static void requireNotNull(Object param, String name) {
-        if (param == null) throw new IllegalArgumentException(name + " must not be null");
-    }
 
     public Observable<PostClientsResponse> createClient(
             @Valid @NotNull ClientCreateRequestDTO request,
             @NotNull String dateFormat,
             @NotNull String locale,
             @NotNull Long addressTypeId) {
-        requireNotNull(request, "request");
-        requireNotNull(dateFormat, "dateFormat");
-        requireNotNull(locale, "locale");
-        requireNotNull(addressTypeId, "addressTypeId");
         validateClientRequest(request);
         log.info("Creating client with name: {}", request.getFirstName() + " " + request.getLastName());
 
@@ -151,12 +144,6 @@ public class FineractClientService {
             @NotNull String dateFormat,
             @NotNull String locale,
             @NotNull Long legalFormId) {
-        requireNotNull(firstname, "firstname");
-        requireNotNull(lastname, "lastname");
-        requireNotNull(officeId, "officeId");
-        requireNotNull(dateFormat, "dateFormat");
-        requireNotNull(locale, "locale");
-        requireNotNull(legalFormId, "legalFormId");
         BasicClientCreateRequestDTO basicClientRequest = BasicClientCreateRequestDTO.builder()
                 .dateFormat(dateFormat)
                 .locale(locale)
@@ -178,9 +165,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String dateFormat,
             @NotNull String locale) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(dateFormat, "dateFormat");
-        requireNotNull(locale, "locale");
         return activateClient(clientId, LocalDate.now(), dateFormat, locale);
     }
 
@@ -189,10 +173,6 @@ public class FineractClientService {
             @NotNull LocalDate activationDate,
             @NotNull String dateFormat,
             @NotNull String locale) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(activationDate, "activationDate");
-        requireNotNull(dateFormat, "dateFormat");
-        requireNotNull(locale, "locale");
         log.info("Activating client with ID: {}, activation date: {}", clientId, activationDate);
 
         ClientActivationRequestDTO activationRequest = ClientActivationRequestDTO.builder()
@@ -205,7 +185,6 @@ public class FineractClientService {
     }
 
     public Observable<GetClientsClientIdResponse> retrieveClient(@NotNull Long clientId) {
-        requireNotNull(clientId, "clientId");
         log.info("Retrieving client with ID: {}", clientId);
 
         return handleError(clientsApi.retrieveClient(clientId), "client retrieval");
@@ -214,8 +193,6 @@ public class FineractClientService {
     public Observable<PutClientsClientIdResponse> updateClient(
             @NotNull Long clientId,
             @Valid @NotNull ClientUpdateRequestDTO updateRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(updateRequest, "updateRequest");
         log.info("Updating client with ID: {} using update request", clientId);
 
         return handleError(clientsApi.updateClient(clientId, updateRequest.toMap()), "client update");
@@ -225,9 +202,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientTransferRequestDTO transferRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(transferRequest, "transferRequest");
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
         return handleError(
@@ -244,9 +218,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientRejectRequestDTO rejectRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(rejectRequest, "rejectRequest");
         log.info("Applying command {} to client with ID: {}", command, clientId);
 
         log.info("Sending reject command request: {}", rejectRequest.toMap());
@@ -267,9 +238,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientCloseRequestDTO closeRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(closeRequest, "closeRequest");
         log.info("Applying command {} to client with ID: {}", command, clientId);
         return handleError(clientsApi.applyCommand(clientId.toString(), closeRequest.toMap(), command), "client closure");
     }
@@ -280,7 +248,6 @@ public class FineractClientService {
             String status,
             Integer limit,
             Integer offset) {
-        requireNotNull(officeId, "officeId");
         log.info("Retrieving all clients with filters - officeId: {}, searchText: {}, status: {}, limit: {}, offset: {}",
                 officeId, searchText, status, limit, offset);
 
@@ -300,7 +267,6 @@ public class FineractClientService {
     }
 
     public Observable<GetClientsClientIdAccountsResponse> retrieveClientAccounts(@NotNull Long clientId) {
-        requireNotNull(clientId, "clientId");
         log.info("Retrieving accounts for client with ID: {}", clientId);
 
         return handleError(clientsApi.retrieveClientAccounts(clientId), "client accounts retrieval");
@@ -476,9 +442,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientWithdrawRequestDTO withdrawRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(withdrawRequest, "withdrawRequest");
         log.info("Applying withdraw command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), withdrawRequest.toMap(), command), "client withdrawal");
@@ -488,9 +451,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientReactivateRequestDTO reactivateRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(reactivateRequest, "reactivateRequest");
         log.info("Applying reactivate command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), reactivateRequest.toMap(), command), "client reactivation");
@@ -500,9 +460,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientUndoRejectRequestDTO undoRejectRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(undoRejectRequest, "undoRejectRequest");
         log.info("Applying undo reject command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), undoRejectRequest.toMap(), command), "client undo reject");
@@ -512,9 +469,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientUndoWithdrawRequestDTO undoWithdrawRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(undoWithdrawRequest, "undoWithdrawRequest");
         log.info("Applying undo withdraw command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), undoWithdrawRequest.toMap(), command), "client undo withdraw");
@@ -524,9 +478,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientAssignStaffRequestDTO assignStaffRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(assignStaffRequest, "assignStaffRequest");
         log.info("Applying assign staff command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), assignStaffRequest.toMap(), command), "client staff assignment");
@@ -536,9 +487,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientUnassignStaffRequestDTO unassignStaffRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(unassignStaffRequest, "unassignStaffRequest");
         log.info("Applying unassign staff command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), unassignStaffRequest.toMap(), command), "client staff unassignment");
@@ -548,9 +496,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientUpdateSavingsRequestDTO updateSavingsRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(updateSavingsRequest, "updateSavingsRequest");
         log.info("Applying update default savings account command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), updateSavingsRequest.toMap(), command), "client default savings account update");
@@ -559,8 +504,6 @@ public class FineractClientService {
     public Observable<PostClientsClientIdResponse> proposeClientTransfer(
             @NotNull Long clientId,
             @Valid @NotNull ClientTransferRequestDTO transferRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(transferRequest, "transferRequest");
         log.info("Proposing transfer for client with ID: {}", clientId);
 
         return handleError(
@@ -577,9 +520,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientWithdrawTransferRequestDTO withdrawTransferRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(withdrawTransferRequest, "withdrawTransferRequest");
         log.info("Applying withdraw transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), withdrawTransferRequest.toMap(), command), "client transfer withdrawal");
@@ -589,9 +529,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientRejectTransferRequestDTO rejectTransferRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(rejectTransferRequest, "rejectTransferRequest");
         log.info("Applying reject transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), rejectTransferRequest.toMap(), command), "client transfer rejection");
@@ -601,9 +538,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @NotNull String command,
             @Valid @NotNull ClientAcceptTransferRequestDTO acceptTransferRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(command, "command");
-        requireNotNull(acceptTransferRequest, "acceptTransferRequest");
         log.info("Applying accept transfer command {} to client with ID: {}", command, clientId);
 
         return handleError(clientsApi.applyCommand(clientId.toString(), acceptTransferRequest.toMap(), command), "client transfer acceptance");
@@ -613,9 +547,6 @@ public class FineractClientService {
             @NotNull Long clientId,
             @Valid @NotNull ClientTransferRequestDTO transferRequest,
             @Valid @NotNull ClientAcceptTransferRequestDTO acceptRequest) {
-        requireNotNull(clientId, "clientId");
-        requireNotNull(transferRequest, "transferRequest");
-        requireNotNull(acceptRequest, "acceptRequest");
         log.info("Proposing and accepting transfer for client with ID: {}", clientId);
 
         return handleError(
@@ -637,7 +568,6 @@ public class FineractClientService {
     }
 
     public Observable<DeleteClientsClientIdResponse> deleteClient(@NotNull Long clientId) {
-        requireNotNull(clientId, "clientId");
         log.info("Deleting client with ID: {}", clientId);
         return handleError(clientsApi.deleteClient(clientId), "client deletion");
     }
@@ -646,9 +576,6 @@ public class FineractClientService {
             @NotNull String externalId,
             @NotNull String command,
             @NotNull Map<String, Object> request) {
-        requireNotNull(externalId, "externalId");
-        requireNotNull(command, "command");
-        requireNotNull(request, "request");
         log.info("Applying command {} to client with external ID: {}", command, externalId);
 
         return handleError(clientsApi.applyCommandByExternalId(externalId, request, command), "client command by external ID");
