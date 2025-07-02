@@ -3,6 +3,7 @@ package org.mifos.workflow.api.client;
 import io.reactivex.rxjava3.core.Observable;
 import org.mifos.fineract.client.models.*;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
@@ -59,6 +60,9 @@ public interface ClientsApi {
     @GET("offices")
     Observable<List<OfficeDTO>> retrieveAllOffices();
 
+    @GET("staff")
+    Observable<List<StaffData>> retrieveAllStaff();
+
     @GET("codes")
     Observable<List<CodeDataDTO>> retrieveCodes();
 
@@ -67,5 +71,19 @@ public interface ClientsApi {
 
     @POST("codes/{codeId}/codevalues")
     Observable<CodeValueData> createCodeValue(@Path("codeId") Long codeId, @Body Map<String, Object> request);
+
+
+    @POST("clients/external-id/{externalId}")
+    @Headers("Content-Type: application/json")
+    Observable<PostClientsClientIdResponse> applyCommandByExternalId(
+            @Path("externalId") String externalId,
+            @Body Map<String, Object> request,
+            @Query("command") String command);
+
+    @DELETE("clients/{clientId}")
+    Observable<DeleteClientsClientIdResponse> deleteClient(@Path("clientId") Long clientId);
+
+    @GET("clients/{clientId}/accounts")
+    Observable<GetClientsClientIdAccountsResponse> retrieveClientAccounts(@Path("clientId") Long clientId);
 
 }

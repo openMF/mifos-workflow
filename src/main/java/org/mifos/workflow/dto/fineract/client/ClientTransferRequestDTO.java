@@ -2,6 +2,7 @@ package org.mifos.workflow.dto.fineract.client;
 
 import lombok.Builder;
 import lombok.Data;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDate;
