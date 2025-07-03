@@ -172,7 +172,7 @@
             <plugin>
                 <groupId>org.asciidoctor</groupId>
                 <artifactId>asciidoctor-maven-plugin</artifactId>
-                <version>2.2.6</version>
+                <version>3.2.0</version>
                 <configuration>
                     <sourceDirectory>docs/asciidoc</sourceDirectory>
                     <outputDirectory>docs/generated</outputDirectory>
