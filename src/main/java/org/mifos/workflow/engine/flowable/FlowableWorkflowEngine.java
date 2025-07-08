@@ -91,7 +91,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error retrieving process definitions", e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to retrieve process definitions", e);
         }
     }
 
@@ -148,7 +148,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error retrieving deployments", e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to retrieve deployments", e);
         }
     }
 
@@ -184,7 +184,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error retrieving process instances", e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to retrieve process instances", e);
         }
     }
 
@@ -227,7 +227,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error retrieving pending tasks for user: {}", userId, e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to retrieve pending tasks for user: " + userId, e);
         }
     }
 
@@ -243,7 +243,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error retrieving pending tasks for process: {}", processInstanceId, e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to retrieve pending tasks for process: " + processInstanceId, e);
         }
     }
 
@@ -277,7 +277,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error retrieving historic processes", e);
-            return Collections.emptyList();
+            throw new RuntimeException("Failed to retrieve historic processes", e);
         }
     }
 
