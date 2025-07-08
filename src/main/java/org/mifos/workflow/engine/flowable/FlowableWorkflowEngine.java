@@ -1,5 +1,14 @@
 package org.mifos.workflow.engine.flowable;
 
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.repository.Deployment;
+import org.flowable.task.api.Task;
+import org.flowable.variable.api.history.HistoricVariableInstance;
 import org.mifos.workflow.config.WorkflowConfig;
 import org.mifos.workflow.core.engine.WorkflowEngine;
 import org.mifos.workflow.core.engine.enums.EngineType;
@@ -16,9 +25,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * FlowableWorkflowEngine is an implementation of the WorkflowEngine interface
@@ -30,131 +42,305 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
 
     private static final Logger logger = LoggerFactory.getLogger(FlowableWorkflowEngine.class);
     private final WorkflowConfig properties;
+    private ProcessEngine processEngine;
+    private RepositoryService repositoryService;
+    private RuntimeService runtimeService;
+    private TaskService taskService;
+    private HistoryService historyService;
 
     public FlowableWorkflowEngine(WorkflowConfig properties) {
         this.properties = properties;
-        logger.info("FlowableWorkflowEngine initialized with properties: {}", properties.getEngine().getType());
+        initializeEngine();
+        logger.info("FlowableWorkflowEngine initialized successfully");
+    }
+
+    private void initializeEngine() {
+        try {
+            ProcessEngineConfiguration config = ProcessEngineConfiguration
+                    .createStandaloneInMemProcessEngineConfiguration()
+                    .setDatabaseSchemaUpdate(properties.getEngine().getFlowable().isDatabaseSchemaUpdate() ?
+                            ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE :
+                            ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE);
+
+            this.processEngine = config.buildProcessEngine();
+            this.repositoryService = processEngine.getRepositoryService();
+            this.runtimeService = processEngine.getRuntimeService();
+            this.taskService = processEngine.getTaskService();
+            this.historyService = processEngine.getHistoryService();
+
+            logger.info("Flowable ProcessEngine initialized with configuration: {}", config);
+        } catch (Exception e) {
+            logger.error("Failed to initialize Flowable ProcessEngine", e);
+            throw new RuntimeException("Failed to initialize Flowable ProcessEngine", e);
+        }
     }
 
     @Override
     public List<ProcessDefinition> getProcessDefinitions() {
-        logger.warn("Flowable getProcessDefinitions not implemented yet");
-        return Collections.emptyList();
+        try {
+            List<org.flowable.engine.repository.ProcessDefinition> flowableDefinitions = repositoryService.createProcessDefinitionQuery()
+                    .active()
+                    .list();
+
+            return flowableDefinitions.stream()
+                    .map(this::mapToProcessDefinition)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error retrieving process definitions", e);
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public DeploymentResult deployProcess(InputStream processDefinition, String filename) {
-        logger.warn("Flowable deployProcess not implemented yet");
-        return DeploymentResult.builder()
-                .deploymentId("stub-deployment-id")
-                .name(filename)
-                .deploymentTime(LocalDateTime.now())
-                .success(false)
-                .errors(Collections.singletonList("Not implemented yet"))
-                .build();
+        try {
+            Deployment deployment = repositoryService.createDeployment()
+                    .addInputStream(filename, processDefinition)
+                    .name(filename)
+                    .deploy();
+
+            logger.info("Successfully deployed process: {} with deployment ID: {}", filename, deployment.getId());
+
+            return DeploymentResult.builder()
+                    .deploymentId(deployment.getId())
+                    .name(deployment.getName())
+                    .deploymentTime(LocalDateTime.ofInstant(deployment.getDeploymentTime().toInstant(), ZoneId.systemDefault()))
+                    .success(true)
+                    .errors(Collections.emptyList())
+                    .build();
+        } catch (Exception e) {
+            logger.error("Failed to deploy process: {}", filename, e);
+            return DeploymentResult.builder()
+                    .deploymentId(null)
+                    .name(filename)
+                    .deploymentTime(LocalDateTime.now())
+                    .success(false)
+                    .errors(Collections.singletonList(e.getMessage()))
+                    .build();
+        }
     }
 
     @Override
     public void deleteDeployment(String deploymentId) {
-        logger.warn("Flowable deleteDeployment not implemented yet");
+        try {
+            repositoryService.deleteDeployment(deploymentId, true);
+            logger.info("Successfully deleted deployment: {}", deploymentId);
+        } catch (Exception e) {
+            logger.error("Failed to delete deployment: {}", deploymentId, e);
+            throw new RuntimeException("Failed to delete deployment: " + deploymentId, e);
+        }
     }
 
     @Override
     public List<DeploymentInfo> getDeployments() {
-        logger.warn("Flowable getDeployments not implemented yet");
-        return Collections.emptyList();
+        try {
+            List<Deployment> deployments = repositoryService.createDeploymentQuery()
+                    .orderByDeploymentTime()
+                    .desc()
+                    .list();
+
+            return deployments.stream()
+                    .map(this::mapToDeploymentInfo)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error retrieving deployments", e);
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public ProcessInstance startProcess(String processDefinitionKey, ProcessVariables variables) {
-        logger.warn("Flowable startProcess not implemented yet");
-        return ProcessInstance.builder()
-                .id("stub-process-id")
-                .processDefinitionId("stub-definition-id")
-                .businessKey("stub-business-key")
-                .status("active")
-                .startTime(LocalDateTime.now())
-                .build();
+        try {
+            Map<String, Object> flowableVariables = variables != null ? variables.getVariables() : new HashMap<>();
+
+            org.flowable.engine.runtime.ProcessInstance flowableInstance = runtimeService.startProcessInstanceByKey(
+                    processDefinitionKey,
+                    flowableVariables
+            );
+
+            logger.info("Started process instance: {} for definition: {}",
+                    flowableInstance.getId(), processDefinitionKey);
+
+            return mapToProcessInstance(flowableInstance);
+        } catch (Exception e) {
+            logger.error("Failed to start process: {}", processDefinitionKey, e);
+            throw new RuntimeException("Failed to start process: " + processDefinitionKey, e);
+        }
     }
 
     @Override
     public List<ProcessInstance> getProcessInstances() {
-        logger.warn("Flowable getProcessInstances not implemented yet");
-        return Collections.emptyList();
+        try {
+            List<org.flowable.engine.runtime.ProcessInstance> flowableInstances = runtimeService.createProcessInstanceQuery()
+                    .active()
+                    .list();
+
+            return flowableInstances.stream()
+                    .map(this::mapToProcessInstance)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error retrieving process instances", e);
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public ProcessVariables getProcessVariables(String processInstanceId) {
-        logger.warn("Flowable getProcessVariables not implemented yet");
-        return ProcessVariables.builder()
-                .variables(new HashMap<>())
-                .build();
+        try {
+            Map<String, Object> variables = runtimeService.getVariables(processInstanceId);
+            return ProcessVariables.builder()
+                    .variables(variables)
+                    .build();
+        } catch (Exception e) {
+            logger.error("Error retrieving process variables for instance: {}", processInstanceId, e);
+            return ProcessVariables.builder()
+                    .variables(new HashMap<>())
+                    .build();
+        }
     }
 
     @Override
     public void completeTask(String taskId, ProcessVariables variables) {
-        logger.warn("Flowable completeTask not implemented yet");
+        try {
+            Map<String, Object> flowableVariables = variables != null ? variables.getVariables() : new HashMap<>();
+            taskService.complete(taskId, flowableVariables);
+            logger.info("Completed task: {}", taskId);
+        } catch (Exception e) {
+            logger.error("Failed to complete task: {}", taskId, e);
+            throw new RuntimeException("Failed to complete task: " + taskId, e);
+        }
     }
 
     @Override
     public List<TaskInfo> getPendingTasks(String userId) {
-        logger.warn("Flowable getPendingTasks not implemented yet");
-        return Collections.emptyList();
+        try {
+            List<Task> tasks = taskService.createTaskQuery()
+                    .taskAssignee(userId)
+                    .list();
+
+            return tasks.stream()
+                    .map(this::mapToTaskInfo)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error retrieving pending tasks for user: {}", userId, e);
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<TaskInfo> getPendingTasksForProcess(String processInstanceId) {
-        logger.warn("Flowable getPendingTasksForProcess not implemented yet");
-        return Collections.emptyList();
+        try {
+            List<Task> tasks = taskService.createTaskQuery()
+                    .processInstanceId(processInstanceId)
+                    .list();
+
+            return tasks.stream()
+                    .map(this::mapToTaskInfo)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error retrieving pending tasks for process: {}", processInstanceId, e);
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public ProcessVariables getTaskVariables(String taskId) {
-        logger.warn("Flowable getTaskVariables not implemented yet");
-        return ProcessVariables.builder()
-                .variables(new HashMap<>())
-                .build();
+        try {
+            Map<String, Object> variables = taskService.getVariables(taskId);
+            return ProcessVariables.builder()
+                    .variables(variables)
+                    .build();
+        } catch (Exception e) {
+            logger.error("Error retrieving task variables for task: {}", taskId, e);
+            return ProcessVariables.builder()
+                    .variables(new HashMap<>())
+                    .build();
+        }
     }
 
     @Override
     public List<HistoricProcessInstance> getHistoricProcesses() {
-        logger.warn("Flowable getHistoricProcesses not implemented yet");
-        return Collections.emptyList();
+        try {
+            List<org.flowable.engine.history.HistoricProcessInstance> historicInstances =
+                    historyService.createHistoricProcessInstanceQuery()
+                            .finished()
+                            .orderByProcessInstanceEndTime()
+                            .desc()
+                            .list();
+
+            return historicInstances.stream()
+                    .map(this::mapToHistoricProcessInstance)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error retrieving historic processes", e);
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public ProcessVariables getHistoricProcessVariables(String processInstanceId) {
-        logger.warn("Flowable getHistoricProcessVariables not implemented yet");
-        return ProcessVariables.builder()
-                .variables(new HashMap<>())
-                .build();
+        try {
+            List<HistoricVariableInstance> variables = historyService.createHistoricVariableInstanceQuery()
+                    .processInstanceId(processInstanceId)
+                    .list();
+
+            Map<String, Object> variableMap = variables.stream()
+                    .collect(Collectors.toMap(
+                            HistoricVariableInstance::getVariableName,
+                            HistoricVariableInstance::getValue
+                    ));
+
+            return ProcessVariables.builder()
+                    .variables(variableMap)
+                    .build();
+        } catch (Exception e) {
+            logger.error("Error retrieving historic process variables for instance: {}", processInstanceId, e);
+            return ProcessVariables.builder()
+                    .variables(new HashMap<>())
+                    .build();
+        }
     }
 
     @Override
     public HistoricProcessInstance getHistoricProcessInstance(String processInstanceId) {
-        logger.warn("Flowable getHistoricProcessInstance not implemented yet");
-        return HistoricProcessInstance.builder()
-                .id(processInstanceId)
-                .processDefinitionId("stub-definition-id")
-                .businessKey("stub-business-key")
-                .startTime(LocalDateTime.now().minusHours(2))
-                .endTime(LocalDateTime.now())
-                .durationInMillis(7200000L)
-                .outcome("completed")
-                .build();
+        try {
+            org.flowable.engine.history.HistoricProcessInstance historicInstance =
+                    historyService.createHistoricProcessInstanceQuery()
+                            .processInstanceId(processInstanceId)
+                            .singleResult();
+
+            return historicInstance != null ? mapToHistoricProcessInstance(historicInstance) : null;
+        } catch (Exception e) {
+            logger.error("Error retrieving historic process instance: {}", processInstanceId, e);
+            return null;
+        }
     }
 
     @Override
     public ProcessHistory getProcessHistory(String processInstanceId) {
-        logger.warn("Flowable getProcessHistory not implemented yet");
-        return ProcessHistory.builder()
-                .historyId("stub-history-id")
-                .processId(processInstanceId)
-                .processDefinitionId("stub-definition-id")
-                .startTime(LocalDateTime.now().minusHours(2))
-                .endTime(LocalDateTime.now())
-                .durationInMillis(7200000L)
-                .build();
+        try {
+            org.flowable.engine.history.HistoricProcessInstance historicInstance =
+                    historyService.createHistoricProcessInstanceQuery()
+                            .processInstanceId(processInstanceId)
+                            .singleResult();
+
+            if (historicInstance == null) {
+                return null;
+            }
+
+            return ProcessHistory.builder()
+                    .historyId(historicInstance.getId())
+                    .processId(processInstanceId)
+                    .processDefinitionId(historicInstance.getProcessDefinitionId())
+                    .startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
+                    .endTime(historicInstance.getEndTime() != null ?
+                            LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null)
+                    .durationInMillis(historicInstance.getDurationInMillis())
+                    .build();
+        } catch (Exception e) {
+            logger.error("Error retrieving process history for instance: {}", processInstanceId, e);
+            return null;
+        }
     }
 
     @Override
@@ -164,25 +350,98 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
 
     @Override
     public boolean isEngineActive() {
-        logger.warn("Flowable isEngineActive not implemented yet");
-        return false;
+        return processEngine != null;
     }
 
     @Override
     public boolean isProcessActive(String processInstanceId) {
-        logger.warn("Flowable isProcessActive not implemented yet");
-        return false;
+        try {
+            org.flowable.engine.runtime.ProcessInstance instance = runtimeService.createProcessInstanceQuery()
+                    .processInstanceId(processInstanceId)
+                    .singleResult();
+            return instance != null;
+        } catch (Exception e) {
+            logger.error("Error checking if process is active: {}", processInstanceId, e);
+            return false;
+        }
     }
 
     @Override
     public ProcessInstance replayProcess(String processInstanceId, ProcessVariables variables) {
-        logger.warn("Flowable replayProcess not implemented yet");
+        try {
+            org.flowable.engine.history.HistoricProcessInstance historicInstance =
+                    historyService.createHistoricProcessInstanceQuery()
+                            .processInstanceId(processInstanceId)
+                            .singleResult();
+
+            if (historicInstance == null) {
+                throw new RuntimeException("Historic process instance not found: " + processInstanceId);
+            }
+
+            Map<String, Object> flowableVariables = variables != null ? variables.getVariables() : new HashMap<>();
+            org.flowable.engine.runtime.ProcessInstance newInstance = runtimeService.startProcessInstanceByKey(
+                    historicInstance.getProcessDefinitionKey(),
+                    flowableVariables
+            );
+
+            logger.info("Replayed process instance: {} as new instance: {}", processInstanceId, newInstance.getId());
+
+            return mapToProcessInstance(newInstance);
+        } catch (Exception e) {
+            logger.error("Failed to replay process: {}", processInstanceId, e);
+            throw new RuntimeException("Failed to replay process: " + processInstanceId, e);
+        }
+    }
+
+    private ProcessDefinition mapToProcessDefinition(org.flowable.engine.repository.ProcessDefinition flowableDef) {
+        return ProcessDefinition.builder()
+                .id(flowableDef.getId())
+                .key(flowableDef.getKey())
+                .name(flowableDef.getName())
+                .version(flowableDef.getVersion())
+                .deploymentId(flowableDef.getDeploymentId())
+                .build();
+    }
+
+    private ProcessInstance mapToProcessInstance(org.flowable.engine.runtime.ProcessInstance flowableInstance) {
         return ProcessInstance.builder()
-                .id("stub-replayed-process-id")
-                .processDefinitionId("stub-definition-id")
-                .businessKey("stub-business-key")
-                .status("active")
-                .startTime(LocalDateTime.now())
+                .id(flowableInstance.getId())
+                .processDefinitionId(flowableInstance.getProcessDefinitionId())
+                .businessKey(flowableInstance.getBusinessKey())
+                .status(flowableInstance.isEnded() ? "completed" : "active")
+                .startTime(LocalDateTime.ofInstant(flowableInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
+                .build();
+    }
+
+    private DeploymentInfo mapToDeploymentInfo(Deployment deployment) {
+        return DeploymentInfo.builder()
+                .id(deployment.getId())
+                .name(deployment.getName())
+                .deploymentTime(LocalDateTime.ofInstant(deployment.getDeploymentTime().toInstant(), ZoneId.systemDefault()))
+                .build();
+    }
+
+    private TaskInfo mapToTaskInfo(Task task) {
+        return TaskInfo.builder()
+                .taskId(task.getId())
+                .name(task.getName())
+                .description(task.getDescription())
+                .assignee(task.getAssignee())
+                .processId(task.getProcessInstanceId())
+                .createTime(LocalDateTime.ofInstant(task.getCreateTime().toInstant(), ZoneId.systemDefault()))
+                .build();
+    }
+
+    private HistoricProcessInstance mapToHistoricProcessInstance(org.flowable.engine.history.HistoricProcessInstance historicInstance) {
+        return HistoricProcessInstance.builder()
+                .id(historicInstance.getId())
+                .processDefinitionId(historicInstance.getProcessDefinitionId())
+                .businessKey(historicInstance.getBusinessKey())
+                .startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
+                .endTime(historicInstance.getEndTime() != null ?
+                        LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null)
+                .durationInMillis(historicInstance.getDurationInMillis())
+                .outcome(historicInstance.getEndActivityId())
                 .build();
     }
 }
