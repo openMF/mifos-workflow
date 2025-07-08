@@ -27,7 +27,6 @@ public class StaffAssignmentDelegate implements JavaDelegate {
         }
         Long staffId = (Long) execution.getVariable("staffId");
         if (staffId == null) {
-            // handle missing staffId (log, throw, etc.)
             throw new IllegalArgumentException("staffId is missing from process variables");
         }
         logger.info("Would assign staff {} to client {}", staffId, clientId);

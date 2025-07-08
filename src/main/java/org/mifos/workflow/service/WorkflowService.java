@@ -45,9 +45,15 @@ public class WorkflowService {
             DeploymentResult result = getWorkflowEngine().deployProcess(processDefinition, filename);
             log.info("Process deployment result: {}", result.isSuccess() ? "SUCCESS" : "FAILED");
             return result;
-        } catch (Exception e) {
-            log.error("Failed to deploy process: {}", filename, e);
-            throw new RuntimeException("Process deployment failed: " + filename, e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid arguments provided for process deployment: {}", filename, e);
+            throw new IllegalArgumentException("Invalid arguments for process deployment: " + filename, e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state during process deployment: {}", filename, e);
+            throw new IllegalStateException("Invalid state during process deployment: " + filename, e);
+        } catch (RuntimeException e) {
+            log.error("Runtime error during process deployment: {}", filename, e);
+            throw new RuntimeException("Runtime error during process deployment: " + filename, e);
         }
     }
 
@@ -63,9 +69,15 @@ public class WorkflowService {
             ProcessInstance instance = getWorkflowEngine().startProcess(processDefinitionKey, processVariables);
             log.info("Started process instance: {} for definition: {}", instance.getId(), processDefinitionKey);
             return instance;
-        } catch (Exception e) {
-            log.error("Failed to start process: {}", processDefinitionKey, e);
-            throw new RuntimeException("Process start failed: " + processDefinitionKey, e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid arguments provided for process start: {}", processDefinitionKey, e);
+            throw new IllegalArgumentException("Invalid arguments for process start: " + processDefinitionKey, e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state during process start: {}", processDefinitionKey, e);
+            throw new IllegalStateException("Invalid state during process start: " + processDefinitionKey, e);
+        } catch (RuntimeException e) {
+            log.error("Runtime error during process start: {}", processDefinitionKey, e);
+            throw new RuntimeException("Runtime error during process start: " + processDefinitionKey, e);
         }
     }
 
@@ -80,9 +92,15 @@ public class WorkflowService {
 
             getWorkflowEngine().completeTask(taskId, processVariables);
             log.info("Completed task: {}", taskId);
-        } catch (Exception e) {
-            log.error("Failed to complete task: {}", taskId, e);
-            throw new RuntimeException("Task completion failed: " + taskId, e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid arguments provided for task completion: {}", taskId, e);
+            throw new IllegalArgumentException("Invalid arguments for task completion: " + taskId, e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state during task completion: {}", taskId, e);
+            throw new IllegalStateException("Invalid state during task completion: " + taskId, e);
+        } catch (RuntimeException e) {
+            log.error("Runtime error during task completion: {}", taskId, e);
+            throw new RuntimeException("Runtime error during task completion: " + taskId, e);
         }
     }
 
@@ -96,9 +114,15 @@ public class WorkflowService {
             List<TaskInfo> tasks = getWorkflowEngine().getPendingTasks(userId);
             log.debug("Found {} pending tasks for user: {}", tasks.size(), userId);
             return tasks;
-        } catch (Exception e) {
-            log.error("Failed to get pending tasks for user: {}", userId, e);
-            throw new RuntimeException("Failed to get pending tasks for user: " + userId, e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid arguments provided for getting pending tasks: {}", userId, e);
+            throw new IllegalArgumentException("Invalid arguments for getting pending tasks: " + userId, e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state while getting pending tasks: {}", userId, e);
+            throw new IllegalStateException("Invalid state while getting pending tasks: " + userId, e);
+        } catch (RuntimeException e) {
+            log.error("Runtime error while getting pending tasks: {}", userId, e);
+            throw new RuntimeException("Runtime error while getting pending tasks: " + userId, e);
         }
     }
 
@@ -112,9 +136,15 @@ public class WorkflowService {
             List<ProcessInstance> instances = getWorkflowEngine().getProcessInstances();
             log.debug("Found {} active process instances", instances.size());
             return instances;
-        } catch (Exception e) {
-            log.error("Failed to get process instances", e);
-            throw new RuntimeException("Failed to get process instances", e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid arguments provided for getting process instances", e);
+            throw new IllegalArgumentException("Invalid arguments for getting process instances", e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state while getting process instances", e);
+            throw new IllegalStateException("Invalid state while getting process instances", e);
+        } catch (RuntimeException e) {
+            log.error("Runtime error while getting process instances", e);
+            throw new RuntimeException("Runtime error while getting process instances", e);
         }
     }
 
@@ -128,9 +158,15 @@ public class WorkflowService {
             ProcessVariables variables = getWorkflowEngine().getProcessVariables(processInstanceId);
             log.debug("Retrieved {} variables for process instance: {}", variables.getVariables().size(), processInstanceId);
             return variables;
-        } catch (Exception e) {
-            log.error("Failed to get process variables for instance: {}", processInstanceId, e);
-            throw new RuntimeException("Failed to get process variables for instance: " + processInstanceId, e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid arguments provided for getting process variables: {}", processInstanceId, e);
+            throw new IllegalArgumentException("Invalid arguments for getting process variables: " + processInstanceId, e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state while getting process variables: {}", processInstanceId, e);
+            throw new IllegalStateException("Invalid state while getting process variables: " + processInstanceId, e);
+        } catch (RuntimeException e) {
+            log.error("Runtime error while getting process variables: {}", processInstanceId, e);
+            throw new RuntimeException("Runtime error while getting process variables: " + processInstanceId, e);
         }
     }
 
@@ -144,9 +180,15 @@ public class WorkflowService {
             List<ProcessDefinition> definitions = getWorkflowEngine().getProcessDefinitions();
             log.debug("Found {} process definitions", definitions.size());
             return definitions;
-        } catch (Exception e) {
-            log.error("Failed to get process definitions", e);
-            throw new RuntimeException("Failed to get process definitions", e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid arguments provided for getting process definitions", e);
+            throw new IllegalArgumentException("Invalid arguments for getting process definitions", e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state while getting process definitions", e);
+            throw new IllegalStateException("Invalid state while getting process definitions", e);
+        } catch (RuntimeException e) {
+            log.error("Runtime error while getting process definitions", e);
+            throw new RuntimeException("Runtime error while getting process definitions", e);
         }
     }
 
@@ -154,8 +196,11 @@ public class WorkflowService {
     public boolean isEngineActive() {
         try {
             return getWorkflowEngine().isEngineActive();
-        } catch (Exception e) {
-            log.error("Failed to check engine status", e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state while checking engine status", e);
+            return false;
+        } catch (RuntimeException e) {
+            log.error("Runtime error while checking engine status", e);
             return false;
         }
     }
@@ -164,8 +209,11 @@ public class WorkflowService {
     public String getEngineType() {
         try {
             return getWorkflowEngine().getEngineType().name();
-        } catch (Exception e) {
-            log.error("Failed to get engine type", e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state while getting engine type", e);
+            return "UNKNOWN";
+        } catch (RuntimeException e) {
+            log.error("Runtime error while getting engine type", e);
             return "UNKNOWN";
         }
     }
@@ -185,8 +233,10 @@ public class WorkflowService {
             } else {
                 log.debug("Authentication key available for workflow operations");
             }
-        } catch (Exception e) {
-            log.error("Failed to check authentication status", e);
+        } catch (IllegalStateException e) {
+            log.error("Invalid state while checking authentication status", e);
+        } catch (RuntimeException e) {
+            log.error("Runtime error while checking authentication status", e);
         }
     }
 
