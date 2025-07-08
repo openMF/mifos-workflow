@@ -21,7 +21,11 @@ public class TransferAcceptanceDelegate implements JavaDelegate {
         logger.info("Process instance ID: {}", execution.getProcessInstanceId());
         logger.info("Variables: {}", execution.getVariables());
 
-        String clientId = (String) execution.getVariable("clientId");
+        Long clientId = (Long) execution.getVariable("clientId");
+        if (clientId == null) {
+            throw new IllegalArgumentException("clientId is missing from process variables");
+        }
+        // String clientIdStr = clientId.toString();
         logger.info("Would accept transfer for client {}", clientId);
     }
 } 

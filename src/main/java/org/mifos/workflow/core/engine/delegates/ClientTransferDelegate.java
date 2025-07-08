@@ -21,8 +21,12 @@ public class ClientTransferDelegate implements JavaDelegate {
         logger.info("Process instance ID: {}", execution.getProcessInstanceId());
         logger.info("Variables: {}", execution.getVariables());
 
-        String clientId = (String) execution.getVariable("clientId");
+        Long clientId = (Long) execution.getVariable("clientId");
+        if (clientId == null) {
+            throw new IllegalArgumentException("clientId is missing from process variables");
+        }
+        String clientIdStr = clientId.toString();
         String destinationOfficeId = (String) execution.getVariable("destinationOfficeId");
-        logger.info("Would transfer client {} to office {}", clientId, destinationOfficeId);
+        logger.info("Would transfer client {} to office {}", clientIdStr, destinationOfficeId);
     }
 } 

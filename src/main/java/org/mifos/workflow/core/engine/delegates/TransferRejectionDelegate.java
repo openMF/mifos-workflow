@@ -21,7 +21,11 @@ public class TransferRejectionDelegate implements JavaDelegate {
         logger.info("Process instance ID: {}", execution.getProcessInstanceId());
         logger.info("Variables: {}", execution.getVariables());
 
-        String clientId = (String) execution.getVariable("clientId");
+        Long clientId = (Long) execution.getVariable("clientId");
+        if (clientId == null) {
+            // handle missing clientId (log, throw, etc.)
+            throw new IllegalArgumentException("clientId is missing from process variables");
+        }
         String rejectionReason = (String) execution.getVariable("rejectionReason");
         logger.info("Would reject transfer for client {} with reason: {}", clientId, rejectionReason);
     }

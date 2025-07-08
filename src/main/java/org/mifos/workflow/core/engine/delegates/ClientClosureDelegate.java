@@ -21,8 +21,12 @@ public class ClientClosureDelegate implements JavaDelegate {
         logger.info("Process instance ID: {}", execution.getProcessInstanceId());
         logger.info("Variables: {}", execution.getVariables());
 
-        String clientId = (String) execution.getVariable("clientId");
+        Long clientId = (Long) execution.getVariable("clientId");
+        if (clientId == null) {
+            throw new IllegalArgumentException("clientId is missing from process variables");
+        }
+        String clientIdStr = clientId.toString();
         String closureReason = (String) execution.getVariable("closureReason");
-        logger.info("Would close client {} with reason: {}", clientId, closureReason);
+        logger.info("Would close client {} with reason: {}", clientIdStr, closureReason);
     }
 } 

@@ -21,8 +21,12 @@ public class ClientRejectionDelegate implements JavaDelegate {
         logger.info("Process instance ID: {}", execution.getProcessInstanceId());
         logger.info("Variables: {}", execution.getVariables());
 
-        String clientId = (String) execution.getVariable("clientId");
+        Long clientId = (Long) execution.getVariable("clientId");
+        if (clientId == null) {
+            throw new IllegalArgumentException("clientId is missing from process variables");
+        }
+        String clientIdStr = clientId.toString();
         String rejectionReason = (String) execution.getVariable("rejectionReason");
-        logger.info("Would reject client with ID: {} for reason: {}", clientId, rejectionReason);
+        logger.info("Would reject client with ID: {} for reason: {}", clientIdStr, rejectionReason);
     }
 } 

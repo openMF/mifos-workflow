@@ -21,8 +21,15 @@ public class StaffAssignmentDelegate implements JavaDelegate {
         logger.info("Process instance ID: {}", execution.getProcessInstanceId());
         logger.info("Variables: {}", execution.getVariables());
 
-        String clientId = (String) execution.getVariable("clientId");
-        String staffId = (String) execution.getVariable("staffId");
+        Long clientId = (Long) execution.getVariable("clientId");
+        if (clientId == null) {
+            throw new IllegalArgumentException("clientId is missing from process variables");
+        }
+        Long staffId = (Long) execution.getVariable("staffId");
+        if (staffId == null) {
+            // handle missing staffId (log, throw, etc.)
+            throw new IllegalArgumentException("staffId is missing from process variables");
+        }
         logger.info("Would assign staff {} to client {}", staffId, clientId);
     }
 } 
