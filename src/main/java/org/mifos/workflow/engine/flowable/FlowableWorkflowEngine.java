@@ -22,14 +22,14 @@ import org.mifos.workflow.core.model.ProcessVariables;
 import org.mifos.workflow.core.model.TaskInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
  * This class provides methods to manage process definitions, deployments,
  * process instances, tasks, and historical data.
  */
+@Component
 public class FlowableWorkflowEngine implements WorkflowEngine {
 
     private static final Logger logger = LoggerFactory.getLogger(FlowableWorkflowEngine.class);
@@ -48,19 +49,22 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
     private TaskService taskService;
     private HistoryService historyService;
 
-    public FlowableWorkflowEngine(WorkflowConfig properties) {
+    @Autowired
+    public FlowableWorkflowEngine(WorkflowConfig properties, DataSource dataSource) {
         this.properties = properties;
-        initializeEngine();
+        initializeEngine(dataSource);
         logger.info("FlowableWorkflowEngine initialized successfully");
     }
 
-    private void initializeEngine() {
+    private void initializeEngine(DataSource dataSource) {
         try {
             ProcessEngineConfiguration config = ProcessEngineConfiguration
-                    .createStandaloneInMemProcessEngineConfiguration()
+                    .createStandaloneProcessEngineConfiguration()
+                    .setDataSource(dataSource)
                     .setDatabaseSchemaUpdate(properties.getEngine().getFlowable().isDatabaseSchemaUpdate() ?
                             ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE :
-                            ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE);
+                            ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE)
+                    .setAsyncExecutorActivate(properties.getEngine().getFlowable().isAsyncExecutorEnabled());
 
             this.processEngine = config.buildProcessEngine();
             this.repositoryService = processEngine.getRepositoryService();
