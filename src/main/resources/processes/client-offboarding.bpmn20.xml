@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://mifos.org/workflow/client-offboarding"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/20100524/MODEL">
+
+    <process id="client-offboarding" name="Client Offboarding Process" isExecutable="true">
+        
+        <!-- Start Event -->
+        <startEvent id="start-client-offboarding" name="Client Closure Requested">
+            <documentation>Triggered when client closure is requested</documentation>
+        </startEvent>
+
+        <!-- User Task: Verify Closure Pre-conditions -->
+        <userTask id="verify-closure-preconditions" name="Verify Closure Pre-conditions"
+                  flowable:assignee="${operationsOfficer}">
+            <documentation>Operations team verifies closure conditions</documentation>
+            <extensionElements>
+                <flowable:formProperty id="clientId" name="Client ID" type="long" required="true" />
+                <flowable:formProperty id="hasActiveLoans" name="Has Active Loans" type="boolean" required="true" />
+                <flowable:formProperty id="hasOutstandingBalance" name="Has Outstanding Balance" type="boolean" required="true" />
+                <flowable:formProperty id="clearToClose" name="Clear to Close" type="boolean" required="true" />
+                <flowable:formProperty id="pendingItems" name="Pending Items" type="string" />
+            </extensionElements>
+        </userTask>
+
+        <!-- Service Task: Check Client Accounts -->
+        <serviceTask id="check-client-accounts" name="Check Client Accounts"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.AccountVerificationDelegate">
+            <documentation>Check for active loans and outstanding balances</documentation>
+        </serviceTask>
+
+        <!-- Exclusive Gateway: Is Client Clear to Close? -->
+        <exclusiveGateway id="clear-to-close-gateway" name="Is Client Clear to Close?" />
+
+        <!-- Service Task: Fetch Closure Reasons -->
+        <serviceTask id="fetch-closure-reasons" name="Fetch Closure Reasons"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.ClosureReasonDelegate">
+            <documentation>Retrieve available closure reasons</documentation>
+        </serviceTask>
+
+        <!-- User Task: Select and Confirm Closure Reason -->
+        <userTask id="select-closure-reason" name="Select and Confirm Closure Reason"
+                  flowable:assignee="${operationsOfficer}">
+            <documentation>User selects closure reason and confirms</documentation>
+            <extensionElements>
+                <flowable:formProperty id="closureReasonId" name="Closure Reason ID" type="long" required="true" />
+                <flowable:formProperty id="closureComments" name="Closure Comments" type="string" />
+                <flowable:formProperty id="confirmed" name="Closure Confirmed" type="boolean" required="true" />
+            </extensionElements>
+        </userTask>
+
+        <!-- Service Task: Close Client Account -->
+        <serviceTask id="close-client-account" name="Close Client Account"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientClosureDelegate">
+            <documentation>Formally close the client account</documentation>
+        </serviceTask>
+
+        <!-- End Event: Client Account Closed -->
+        <endEvent id="client-account-closed" name="Client Account Closed">
+            <documentation>Client account successfully closed</documentation>
+        </endEvent>
+
+        <!-- User Task: Handle Pending Items -->
+        <userTask id="handle-pending-items" name="Handle Pending Items"
+                  flowable:assignee="${operationsOfficer}">
+            <documentation>Handle any pending items before closure</documentation>
+            <extensionElements>
+                <flowable:formProperty id="pendingItemsResolved" name="Pending Items Resolved" type="boolean" required="true" />
+                <flowable:formProperty id="resolutionNotes" name="Resolution Notes" type="string" />
+            </extensionElements>
+        </userTask>
+
+        <!-- End Event: Closure Halted -->
+        <endEvent id="closure-halted" name="Closure Halted">
+            <documentation>Closure process halted due to pending items</documentation>
+        </endEvent>
+
+        <!-- Sequence Flows -->
+        <sequenceFlow id="flow1" sourceRef="start-client-offboarding" targetRef="verify-closure-preconditions" />
+        <sequenceFlow id="flow2" sourceRef="verify-closure-preconditions" targetRef="check-client-accounts" />
+        <sequenceFlow id="flow3" sourceRef="check-client-accounts" targetRef="clear-to-close-gateway" />
+        
+        <!-- Clear to close path -->
+        <sequenceFlow id="flow4-clear" sourceRef="clear-to-close-gateway" targetRef="fetch-closure-reasons">
+            <conditionExpression xsi:type="tFormalExpression">${clearToClose == true}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow5" sourceRef="fetch-closure-reasons" targetRef="select-closure-reason" />
+        <sequenceFlow id="flow6" sourceRef="select-closure-reason" targetRef="close-client-account" />
+        <sequenceFlow id="flow7" sourceRef="close-client-account" targetRef="client-account-closed" />
+        
+        <!-- Not clear to close path -->
+        <sequenceFlow id="flow4-not-clear" sourceRef="clear-to-close-gateway" targetRef="handle-pending-items">
+            <conditionExpression xsi:type="tFormalExpression">${clearToClose == false}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow8" sourceRef="handle-pending-items" targetRef="closure-halted" />
+
+    </process>
+
+</definitions> 

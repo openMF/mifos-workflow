@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://mifos.org/workflow/client-transfer"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/20100524/MODEL">
+
+    <process id="client-transfer" name="Client Transfer Process" isExecutable="true">
+        
+        <!-- Start Event -->
+        <startEvent id="start-transfer" name="Transfer Requested">
+            <documentation>Transfer request initiated by originating office</documentation>
+        </startEvent>
+
+        <!-- User Task: Propose Transfer -->
+        <userTask id="propose-transfer" name="Select Destination Office and Propose Transfer"
+                  flowable:assignee="${originatingOfficer}">
+            <documentation>Loan officer selects client and destination office</documentation>
+            <extensionElements>
+                <flowable:formProperty id="clientId" name="Client ID" type="long" required="true" />
+                <flowable:formProperty id="destinationOfficeId" name="Destination Office ID" type="long" required="true" />
+                <flowable:formProperty id="transferReason" name="Transfer Reason" type="string" required="true" />
+                <flowable:formProperty id="effectiveDate" name="Effective Date" type="date" required="true" />
+            </extensionElements>
+        </userTask>
+
+        <!-- Service Task: Submit Transfer Proposal -->
+        <serviceTask id="submit-transfer-proposal" name="Submit Transfer Proposal"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientTransferDelegate">
+            <documentation>Submit transfer proposal to destination office</documentation>
+        </serviceTask>
+
+        <!-- User Task: Review Transfer Proposal -->
+        <userTask id="review-transfer-proposal" name="Review Transfer Proposal"
+                  flowable:assignee="${destinationManager}">
+            <documentation>Branch manager reviews the transfer proposal</documentation>
+            <extensionElements>
+                <flowable:formProperty id="transferAccepted" name="Transfer Accepted" type="boolean" required="true" />
+                <flowable:formProperty id="rejectionReason" name="Rejection Reason" type="string" />
+                <flowable:formProperty id="reviewComments" name="Review Comments" type="string" />
+            </extensionElements>
+        </userTask>
+
+        <!-- Exclusive Gateway: Transfer Accepted? -->
+        <exclusiveGateway id="transfer-accepted-gateway" name="Transfer Accepted?" />
+
+        <!-- Service Task: Accept Client Transfer -->
+        <serviceTask id="accept-client-transfer" name="Accept Client Transfer"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.TransferAcceptanceDelegate">
+            <documentation>Accept the client transfer</documentation>
+        </serviceTask>
+
+        <!-- Service Task: Reject Client Transfer -->
+        <serviceTask id="reject-client-transfer" name="Reject Client Transfer"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.TransferRejectionDelegate">
+            <documentation>Reject the client transfer</documentation>
+        </serviceTask>
+
+        <!-- End Events -->
+        <endEvent id="transfer-complete" name="Transfer Complete">
+            <documentation>Client transfer successfully completed</documentation>
+        </endEvent>
+
+        <endEvent id="transfer-rejected" name="Transfer Rejected">
+            <documentation>Client transfer rejected by destination office</documentation>
+        </endEvent>
+
+        <!-- Sequence Flows -->
+        <sequenceFlow id="flow1" sourceRef="start-transfer" targetRef="propose-transfer" />
+        <sequenceFlow id="flow2" sourceRef="propose-transfer" targetRef="submit-transfer-proposal" />
+        <sequenceFlow id="flow3" sourceRef="submit-transfer-proposal" targetRef="review-transfer-proposal" />
+        <sequenceFlow id="flow4" sourceRef="review-transfer-proposal" targetRef="transfer-accepted-gateway" />
+        
+        <!-- Accepted path -->
+        <sequenceFlow id="flow5-accepted" sourceRef="transfer-accepted-gateway" targetRef="accept-client-transfer">
+            <conditionExpression xsi:type="tFormalExpression">${transferAccepted == true}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow6" sourceRef="accept-client-transfer" targetRef="transfer-complete" />
+        
+        <!-- Rejected path -->
+        <sequenceFlow id="flow5-rejected" sourceRef="transfer-accepted-gateway" targetRef="reject-client-transfer">
+            <conditionExpression xsi:type="tFormalExpression">${transferAccepted == false}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow7" sourceRef="reject-client-transfer" targetRef="transfer-rejected" />
+
+    </process>
+
+</definitions> 
