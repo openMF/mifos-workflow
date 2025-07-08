@@ -21,6 +21,6 @@ public class ClientCreationDelegate implements JavaDelegate {
         logger.info("Process instance ID: {}", execution.getProcessInstanceId());
         logger.info("Variables: {}", execution.getVariables());
 
-        execution.setVariable("clientId", "placeholder-client-id-" + System.currentTimeMillis());
+        execution.setVariable("clientId", System.currentTimeMillis());
     }
 } 
