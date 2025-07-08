@@ -25,11 +25,10 @@ public class ClientClosureDelegate implements JavaDelegate {
         if (clientId == null) {
             throw new IllegalArgumentException("clientId is missing from process variables");
         }
-        String clientIdStr = clientId.toString();
         Long closureReasonId = (Long) execution.getVariable("closureReasonId");
         if (closureReasonId == null) {
             throw new IllegalArgumentException("closureReasonId is missing from process variables");
         }
-        logger.info("Would close client {} with reason ID: {}", clientIdStr, closureReasonId);
+        logger.info("Would close client {} with reason ID: {}", clientId, closureReasonId);
     }
 } 

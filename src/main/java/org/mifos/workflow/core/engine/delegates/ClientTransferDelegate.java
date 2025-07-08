@@ -25,12 +25,10 @@ public class ClientTransferDelegate implements JavaDelegate {
         if (clientId == null) {
             throw new IllegalArgumentException("clientId is missing from process variables");
         }
-        String clientIdStr = clientId.toString();
         Long destinationOfficeId = (Long) execution.getVariable("destinationOfficeId");
         if (destinationOfficeId == null) {
             throw new IllegalArgumentException("destinationOfficeId is missing from process variables");
         }
-        String destinationOfficeIdStr = destinationOfficeId.toString();
-        logger.info("Would transfer client {} to office {}", clientIdStr, destinationOfficeIdStr);
+        logger.info("Would transfer client {} to office {}", clientId, destinationOfficeId);
     }
 } 
