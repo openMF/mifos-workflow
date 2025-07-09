@@ -43,6 +43,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
 
     private static final Logger logger = LoggerFactory.getLogger(FlowableWorkflowEngine.class);
     private final WorkflowConfig properties;
+    private final FlowableMapper flowableMapper;
     private ProcessEngine processEngine;
     private RepositoryService repositoryService;
     private RuntimeService runtimeService;
@@ -50,8 +51,9 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
     private HistoryService historyService;
 
     @Autowired
-    public FlowableWorkflowEngine(WorkflowConfig properties, DataSource dataSource) {
+    public FlowableWorkflowEngine(WorkflowConfig properties, DataSource dataSource, FlowableMapper flowableMapper) {
         this.properties = properties;
+        this.flowableMapper = flowableMapper;
         initializeEngine(dataSource);
         logger.info("FlowableWorkflowEngine initialized successfully");
     }
@@ -93,7 +95,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .list();
 
             return flowableDefinitions.stream()
-                    .map(this::mapToProcessDefinition)
+                    .map(flowableMapper::mapToProcessDefinition)
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving process definitions", e);
@@ -180,7 +182,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .list();
 
             return deployments.stream()
-                    .map(this::mapToDeploymentInfo)
+                    .map(flowableMapper::mapToDeploymentInfo)
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving deployments", e);
@@ -207,7 +209,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
             logger.info("Started process instance: {} for definition: {}",
                     flowableInstance.getId(), processDefinitionKey);
 
-            return mapToProcessInstance(flowableInstance);
+            return flowableMapper.mapToProcessInstance(flowableInstance);
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for process start: {}", processDefinitionKey, e);
             throw new IllegalArgumentException("Invalid arguments for process start: " + processDefinitionKey, e);
@@ -228,7 +230,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .list();
 
             return flowableInstances.stream()
-                    .map(this::mapToProcessInstance)
+                    .map(flowableMapper::mapToProcessInstance)
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving process instances", e);
@@ -293,7 +295,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .list();
 
             return tasks.stream()
-                    .map(this::mapToTaskInfo)
+                    .map(flowableMapper::mapToTaskInfo)
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving pending tasks for user: {}", userId, e);
@@ -315,7 +317,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .list();
 
             return tasks.stream()
-                    .map(this::mapToTaskInfo)
+                    .map(flowableMapper::mapToTaskInfo)
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving pending tasks for process: {}", processInstanceId, e);
@@ -365,7 +367,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                             .list();
 
             return historicInstances.stream()
-                    .map(this::mapToHistoricProcessInstance)
+                    .map(flowableMapper::mapToHistoricProcessInstance)
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving historic processes", e);
@@ -421,7 +423,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                             .processInstanceId(processInstanceId)
                             .singleResult();
 
-            return historicInstance != null ? mapToHistoricProcessInstance(historicInstance) : null;
+            return historicInstance != null ? flowableMapper.mapToHistoricProcessInstance(historicInstance) : null;
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving historic process instance: {}", processInstanceId, e);
             return null;
@@ -516,7 +518,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
 
             logger.info("Replayed process instance: {} as new instance: {}", processInstanceId, newInstance.getId());
 
-            return mapToProcessInstance(newInstance);
+            return flowableMapper.mapToProcessInstance(newInstance);
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for process replay: {}", processInstanceId, e);
             throw new IllegalArgumentException("Invalid arguments for process replay: " + processInstanceId, e);
@@ -527,57 +529,5 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
             logger.error("Runtime error during process replay: {}", processInstanceId, e);
             throw new RuntimeException("Runtime error during process replay: " + processInstanceId, e);
         }
-    }
-
-    private ProcessDefinition mapToProcessDefinition(org.flowable.engine.repository.ProcessDefinition flowableDef) {
-        return ProcessDefinition.builder()
-                .id(flowableDef.getId())
-                .key(flowableDef.getKey())
-                .name(flowableDef.getName())
-                .version(flowableDef.getVersion())
-                .deploymentId(flowableDef.getDeploymentId())
-                .build();
-    }
-
-    private ProcessInstance mapToProcessInstance(org.flowable.engine.runtime.ProcessInstance flowableInstance) {
-        return ProcessInstance.builder()
-                .id(flowableInstance.getId())
-                .processDefinitionId(flowableInstance.getProcessDefinitionId())
-                .businessKey(flowableInstance.getBusinessKey())
-                .status(flowableInstance.isEnded() ? "completed" : "active")
-                .startTime(LocalDateTime.ofInstant(flowableInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
-                .build();
-    }
-
-    private DeploymentInfo mapToDeploymentInfo(Deployment deployment) {
-        return DeploymentInfo.builder()
-                .id(deployment.getId())
-                .name(deployment.getName())
-                .deploymentTime(LocalDateTime.ofInstant(deployment.getDeploymentTime().toInstant(), ZoneId.systemDefault()))
-                .build();
-    }
-
-    private TaskInfo mapToTaskInfo(Task task) {
-        return TaskInfo.builder()
-                .taskId(task.getId())
-                .name(task.getName())
-                .description(task.getDescription())
-                .assignee(task.getAssignee())
-                .processId(task.getProcessInstanceId())
-                .createTime(LocalDateTime.ofInstant(task.getCreateTime().toInstant(), ZoneId.systemDefault()))
-                .build();
-    }
-
-    private HistoricProcessInstance mapToHistoricProcessInstance(org.flowable.engine.history.HistoricProcessInstance historicInstance) {
-        return HistoricProcessInstance.builder()
-                .id(historicInstance.getId())
-                .processDefinitionId(historicInstance.getProcessDefinitionId())
-                .businessKey(historicInstance.getBusinessKey())
-                .startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
-                .endTime(historicInstance.getEndTime() != null ?
-                        LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null)
-                .durationInMillis(historicInstance.getDurationInMillis())
-                .outcome(historicInstance.getEndActivityId())
-                .build();
     }
 }

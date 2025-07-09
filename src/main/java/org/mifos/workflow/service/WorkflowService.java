@@ -228,15 +228,17 @@ public class WorkflowService {
         try {
             String cachedAuthKey = fineractAuthService.getCachedAuthKey();
             if (cachedAuthKey == null || cachedAuthKey.isEmpty()) {
-                log.info("No cached authentication key found, authentication required");
-                log.warn("Authentication key not available - workflow operations may fail");
+                log.error("Authentication required but no cached authentication key found");
+                throw new IllegalStateException("Authentication required but no authentication key available. Please authenticate first.");
             } else {
                 log.debug("Authentication key available for workflow operations");
             }
         } catch (IllegalStateException e) {
             log.error("Invalid state while checking authentication status", e);
+            throw e;
         } catch (RuntimeException e) {
             log.error("Runtime error while checking authentication status", e);
+            throw new IllegalStateException("Failed to verify authentication status", e);
         }
     }
 
