@@ -253,19 +253,13 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .build();
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving process variables: {}", processInstanceId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+            throw new IllegalArgumentException("Invalid arguments for retrieving process variables: " + processInstanceId, e);
         } catch (IllegalStateException e) {
             logger.error("Invalid state while retrieving process variables: {}", processInstanceId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+            throw new IllegalStateException("Invalid state while retrieving process variables: " + processInstanceId, e);
         } catch (RuntimeException e) {
             logger.error("Runtime error while retrieving process variables: {}", processInstanceId, e);
-        return ProcessVariables.builder()
-                .variables(new HashMap<>())
-                .build();
+            throw new RuntimeException("Runtime error while retrieving process variables: " + processInstanceId, e);
         }
     }
 
@@ -340,19 +334,13 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .build();
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving task variables: {}", taskId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+            throw new IllegalArgumentException("Invalid arguments for retrieving task variables: " + taskId, e);
         } catch (IllegalStateException e) {
             logger.error("Invalid state while retrieving task variables: {}", taskId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+            throw new IllegalStateException("Invalid state while retrieving task variables: " + taskId, e);
         } catch (RuntimeException e) {
             logger.error("Runtime error while retrieving task variables: {}", taskId, e);
-        return ProcessVariables.builder()
-                .variables(new HashMap<>())
-                .build();
+            throw new RuntimeException("Runtime error while retrieving task variables: " + taskId, e);
         }
     }
 
@@ -399,19 +387,13 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .build();
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving historic process variables: {}", processInstanceId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+            throw new IllegalArgumentException("Invalid arguments for retrieving historic process variables: " + processInstanceId, e);
         } catch (IllegalStateException e) {
             logger.error("Invalid state while retrieving historic process variables: {}", processInstanceId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+            throw new IllegalStateException("Invalid state while retrieving historic process variables: " + processInstanceId, e);
         } catch (RuntimeException e) {
             logger.error("Runtime error while retrieving historic process variables: {}", processInstanceId, e);
-        return ProcessVariables.builder()
-                .variables(new HashMap<>())
-                .build();
+            throw new RuntimeException("Runtime error while retrieving historic process variables: " + processInstanceId, e);
         }
     }
 
@@ -426,13 +408,13 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
             return historicInstance != null ? flowableMapper.mapToHistoricProcessInstance(historicInstance) : null;
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving historic process instance: {}", processInstanceId, e);
-            return null;
+            throw new IllegalArgumentException("Invalid arguments for retrieving historic process instance: " + processInstanceId, e);
         } catch (IllegalStateException e) {
             logger.error("Invalid state while retrieving historic process instance: {}", processInstanceId, e);
-            return null;
+            throw new IllegalStateException("Invalid state while retrieving historic process instance: " + processInstanceId, e);
         } catch (RuntimeException e) {
             logger.error("Runtime error while retrieving historic process instance: {}", processInstanceId, e);
-            return null;
+            throw new RuntimeException("Runtime error while retrieving historic process instance: " + processInstanceId, e);
         }
     }
 
@@ -459,13 +441,13 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                 .build();
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving process history: {}", processInstanceId, e);
-            return null;
+            throw new IllegalArgumentException("Invalid arguments for retrieving process history: " + processInstanceId, e);
         } catch (IllegalStateException e) {
             logger.error("Invalid state while retrieving process history: {}", processInstanceId, e);
-            return null;
+            throw new IllegalStateException("Invalid state while retrieving process history: " + processInstanceId, e);
         } catch (RuntimeException e) {
             logger.error("Runtime error while retrieving process history: {}", processInstanceId, e);
-            return null;
+            throw new RuntimeException("Runtime error while retrieving process history: " + processInstanceId, e);
         }
     }
 
@@ -488,13 +470,13 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
             return instance != null;
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for checking process active status: {}", processInstanceId, e);
-            return false;
+            throw new IllegalArgumentException("Invalid arguments for checking process active status: " + processInstanceId, e);
         } catch (IllegalStateException e) {
             logger.error("Invalid state while checking process active status: {}", processInstanceId, e);
-            return false;
+            throw new IllegalStateException("Invalid state while checking process active status: " + processInstanceId, e);
         } catch (RuntimeException e) {
             logger.error("Runtime error while checking process active status: {}", processInstanceId, e);
-        return false;
+            throw new RuntimeException("Runtime error while checking process active status: " + processInstanceId, e);
         }
     }
 

@@ -26,6 +26,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import javax.net.ssl.*;
 import java.lang.reflect.Type;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.LocalDate;
@@ -65,8 +67,10 @@ public class FineractApiConfig {
         try {
             trustAllSslContext = SSLContext.getInstance("SSL");
             trustAllSslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize trust-all SSL context", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SSL algorithm not available", e);
+        } catch (KeyManagementException e) {
+            throw new RuntimeException("Failed to initialize SSL key management", e);
         }
     }
 
