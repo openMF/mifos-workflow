@@ -32,7 +32,7 @@ public class WorkflowEngineFactory {
 
     @PostConstruct
     private void init() {
-        String engineType = properties.getEngine().getType().toLowerCase();
+        String engineType = properties.getEngine().getType().trim().toLowerCase();
         logger.info("Initializing workflow engine of type: {}", engineType);
         switch (engineType) {
             case "flowable":
