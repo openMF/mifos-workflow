@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://mifos.org/workflow/client-onboarding"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/20100524/MODEL">
+
+    <process id="client-onboarding" name="Client Onboarding Process" isExecutable="true">
+        
+        <!-- Start Event -->
+        <startEvent id="start-client-onboarding" name="Client Application Received">
+            <documentation>Triggered when a client submits their application</documentation>
+        </startEvent>
+
+        <!-- Service Task: Create Inactive Client -->
+        <serviceTask id="create-inactive-client" name="Create Inactive Client"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientCreationDelegate">
+            <documentation>Create client record in pending state using FineractClientService</documentation>
+        </serviceTask>
+
+        <!-- User Task: Verify Client Data -->
+        <userTask id="verify-client-data" name="Verify Client Data and Documents"
+                  flowable:assignee="${assignee}">
+            <documentation>Back office officer reviews client details and documents</documentation>
+            <extensionElements>
+                <flowable:formProperty id="clientId" name="Client ID" type="long" required="true" />
+                <flowable:formProperty id="approved" name="Application Approved" type="boolean" required="true" />
+                <flowable:formProperty id="rejectionReason" name="Rejection Reason" type="string" />
+                <flowable:formProperty id="comments" name="Comments" type="string" />
+            </extensionElements>
+        </userTask>
+
+        <!-- Exclusive Gateway: Application Approved? -->
+        <exclusiveGateway id="application-approved-gateway" name="Application Approved?" />
+
+        <!-- Service Task: Assign Staff (Optional) -->
+        <serviceTask id="assign-staff" name="Assign Staff"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.StaffAssignmentDelegate">
+            <documentation>Assign loan officer to the client</documentation>
+            <extensionElements>
+                <flowable:formProperty id="staffId" name="Staff ID" type="long" required="true" />
+            </extensionElements>
+        </serviceTask>
+
+        <!-- Service Task: Activate Client -->
+        <serviceTask id="activate-client" name="Activate Client"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientActivationDelegate">
+            <documentation>Activate the client in Fineract system</documentation>
+        </serviceTask>
+
+        <!-- End Event: Client Onboarding Complete -->
+        <endEvent id="client-onboarding-complete" name="Client Onboarding Complete">
+            <documentation>Client successfully onboarded and activated</documentation>
+        </endEvent>
+
+        <!-- Service Task: Reject Client -->
+        <serviceTask id="reject-client" name="Reject Client"
+                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientRejectionDelegate">
+            <documentation>Reject the client application</documentation>
+        </serviceTask>
+
+        <!-- End Event: Client Application Rejected -->
+        <endEvent id="client-application-rejected" name="Client Application Rejected">
+            <documentation>Client application rejected</documentation>
+        </endEvent>
+
+        <!-- Sequence Flows -->
+        <sequenceFlow id="flow1" sourceRef="start-client-onboarding" targetRef="create-inactive-client" />
+        <sequenceFlow id="flow2" sourceRef="create-inactive-client" targetRef="verify-client-data" />
+        <sequenceFlow id="flow3" sourceRef="verify-client-data" targetRef="application-approved-gateway" />
+        
+        <!-- Approved path -->
+        <sequenceFlow id="flow4-approved" sourceRef="application-approved-gateway" targetRef="assign-staff">
+            <conditionExpression xsi:type="tFormalExpression">${approved == true}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow5" sourceRef="assign-staff" targetRef="activate-client" />
+        <sequenceFlow id="flow6" sourceRef="activate-client" targetRef="client-onboarding-complete" />
+        
+        <!-- Rejected path -->
+        <sequenceFlow id="flow4-rejected" sourceRef="application-approved-gateway" targetRef="reject-client">
+            <conditionExpression xsi:type="tFormalExpression">${approved == false}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow7" sourceRef="reject-client" targetRef="client-application-rejected" />
+
+    </process>
+
+</definitions> 
