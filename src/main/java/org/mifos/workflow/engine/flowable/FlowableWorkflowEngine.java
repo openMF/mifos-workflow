@@ -75,7 +75,9 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
             this.taskService = processEngine.getTaskService();
             this.historyService = processEngine.getHistoryService();
 
-            logger.info("Flowable ProcessEngine initialized with configuration: {}", config);
+            logger.info("Flowable ProcessEngine initialized successfully. Database schema update: {}, Async executor: {}",
+                    properties.getEngine().getFlowable().isDatabaseSchemaUpdate(),
+                    properties.getEngine().getFlowable().isAsyncExecutorEnabled());
             return null;
         });
     }
