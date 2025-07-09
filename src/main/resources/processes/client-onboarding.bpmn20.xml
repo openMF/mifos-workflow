@@ -39,6 +39,9 @@
         <serviceTask id="assign-staff" name="Assign Staff"
                      flowable:class="org.mifos.workflow.core.engine.delegates.StaffAssignmentDelegate">
             <documentation>Assign loan officer to the client</documentation>
+            <extensionElements>
+                <flowable:formProperty id="staffId" name="Staff ID" type="long" required="true" />
+            </extensionElements>
         </serviceTask>
 
         <!-- Service Task: Activate Client -->

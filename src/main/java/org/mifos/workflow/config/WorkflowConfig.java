@@ -30,18 +30,18 @@ public class WorkflowConfig {
         private boolean databaseSchemaUpdate = true;
         private boolean historyEnabled = true;
         private String databaseType = "mysql";
-        private String databaseUrl = "jdbc:mysql://localhost:3306/flowable";
-        private String databaseUsername = "flowable";
-        private String databasePassword = "flowable";
+        private String databaseUrl;
+        private String databaseUsername;
+        private String databasePassword;
     }
 
     @Data
     public static class Fineract {
-        private String baseUrl = "http://localhost:8443/fineract-provider/api/v1/";
-        private String username = "mifos";
-        private String password = "password";
-        private String tenantId = "default";
-        private boolean testEnabled = false;
+        private String baseUrl;
+        private String username;
+        private String password;
+        private String tenantId;
+        private boolean testEnabled;
         private int connectionTimeout = 30000;
         private int readTimeout = 30000;
     }

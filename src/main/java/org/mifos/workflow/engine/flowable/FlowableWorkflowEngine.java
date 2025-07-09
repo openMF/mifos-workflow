@@ -146,13 +146,13 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .build();
         } catch (RuntimeException e) {
             logger.error("Runtime error during process deployment: {}", filename, e);
-            return DeploymentResult.builder()
+        return DeploymentResult.builder()
                     .deploymentId(null)
-                    .name(filename)
-                    .deploymentTime(LocalDateTime.now())
-                    .success(false)
+                .name(filename)
+                .deploymentTime(LocalDateTime.now())
+                .success(false)
                     .errors(Collections.singletonList("Runtime error during process deployment: " + e.getMessage()))
-                    .build();
+                .build();
         }
     }
 
@@ -263,9 +263,9 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .build();
         } catch (RuntimeException e) {
             logger.error("Runtime error while retrieving process variables: {}", processInstanceId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+        return ProcessVariables.builder()
+                .variables(new HashMap<>())
+                .build();
         }
     }
 
@@ -350,9 +350,9 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .build();
         } catch (RuntimeException e) {
             logger.error("Runtime error while retrieving task variables: {}", taskId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+        return ProcessVariables.builder()
+                .variables(new HashMap<>())
+                .build();
         }
     }
 
@@ -409,9 +409,9 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                     .build();
         } catch (RuntimeException e) {
             logger.error("Runtime error while retrieving historic process variables: {}", processInstanceId, e);
-            return ProcessVariables.builder()
-                    .variables(new HashMap<>())
-                    .build();
+        return ProcessVariables.builder()
+                .variables(new HashMap<>())
+                .build();
         }
     }
 
@@ -448,15 +448,15 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                 return null;
             }
 
-            return ProcessHistory.builder()
+        return ProcessHistory.builder()
                     .historyId(historicInstance.getId())
-                    .processId(processInstanceId)
+                .processId(processInstanceId)
                     .processDefinitionId(historicInstance.getProcessDefinitionId())
                     .startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
                     .endTime(historicInstance.getEndTime() != null ?
                             LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null)
                     .durationInMillis(historicInstance.getDurationInMillis())
-                    .build();
+                .build();
         } catch (IllegalArgumentException e) {
             logger.error("Invalid arguments provided for retrieving process history: {}", processInstanceId, e);
             return null;
@@ -494,7 +494,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
             return false;
         } catch (RuntimeException e) {
             logger.error("Runtime error while checking process active status: {}", processInstanceId, e);
-            return false;
+        return false;
         }
     }
 
