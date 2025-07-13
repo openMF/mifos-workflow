@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * Represents a workflow process definition (e.g., a BPMN template).
+ * Represents a workflow process definition (a BPMN template).
  * Used to define workflows that can be instantiated as processes.
  */
 @Data

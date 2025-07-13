@@ -13,7 +13,6 @@ import java.util.Map;
 @Data
 @Builder
 public class ProcessVariables {
-
     private Map<String, Object> variables;
 
     public ProcessVariables() {
