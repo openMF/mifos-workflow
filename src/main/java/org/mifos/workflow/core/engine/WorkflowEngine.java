@@ -1,7 +1,21 @@
 package org.mifos.workflow.core.engine;
 
 import org.mifos.workflow.core.engine.enums.EngineType;
-import org.mifos.workflow.core.model.*;
+import org.mifos.workflow.core.model.ActiveProcess;
+import org.mifos.workflow.core.model.DeploymentInfo;
+import org.mifos.workflow.core.model.DeploymentInfoEnhanced;
+import org.mifos.workflow.core.model.DeploymentResource;
+import org.mifos.workflow.core.model.DeploymentResult;
+import org.mifos.workflow.core.model.ProcessCompletionStatus;
+import org.mifos.workflow.core.model.ProcessDefinitionInfo;
+import org.mifos.workflow.core.model.ProcessHistory;
+import org.mifos.workflow.core.model.ProcessHistoryInfo;
+import org.mifos.workflow.core.model.ProcessStatus;
+import org.mifos.workflow.core.model.ProcessVariables;
+import org.mifos.workflow.core.model.ProcessDefinition;
+import org.mifos.workflow.core.model.ProcessInstance;
+import org.mifos.workflow.core.model.HistoricProcessInstance;
+import org.mifos.workflow.core.model.TaskInfo;
 
 import java.io.InputStream;
 import java.util.List;
@@ -56,4 +70,22 @@ public interface WorkflowEngine {
 
     // Replay Operation (for Task Execution Replay feature)
     ProcessInstance replayProcess(String processInstanceId, ProcessVariables variables);
+
+    void terminateProcess(String processInstanceId, String reason);
+    
+    ProcessStatus getProcessStatus(String processInstanceId);
+    
+    ProcessCompletionStatus getProcessCompletionStatus(String processInstanceId);
+    
+    List<ActiveProcess> getActiveProcesses();
+    
+    List<ProcessDefinitionInfo> getProcessDefinitionsInfo();
+    
+    List<ProcessHistoryInfo> getProcessHistoryInfo();
+    
+    DeploymentInfoEnhanced getDeploymentInfo(String deploymentId);
+    
+    List<DeploymentResource> getDeploymentResources(String deploymentId);
+    
+    byte[] getDeploymentResource(String deploymentId, String resourceName);
 }
