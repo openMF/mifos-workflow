@@ -2,30 +2,90 @@ package org.mifos.workflow.core.engine.delegates;
 
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
+import org.mifos.fineract.client.models.PostClientsClientIdResponse;
+import org.mifos.workflow.service.fineract.client.FineractClientService;
+import org.mifos.workflow.exception.FineractApiException;
+import org.mifos.workflow.exception.WorkflowException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 
 /**
  * Delegate for activating a client in the Fineract system.
- * This is a placeholder implementation.
- * Full implementation will be provided later.
+ * Activates a previously created inactive client.
  */
-public class ClientActivationDelegate implements JavaDelegate {
-
+@Component
+public class ClientActivationDelegate implements JavaDelegate, ApplicationContextAware {
     private static final Logger logger = LoggerFactory.getLogger(ClientActivationDelegate.class);
+    private static ApplicationContext applicationContext;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        ClientActivationDelegate.applicationContext = applicationContext;
+    }
+
+    private FineractClientService getFineractClientService() {
+        if (applicationContext == null) {
+            throw new IllegalStateException("ApplicationContext not available");
+        }
+        return applicationContext.getBean(FineractClientService.class);
+    }
 
     @Override
     public void execute(DelegateExecution execution) {
-        // TODO: Implement client activation logic
-        logger.info("ClientActivationDelegate.execute() called - placeholder implementation");
-        logger.info("Process instance ID: {}", execution.getProcessInstanceId());
-        logger.info("Variables: {}", execution.getVariables());
-
-        Long clientId = (Long) execution.getVariable("clientId");
-        if (clientId == null) {
-            throw new IllegalArgumentException("clientId is missing from process variables");
+        logger.info("ClientActivationDelegate.execute() called for process instance: {}", execution.getProcessInstanceId());
+        try {
+            FineractClientService fineractClientService = getFineractClientService();
+            Long clientId = (Long) execution.getVariable("clientId");
+            if (clientId == null) {
+                throw new IllegalArgumentException("clientId is missing from process variables");
+            }
+            Object activationDateObj = execution.getVariable("activationDate");
+            LocalDate activationDate = null;
+            if (activationDateObj != null) {
+                if (activationDateObj instanceof LocalDate) {
+                    activationDate = (LocalDate) activationDateObj;
+                } else if (activationDateObj instanceof String) {
+                    String activationDateStr = (String) activationDateObj;
+                    if (!activationDateStr.trim().isEmpty()) {
+                        try {
+                            activationDate = LocalDate.parse(activationDateStr);
+                        } catch (Exception e) {
+                            logger.warn("Could not parse activationDate string: {}, using current date", activationDateStr);
+                        }
+                    }
+                } else {
+                    logger.warn("Unexpected activationDate type: {}, using current date", activationDateObj.getClass().getSimpleName());
+                }
+            }
+            if (activationDate == null) {
+                activationDate = LocalDate.now();
+            }
+            logger.info("Activating client with ID: {} on date: {}", clientId, activationDate);
+            PostClientsClientIdResponse response = fineractClientService.activateClient(clientId, activationDate, "dd MMMM yyyy", "en").blockingFirst();
+            if (response.getResourceId() != null) {
+                execution.setVariable("clientActivated", true);
+                execution.setVariable("clientStatus", "ACTIVE");
+                execution.setVariable("activationDate", activationDate);
+                logger.info("Successfully activated client with ID: {}", clientId);
+            } else {
+                throw new RuntimeException("Failed to activate client: No response received");
+            }
+        } catch (FineractApiException e) {
+            logger.error("Fineract API error during client activation: {}", e.getMessage());
+            execution.setVariable("clientActivated", false);
+            execution.setVariable("errorMessage", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error activating client: {}", e.getMessage(), e);
+            execution.setVariable("clientActivated", false);
+            execution.setVariable("errorMessage", e.getMessage());
+            throw new WorkflowException("Client activation failed", e, "client activation", "CLIENT_ACTIVATION_FAILED");
         }
-        // String clientIdStr = clientId.toString();
-        logger.info("Would activate client with ID: {}", clientId);
     }
 } 
