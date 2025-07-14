@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -20,23 +21,78 @@ public class WorkflowErrorHandler {
     private static final Map<String, ErrorPattern> ERROR_PATTERNS = new HashMap<>();
 
     static {
-        registerErrorPattern("Cannot find task with id", (operation, param) -> new WorkflowException("Task not found: " + param, operation, WorkflowException.ERROR_TASK_NOT_FOUND, null, param), message -> message.contains("Cannot find task with id"));
+        registerTaskNotFoundPattern();
+        registerProcessNotFoundPattern();
+        registerProcessDefinitionNotFoundPattern();
+        registerDeploymentNotFoundPattern();
+        registerProcessStatePatterns();
+        registerHistoricPatterns();
+    }
 
-        registerErrorPattern("Cannot find process instance with id", (operation, param) -> new WorkflowException("Process instance not found: " + param, operation, WorkflowException.ERROR_PROCESS_NOT_FOUND, param, null), message -> message.contains("Cannot find process instance with id"));
+    private static void registerTaskNotFoundPattern() {
+        registerErrorPattern(
+            "Cannot find task with id",
+            (operation, param) -> new WorkflowException("Task not found: " + param, operation, WorkflowException.ERROR_TASK_NOT_FOUND, null, param),
+            message -> message.contains("Cannot find task with id")
+        );
+    }
 
-        registerErrorPattern("execution", (operation, param) -> new WorkflowException("Process execution not found: " + param, operation, WorkflowException.ERROR_PROCESS_NOT_FOUND, param, null), message -> message.contains("execution") && message.contains("doesn't exist"));
+    private static void registerProcessNotFoundPattern() {
+        registerErrorPattern(
+            "Cannot find process instance with id",
+            (operation, param) -> new WorkflowException("Process instance not found: " + param, operation, WorkflowException.ERROR_PROCESS_NOT_FOUND, param, null),
+            message -> message.contains("Cannot find process instance with id")
+        );
 
-        registerErrorPattern("Cannot find process definition with id", (operation, param) -> new WorkflowException("Process definition not found: " + param, operation, WorkflowException.ERROR_PROCESS_DEFINITION_NOT_FOUND, param, null), message -> message.contains("Cannot find process definition with id"));
+        registerErrorPattern(
+            "execution",
+            (operation, param) -> new WorkflowException("Process execution not found: " + param, operation, WorkflowException.ERROR_PROCESS_NOT_FOUND, param, null),
+            message -> message.contains("execution") && message.contains("doesn't exist")
+        );
+    }
 
-        registerErrorPattern("Cannot find deployment with id", (operation, param) -> new WorkflowException("Deployment not found: " + param, operation, WorkflowException.ERROR_DEPLOYMENT_NOT_FOUND, param, null), message -> message.contains("Cannot find deployment with id"));
+    private static void registerProcessDefinitionNotFoundPattern() {
+        registerErrorPattern(
+            "Cannot find process definition with id",
+            (operation, param) -> new WorkflowException("Process definition not found: " + param, operation, WorkflowException.ERROR_PROCESS_DEFINITION_NOT_FOUND, param, null),
+            message -> message.contains("Cannot find process definition with id")
+        );
+    }
 
-        registerErrorPattern("Process instance is already ended", (operation, param) -> new WorkflowException("Process instance is already ended: " + param, operation, WorkflowException.ERROR_INVALID_PROCESS_STATE, param, null), message -> message.contains("Process instance is already ended"));
+    private static void registerDeploymentNotFoundPattern() {
+        registerErrorPattern(
+            "Cannot find deployment with id",
+            (operation, param) -> new WorkflowException("Deployment not found: " + param, operation, WorkflowException.ERROR_DEPLOYMENT_NOT_FOUND, param, null),
+            message -> message.contains("Cannot find deployment with id")
+        );
+    }
 
-        registerErrorPattern("Task is already completed", (operation, param) -> new WorkflowException("Task is already completed: " + param, operation, WorkflowException.ERROR_INVALID_TASK_STATE, null, param), message -> message.contains("Task is already completed"));
+    private static void registerProcessStatePatterns() {
+        registerErrorPattern(
+            "Process instance is already ended",
+            (operation, param) -> new WorkflowException("Process instance is already ended: " + param, operation, WorkflowException.ERROR_INVALID_PROCESS_STATE, param, null),
+            message -> message.contains("Process instance is already ended")
+        );
 
-        registerErrorPattern("Historic process instance not found", (operation, param) -> new WorkflowException("Historic process instance not found: " + param, operation, WorkflowException.ERROR_PROCESS_NOT_FOUND, param, null), message -> message.contains("Historic process instance not found") || message.contains("doesn't exist"));
+        registerErrorPattern(
+            "Task is already completed",
+            (operation, param) -> new WorkflowException("Task is already completed: " + param, operation, WorkflowException.ERROR_INVALID_TASK_STATE, null, param),
+            message -> message.contains("Task is already completed")
+        );
+    }
 
-        registerErrorPattern("Historic variable instance not found", (operation, param) -> new WorkflowException("Historic variable instance not found: " + param, operation, WorkflowException.ERROR_PROCESS_NOT_FOUND, param, null), message -> message.contains("Historic variable instance not found") || message.contains("variable") && message.contains("not found"));
+    private static void registerHistoricPatterns() {
+        registerErrorPattern(
+            "Historic process instance not found",
+            (operation, param) -> new WorkflowException("Historic process instance not found: " + param, operation, WorkflowException.ERROR_PROCESS_NOT_FOUND, param, null),
+            message -> message.contains("Historic process instance not found") || message.contains("doesn't exist")
+        );
+
+        registerErrorPattern(
+            "Historic variable instance not found",
+            (operation, param) -> new WorkflowException("Historic variable instance not found: " + param, operation, WorkflowException.ERROR_PROCESS_NOT_FOUND, param, null),
+            message -> message.contains("Historic variable instance not found") || message.contains("variable") && message.contains("not found")
+        );
     }
 
     public static <T> T executeWithExceptionHandling(String operation, String param, Supplier<T> operationSupplier) {
@@ -113,11 +169,6 @@ public class WorkflowErrorHandler {
 
     private static void registerErrorPattern(String pattern, BiFunction<String, String, WorkflowException> exceptionCreator, Function<String, Boolean> matcher) {
         ERROR_PATTERNS.put(pattern, new ErrorPattern(exceptionCreator, matcher));
-    }
-
-    @FunctionalInterface
-    private interface BiFunction<T, U, R> {
-        R apply(T t, U u);
     }
 
     private record ErrorPattern(BiFunction<String, String, WorkflowException> exceptionCreator,
