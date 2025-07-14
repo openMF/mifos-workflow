@@ -231,8 +231,7 @@ public class FineractClientService {
     public Observable<List<CodeValueData>> retrieveClientRejectionReasons() {
         log.info("Retrieving client rejection reasons");
 
-
-        return clientsApi.retrieveCodes().subscribeOn(Schedulers.io()).doOnNext(codes -> {
+        return handleError(clientsApi.retrieveCodes().subscribeOn(Schedulers.io()).doOnNext(codes -> {
             log.info("Retrieved {} codes from the system", codes.size());
             codes.forEach(code -> log.info("Found code: {} (ID: {})", code.getName(), code.getId()));
         }).flatMap(codes -> {
@@ -253,13 +252,13 @@ public class FineractClientService {
                 log.error("No rejection reasons found for code 'ClientRejectReason'. Please add rejection reasons in the system.");
                 throw new IllegalStateException("No rejection reasons found in the system. Please add rejection reasons first.");
             }
-        }).onErrorResumeNext(error -> Observable.error(FineractErrorHandler.handleError("retrieve rejection reasons", error)));
+        }), "retrieve rejection reasons", "ClientRejectReason");
     }
 
     public Observable<CodeValueData> createRejectionReason(String name, String description) {
         log.info("Creating rejection reason with name: {}", name);
 
-        return clientsApi.retrieveCodes().subscribeOn(Schedulers.io()).flatMap(codes -> {
+        return handleError(clientsApi.retrieveCodes().subscribeOn(Schedulers.io()).flatMap(codes -> {
             Long rejectionCodeId = codes.stream().filter(code -> "ClientRejectReason".equals(code.getName())).findFirst().map(code -> code.getId()).orElse(null);
 
             if (rejectionCodeId == null) {
@@ -278,13 +277,13 @@ public class FineractClientService {
             } else {
                 log.warn("No response received when creating rejection reason");
             }
-        }).onErrorResumeNext(error -> Observable.error(FineractErrorHandler.handleError("create rejection reason", error)));
+        }), "create rejection reason", name);
     }
 
     public Observable<List<CodeValueData>> retrieveClientClosureReasons() {
         log.info("Retrieving client closure reasons");
 
-        return clientsApi.retrieveCodes().subscribeOn(Schedulers.io()).doOnNext(codes -> {
+        return handleError(clientsApi.retrieveCodes().subscribeOn(Schedulers.io()).doOnNext(codes -> {
             log.info("Retrieved {} codes from the system", codes.size());
             codes.forEach(code -> log.info("Found code: {} (ID: {})", code.getName(), code.getId()));
         }).flatMap(codes -> {
@@ -305,13 +304,13 @@ public class FineractClientService {
                 log.error("No closure reasons found for code 'ClientClosureReason'. Please add closure reasons in the system.");
                 throw new IllegalStateException("No closure reasons found in the system. Please add closure reasons first.");
             }
-        }).onErrorResumeNext(error -> Observable.error(FineractErrorHandler.handleError("retrieve closure reasons", error)));
+        }), "retrieve closure reasons", "ClientClosureReason");
     }
 
     public Observable<CodeValueData> createClosureReason(String name, String description) {
         log.info("Creating closure reason with name: {}", name);
 
-        return clientsApi.retrieveCodes().subscribeOn(Schedulers.io()).flatMap(codes -> {
+        return handleError(clientsApi.retrieveCodes().subscribeOn(Schedulers.io()).flatMap(codes -> {
 
             Long closureCodeId = codes.stream().filter(code -> "ClientClosureReason".equals(code.getName())).findFirst().map(code -> code.getId()).orElse(null);
 
@@ -331,7 +330,7 @@ public class FineractClientService {
             } else {
                 log.warn("No response received when creating closure reason");
             }
-        }).onErrorResumeNext(error -> Observable.error(FineractErrorHandler.handleError("create closure reason", error)));
+        }), "create closure reason", name);
     }
 
     public Observable<PostClientsClientIdResponse> withdrawClient(@NotNull Long clientId, @NotNull String command, @Valid @NotNull ClientWithdrawRequestDTO withdrawRequest) {
