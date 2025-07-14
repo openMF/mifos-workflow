@@ -65,6 +65,8 @@ public class FineractClientService {
 
 
     private static final String ACTIVATE_COMMAND = "activate";
+    private static final String PROPOSE_TRANSFER_COMMAND = "proposeTransfer";
+    private static final String ACCEPT_TRANSFER_COMMAND = "acceptTransfer";
 
     public final ClientsApi clientsApi;
 
@@ -448,7 +450,7 @@ public class FineractClientService {
 
         return handleError(clientsApi.retrieveTransferTemplate(clientId).flatMap(template -> {
             log.info("Retrieved transfer template for client: {}", clientId);
-            return clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), "proposeTransfer");
+            return clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), PROPOSE_TRANSFER_COMMAND);
         }), "client transfer proposal", clientId.toString());
     }
 
@@ -489,13 +491,13 @@ public class FineractClientService {
     }
 
     private Observable<PostClientsClientIdResponse> proposeTransfer(Long clientId, ClientTransferRequestDTO transferRequest, ClientAcceptTransferRequestDTO acceptRequest) {
-        return handleError(clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), "proposeTransfer"), "client transfer proposal", clientId.toString()).flatMap(response -> acceptTransfer(clientId, transferRequest, acceptRequest));
+        return handleError(clientsApi.applyCommand(clientId.toString(), transferRequest.toMap(), PROPOSE_TRANSFER_COMMAND), "client transfer proposal", clientId.toString()).flatMap(response -> acceptTransfer(clientId, transferRequest, acceptRequest));
     }
 
     private Observable<PostClientsClientIdResponse> acceptTransfer(Long clientId, ClientTransferRequestDTO transferRequest, ClientAcceptTransferRequestDTO acceptRequest) {
         Map<String, Object> combinedRequest = new HashMap<>(transferRequest.toMap());
         combinedRequest.putAll(acceptRequest.toMap());
-        return handleError(clientsApi.applyCommand(clientId.toString(), combinedRequest, "acceptTransfer"), "client transfer acceptance", clientId.toString());
+        return handleError(clientsApi.applyCommand(clientId.toString(), combinedRequest, ACCEPT_TRANSFER_COMMAND), "client transfer acceptance", clientId.toString());
     }
 
     public Observable<DeleteClientsClientIdResponse> deleteClient(@NotNull Long clientId) {

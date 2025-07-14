@@ -20,6 +20,8 @@ import java.time.LocalDate;
 @Component
 public class ClientActivationDelegate implements JavaDelegate {
     private static final Logger logger = LoggerFactory.getLogger(ClientActivationDelegate.class);
+    private static final String DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
+    private static final String DEFAULT_LOCALE = "en";
     
     private final FineractClientService fineractClientService;
 
@@ -58,7 +60,7 @@ public class ClientActivationDelegate implements JavaDelegate {
                 activationDate = LocalDate.now();
             }
             logger.info("Activating client with ID: {} on date: {}", clientId, activationDate);
-            PostClientsClientIdResponse response = fineractClientService.activateClient(clientId, activationDate, "dd MMMM yyyy", "en").blockingFirst();
+            PostClientsClientIdResponse response = fineractClientService.activateClient(clientId, activationDate, DEFAULT_DATE_FORMAT, DEFAULT_LOCALE).blockingFirst();
             if (response.getResourceId() != null) {
                 execution.setVariable("clientActivated", true);
                 execution.setVariable("clientStatus", "ACTIVE");

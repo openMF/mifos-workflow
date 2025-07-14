@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class ClientCloseRequestDTO {
+    private static final String DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
     @NotNull
     private String dateFormat;
     @NotNull
@@ -28,7 +29,7 @@ public class ClientCloseRequestDTO {
         if (dateFormat != null) map.put("dateFormat", dateFormat);
         if (locale != null) map.put("locale", locale);
         if (closureDate != null) {
-            String format = dateFormat != null ? dateFormat : "dd MMMM yyyy";
+            String format = dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT;
             map.put("closureDate", closureDate.format(java.time.format.DateTimeFormatter.ofPattern(format)));
         }
         if (closureReasonId != null) map.put("closureReasonId", closureReasonId);

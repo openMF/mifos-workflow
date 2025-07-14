@@ -27,6 +27,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class ClientCreationDelegate implements JavaDelegate {
     private static final Logger logger = LoggerFactory.getLogger(ClientCreationDelegate.class);
+    private static final Long DEFAULT_ADDRESS_TYPE_ID = 1L;
+    private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
+    private static final String DEFAULT_LOCALE = "en";
     
     private final FineractClientService fineractClientService;
 
@@ -99,12 +102,12 @@ public class ClientCreationDelegate implements JavaDelegate {
                     .externalId(externalId)
                     .dateOfBirth(dateOfBirth)
                     .active(active != null ? active : false)
-                    .dateFormat(dateFormat != null ? dateFormat : "yyyy-MM-dd")
-                    .locale(locale != null ? locale : "en")
+                    .dateFormat(dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT)
+                    .locale(locale != null ? locale : DEFAULT_LOCALE)
                     .address(addresses)
                     .submissionDate(LocalDate.now())
                     .build();
-            PostClientsResponse response = fineractClientService.createClient(clientRequest, clientRequest.getDateFormat(), clientRequest.getLocale(), 1L).blockingFirst();
+            PostClientsResponse response = fineractClientService.createClient(clientRequest, clientRequest.getDateFormat(), clientRequest.getLocale(), DEFAULT_ADDRESS_TYPE_ID).blockingFirst();
             if (response != null && response.getClientId() != null) {
                 Long clientId = response.getClientId();
                 logger.info("Successfully created client with ID: {}", clientId);

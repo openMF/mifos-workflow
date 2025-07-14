@@ -21,6 +21,7 @@ import java.time.LocalDate;
 @Component
 public class StaffAssignmentDelegate implements JavaDelegate {
     private static final Logger logger = LoggerFactory.getLogger(StaffAssignmentDelegate.class);
+    private static final String ASSIGN_STAFF_COMMAND = "assignStaff";
     
     private final FineractClientService fineractClientService;
 
@@ -82,7 +83,7 @@ public class StaffAssignmentDelegate implements JavaDelegate {
             }
             logger.info("Assigning staff {} to client {} on date: {}", staffId, clientId, assignmentDate);
             ClientAssignStaffRequestDTO assignStaffRequest = ClientAssignStaffRequestDTO.builder().staffId(staffId).build();
-            PostClientsClientIdResponse response = fineractClientService.assignStaff(clientId, "assignStaff", assignStaffRequest).blockingFirst();
+            PostClientsClientIdResponse response = fineractClientService.assignStaff(clientId, ASSIGN_STAFF_COMMAND, assignStaffRequest).blockingFirst();
             if (response != null && response.getResourceId() != null) {
                 execution.setVariable("staffAssigned", true);
                 execution.setVariable("assignedStaffId", staffId);

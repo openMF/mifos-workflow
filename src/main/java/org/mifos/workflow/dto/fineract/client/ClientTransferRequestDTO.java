@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class ClientTransferRequestDTO {
+    private static final String DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
     private String dateFormat;
     private LocalDate transferDate;
     private Long destinationOfficeId;
@@ -21,7 +22,7 @@ public class ClientTransferRequestDTO {
         Map<String, Object> map = new HashMap<>();
         if (dateFormat != null) map.put("dateFormat", dateFormat);
         if (transferDate != null) {
-            String format = dateFormat != null ? dateFormat : "dd MMMM yyyy";
+            String format = dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT;
             map.put("transferDate", transferDate.format(java.time.format.DateTimeFormatter.ofPattern(format)));
         }
         if (destinationOfficeId != null) {

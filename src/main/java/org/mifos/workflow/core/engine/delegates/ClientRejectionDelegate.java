@@ -21,6 +21,10 @@ import java.time.LocalDate;
 @Component
 public class ClientRejectionDelegate implements JavaDelegate {
     private static final Logger logger = LoggerFactory.getLogger(ClientRejectionDelegate.class);
+    private static final String REJECT_COMMAND = "reject";
+    private static final Long DEFAULT_REJECTION_REASON_ID = 1L;
+    private static final String DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
+    private static final String DEFAULT_LOCALE = "en";
     
     private final FineractClientService fineractClientService;
 
@@ -83,7 +87,7 @@ public class ClientRejectionDelegate implements JavaDelegate {
             }
         }
         if (rejectionReasonId == null) {
-            rejectionReasonId = 1L;
+            rejectionReasonId = DEFAULT_REJECTION_REASON_ID;
             logger.warn("No rejection reason ID provided, using default: {}", rejectionReasonId);
         }
         logger.info("Rejecting client with ID: {} for reason: {}", clientId, rejectionReason);
@@ -91,12 +95,12 @@ public class ClientRejectionDelegate implements JavaDelegate {
             ClientRejectRequestDTO rejectRequest = ClientRejectRequestDTO.builder()
                     .rejectionDate(rejectionDate)
                     .rejectionReasonId(rejectionReasonId)
-                    .dateFormat("dd MMMM yyyy")
-                    .locale("en")
+                    .dateFormat(DEFAULT_DATE_FORMAT)
+                    .locale(DEFAULT_LOCALE)
                     .build();
             PostClientsClientIdResponse response = fineractClientService.rejectClient(
                     clientId,
-                    "reject",
+                    REJECT_COMMAND,
                     rejectRequest
             ).blockingFirst();
             if (response != null && response.getResourceId() != null) {
