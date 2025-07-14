@@ -90,7 +90,20 @@ public class ClientCreationDelegate implements JavaDelegate {
                     logger.warn("Could not parse address JSON: {}, using empty list", addressJson);
                 }
             }
-            ClientCreateRequestDTO clientRequest = ClientCreateRequestDTO.builder().firstName(firstName).lastName(lastName).mobileNo(mobileNo).officeId(officeId).legalFormId(legalFormId).externalId(externalId).dateOfBirth(dateOfBirth).active(active != null ? active : false).dateFormat(dateFormat != null ? dateFormat : "yyyy-MM-dd").locale(locale != null ? locale : "en").address(addresses).submissionDate(LocalDate.now()).build();
+            ClientCreateRequestDTO clientRequest = ClientCreateRequestDTO.builder()
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .mobileNo(mobileNo)
+                    .officeId(officeId)
+                    .legalFormId(legalFormId)
+                    .externalId(externalId)
+                    .dateOfBirth(dateOfBirth)
+                    .active(active != null ? active : false)
+                    .dateFormat(dateFormat != null ? dateFormat : "yyyy-MM-dd")
+                    .locale(locale != null ? locale : "en")
+                    .address(addresses)
+                    .submissionDate(LocalDate.now())
+                    .build();
             PostClientsResponse response = fineractClientService.createClient(clientRequest, clientRequest.getDateFormat(), clientRequest.getLocale(), 1L).blockingFirst();
             if (response != null && response.getClientId() != null) {
                 Long clientId = response.getClientId();

@@ -97,7 +97,15 @@ public class FineractClientService {
         List<AddressDTO> addressList = new ArrayList<>();
         if (request.getAddress() != null && !request.getAddress().isEmpty()) {
             for (AddressDTO address : request.getAddress()) {
-                AddressDTO addressWithType = AddressDTO.builder().addressTypeId(addressTypeId).addressLine1(address.getAddressLine1()).addressLine2(address.getAddressLine2()).city(address.getCity()).stateProvinceId(address.getStateProvinceId()).countryId(address.getCountryId()).postalCode(address.getPostalCode()).build();
+                AddressDTO addressWithType = AddressDTO.builder()
+                    .addressTypeId(addressTypeId)
+                    .addressLine1(address.getAddressLine1())
+                    .addressLine2(address.getAddressLine2())
+                    .city(address.getCity())
+                    .stateProvinceId(address.getStateProvinceId())
+                    .countryId(address.getCountryId())
+                    .postalCode(address.getPostalCode())
+                    .build();
                 addressList.add(addressWithType);
             }
         }
@@ -116,7 +124,20 @@ public class FineractClientService {
         validateClientRequest(request);
         log.info("Creating client with name: {}", request.getFirstName() + " " + request.getLastName());
 
-        ClientCreateRequestDTO clientRequest = ClientCreateRequestDTO.builder().dateFormat(dateFormat).locale(locale).firstName(request.getFirstName()).lastName(request.getLastName()).officeId(request.getOfficeId()).active(request.getActive()).legalFormId(request.getLegalFormId()).mobileNo(request.getMobileNo()).dateOfBirth(request.getDateOfBirth()).externalId(request.getExternalId()).address(getAddressList(request, addressTypeId)).submissionDate(LocalDate.now()).build();
+                    ClientCreateRequestDTO clientRequest = ClientCreateRequestDTO.builder()
+                    .dateFormat(dateFormat)
+                    .locale(locale)
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .officeId(request.getOfficeId())
+                    .active(request.getActive())
+                    .legalFormId(request.getLegalFormId())
+                    .mobileNo(request.getMobileNo())
+                    .dateOfBirth(request.getDateOfBirth())
+                    .externalId(request.getExternalId())
+                    .address(getAddressList(request, addressTypeId))
+                    .submissionDate(LocalDate.now())
+                    .build();
 
         log.info("Sending request to Fineract: {}", clientRequest.toMap());
 
@@ -130,7 +151,17 @@ public class FineractClientService {
         requireNotNull(dateFormat, "dateFormat");
         requireNotNull(locale, "locale");
         requireNotNull(legalFormId, "legalFormId");
-        BasicClientCreateRequestDTO basicClientRequest = BasicClientCreateRequestDTO.builder().dateFormat(dateFormat).locale(locale).firstname(firstname).lastname(lastname).mobileNo(mobileNo).officeId(officeId).active(false).legalFormId(legalFormId).submittedOnDate(LocalDate.now().format(DateTimeFormatter.ofPattern(dateFormat))).build();
+        BasicClientCreateRequestDTO basicClientRequest = BasicClientCreateRequestDTO.builder()
+                .dateFormat(dateFormat)
+                .locale(locale)
+                .firstname(firstname)
+                .lastname(lastname)
+                .mobileNo(mobileNo)
+                .officeId(officeId)
+                .active(false)
+                .legalFormId(legalFormId)
+                .submittedOnDate(LocalDate.now().format(DateTimeFormatter.ofPattern(dateFormat)))
+                .build();
 
         log.info("Creating basic client with request: {}", basicClientRequest.toMap());
 
@@ -151,7 +182,11 @@ public class FineractClientService {
         requireNotNull(locale, "locale");
         log.info("Activating client with ID: {}, activation date: {}", clientId, activationDate);
 
-        ClientActivationRequestDTO activationRequest = ClientActivationRequestDTO.builder().dateFormat(dateFormat).locale(locale).activationDate(activationDate).build();
+        ClientActivationRequestDTO activationRequest = ClientActivationRequestDTO.builder()
+                .dateFormat(dateFormat)
+                .locale(locale)
+                .activationDate(activationDate)
+                .build();
 
         return handleError(clientsApi.activateClient(clientId, ACTIVATE_COMMAND, activationRequest.toMap(dateFormat)), "client activation", clientId.toString());
     }
@@ -268,7 +303,12 @@ public class FineractClientService {
 
             log.info("Found client rejection reason code ID: {}", rejectionCodeId);
 
-            CodeValueCreateRequestDTO codeValueRequest = CodeValueCreateRequestDTO.builder().name(name).description(description).position(1).isActive(true).build();
+            CodeValueCreateRequestDTO codeValueRequest = CodeValueCreateRequestDTO.builder()
+                    .name(name)
+                    .description(description)
+                    .position(1)
+                    .isActive(true)
+                    .build();
 
             return clientsApi.createCodeValue(rejectionCodeId, codeValueRequest.toMap());
         }).doOnNext(response -> {
@@ -321,7 +361,12 @@ public class FineractClientService {
 
             log.info("Found client closure reason code ID: {}", closureCodeId);
 
-            CodeValueCreateRequestDTO codeValueRequest = CodeValueCreateRequestDTO.builder().name(name).description(description).position(1).isActive(true).build();
+            CodeValueCreateRequestDTO codeValueRequest = CodeValueCreateRequestDTO.builder()
+                    .name(name)
+                    .description(description)
+                    .position(1)
+                    .isActive(true)
+                    .build();
 
             return clientsApi.createCodeValue(closureCodeId, codeValueRequest.toMap());
         }).doOnNext(response -> {
