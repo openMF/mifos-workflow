@@ -93,7 +93,7 @@ public class StaffAssignmentDelegate implements JavaDelegate {
                 throw new RuntimeException("Failed to assign staff: No response received");
             }
         } catch (FineractApiException e) {
-            if (e.isNotFound() && (e.getErrorBody().contains("staff.id.invalid") || e.getErrorBody().contains("does not exist"))) {
+            if (e.isNotFound() && (e.getErrorBody() != null && (e.getErrorBody().contains("staff.id.invalid") || e.getErrorBody().contains("does not exist")))) {
                 Object currentStaffIdObj = execution.getVariable("staffId");
                 Long currentStaffId = null;
                 if (currentStaffIdObj instanceof Long) {

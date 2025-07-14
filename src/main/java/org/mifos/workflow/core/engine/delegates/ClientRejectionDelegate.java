@@ -113,7 +113,7 @@ public class ClientRejectionDelegate implements JavaDelegate {
                 throw new RuntimeException("Failed to reject client: No response received");
             }
         } catch (FineractApiException e) {
-            if (e.isNotFound() && (e.getErrorBody().contains("ClientRejectReason") || e.getErrorBody().contains("does not exist"))) {
+            if (e.isNotFound() && (e.getErrorBody() != null && (e.getErrorBody().contains("ClientRejectReason") || e.getErrorBody().contains("does not exist")))) {
                 logger.warn("Rejection reason ID {} does not exist. Marking client as rejected without Fineract API call.", rejectionReasonId);
                 execution.setVariable("clientRejected", true);
                 execution.setVariable("clientStatus", "REJECTED");
