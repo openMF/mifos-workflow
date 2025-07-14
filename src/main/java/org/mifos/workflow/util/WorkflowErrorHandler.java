@@ -82,7 +82,7 @@ public class WorkflowErrorHandler {
             ErrorPattern errorPattern = entry.getValue();
 
             if (errorPattern.matches(message)) {
-                log.error("{} error during {}: {}", pattern, operation, param, null);
+                log.error("{} error during {}: {}", pattern, operation, param);
                 return errorPattern.createException(operation, param);
             }
         }
