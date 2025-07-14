@@ -4,9 +4,7 @@ import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.mifos.workflow.service.fineract.client.FineractClientService;
 import org.mifos.workflow.dto.fineract.client.ClientCreateRequestDTO;
@@ -27,20 +25,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Creates an inactive client that will be activated later in the workflow.
  */
 @Component
-public class ClientCreationDelegate implements JavaDelegate, ApplicationContextAware {
+public class ClientCreationDelegate implements JavaDelegate {
     private static final Logger logger = LoggerFactory.getLogger(ClientCreationDelegate.class);
-    private static ApplicationContext applicationContext;
+    
+    private final FineractClientService fineractClientService;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        ClientCreationDelegate.applicationContext = applicationContext;
-    }
-
-    private FineractClientService getFineractClientService() {
-        if (applicationContext == null) {
-            throw new IllegalStateException("ApplicationContext not available");
-        }
-        return applicationContext.getBean(FineractClientService.class);
+    @Autowired
+    public ClientCreationDelegate(FineractClientService fineractClientService) {
+        this.fineractClientService = fineractClientService;
     }
 
     @Override
@@ -99,7 +91,6 @@ public class ClientCreationDelegate implements JavaDelegate, ApplicationContextA
                 }
             }
             ClientCreateRequestDTO clientRequest = ClientCreateRequestDTO.builder().firstName(firstName).lastName(lastName).mobileNo(mobileNo).officeId(officeId).legalFormId(legalFormId).externalId(externalId).dateOfBirth(dateOfBirth).active(active != null ? active : false).dateFormat(dateFormat != null ? dateFormat : "yyyy-MM-dd").locale(locale != null ? locale : "en").address(addresses).submissionDate(LocalDate.now()).build();
-            FineractClientService fineractClientService = getFineractClientService();
             PostClientsResponse response = fineractClientService.createClient(clientRequest, clientRequest.getDateFormat(), clientRequest.getLocale(), 1L).blockingFirst();
             if (response != null && response.getClientId() != null) {
                 Long clientId = response.getClientId();

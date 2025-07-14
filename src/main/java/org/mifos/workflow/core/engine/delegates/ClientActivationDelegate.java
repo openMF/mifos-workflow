@@ -8,9 +8,7 @@ import org.mifos.workflow.exception.FineractApiException;
 import org.mifos.workflow.exception.WorkflowException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -20,27 +18,20 @@ import java.time.LocalDate;
  * Activates a previously created inactive client.
  */
 @Component
-public class ClientActivationDelegate implements JavaDelegate, ApplicationContextAware {
+public class ClientActivationDelegate implements JavaDelegate {
     private static final Logger logger = LoggerFactory.getLogger(ClientActivationDelegate.class);
-    private static ApplicationContext applicationContext;
+    
+    private final FineractClientService fineractClientService;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        ClientActivationDelegate.applicationContext = applicationContext;
-    }
-
-    private FineractClientService getFineractClientService() {
-        if (applicationContext == null) {
-            throw new IllegalStateException("ApplicationContext not available");
-        }
-        return applicationContext.getBean(FineractClientService.class);
+    @Autowired
+    public ClientActivationDelegate(FineractClientService fineractClientService) {
+        this.fineractClientService = fineractClientService;
     }
 
     @Override
     public void execute(DelegateExecution execution) {
         logger.info("ClientActivationDelegate.execute() called for process instance: {}", execution.getProcessInstanceId());
         try {
-            FineractClientService fineractClientService = getFineractClientService();
             Long clientId = (Long) execution.getVariable("clientId");
             if (clientId == null) {
                 throw new IllegalArgumentException("clientId is missing from process variables");

@@ -9,9 +9,7 @@ import org.mifos.workflow.exception.FineractApiException;
 import org.mifos.workflow.exception.WorkflowException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -21,20 +19,14 @@ import java.time.LocalDate;
  * Rejects a client application with a specified reason.
  */
 @Component
-public class ClientRejectionDelegate implements JavaDelegate, ApplicationContextAware {
+public class ClientRejectionDelegate implements JavaDelegate {
     private static final Logger logger = LoggerFactory.getLogger(ClientRejectionDelegate.class);
-    private static ApplicationContext applicationContext;
+    
+    private final FineractClientService fineractClientService;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        ClientRejectionDelegate.applicationContext = applicationContext;
-    }
-
-    private FineractClientService getFineractClientService() {
-        if (applicationContext == null) {
-            throw new IllegalStateException("ApplicationContext not available");
-        }
-        return applicationContext.getBean(FineractClientService.class);
+    @Autowired
+    public ClientRejectionDelegate(FineractClientService fineractClientService) {
+        this.fineractClientService = fineractClientService;
     }
 
     @Override
@@ -96,7 +88,6 @@ public class ClientRejectionDelegate implements JavaDelegate, ApplicationContext
         }
         logger.info("Rejecting client with ID: {} for reason: {}", clientId, rejectionReason);
         try {
-            FineractClientService fineractClientService = getFineractClientService();
             ClientRejectRequestDTO rejectRequest = ClientRejectRequestDTO.builder()
                     .rejectionDate(rejectionDate)
                     .rejectionReasonId(rejectionReasonId)
