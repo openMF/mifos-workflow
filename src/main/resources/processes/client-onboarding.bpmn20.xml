@@ -16,7 +16,7 @@
 
         <!-- Service Task: Create Inactive Client -->
         <serviceTask id="create-inactive-client" name="Create Inactive Client"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientCreationDelegate">
+                     flowable:delegateExpression="${clientCreationDelegate}">
             <documentation>Create client record in pending state using FineractClientService</documentation>
         </serviceTask>
 
@@ -37,7 +37,7 @@
 
         <!-- Service Task: Assign Staff (Optional) -->
         <serviceTask id="assign-staff" name="Assign Staff"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.StaffAssignmentDelegate">
+                     flowable:delegateExpression="${staffAssignmentDelegate}">
             <documentation>Assign loan officer to the client</documentation>
             <extensionElements>
                 <flowable:formProperty id="staffId" name="Staff ID" type="long" required="true" />
@@ -46,7 +46,7 @@
 
         <!-- Service Task: Activate Client -->
         <serviceTask id="activate-client" name="Activate Client"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientActivationDelegate">
+                     flowable:delegateExpression="${clientActivationDelegate}">
             <documentation>Activate the client in Fineract system</documentation>
         </serviceTask>
 
@@ -57,7 +57,7 @@
 
         <!-- Service Task: Reject Client -->
         <serviceTask id="reject-client" name="Reject Client"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientRejectionDelegate">
+                     flowable:delegateExpression="${clientRejectionDelegate}">
             <documentation>Reject the client application</documentation>
         </serviceTask>
 
