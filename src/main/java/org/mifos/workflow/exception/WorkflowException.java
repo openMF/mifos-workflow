@@ -25,6 +25,10 @@ public class WorkflowException extends RuntimeException {
     public static final String ERROR_INVALID_TASK_STATE = "INVALID_TASK_STATE";
     public static final String ERROR_WORKFLOW_ENGINE_ERROR = "WORKFLOW_ENGINE_ERROR";
     public static final String ERROR_PROCESS_EXECUTION_ERROR = "PROCESS_EXECUTION_ERROR";
+    public static final String ERROR_CLIENT_CREATION_FAILED = "CLIENT_CREATION_FAILED";
+    public static final String ERROR_CLIENT_REJECTION_FAILED = "CLIENT_REJECTION_FAILED";
+    public static final String ERROR_STAFF_ASSIGNMENT_FAILED = "STAFF_ASSIGNMENT_FAILED";
+    public static final String ERROR_CLIENT_ACTIVATION_FAILED = "CLIENT_ACTIVATION_FAILED";
 
 
     public WorkflowException(String message, String operation, String errorCode, String processId, String taskId) {

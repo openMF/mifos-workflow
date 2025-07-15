@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 /**
  * Delegate for rejecting a client in the Fineract system.
@@ -49,43 +50,12 @@ public class ClientRejectionDelegate implements JavaDelegate {
             rejectionReason = "Application rejected during review process";
         }
         Object rejectionDateObj = execution.getVariable("rejectionDate");
-        LocalDate rejectionDate = null;
-        if (rejectionDateObj != null) {
-            if (rejectionDateObj instanceof LocalDate) {
-                rejectionDate = (LocalDate) rejectionDateObj;
-            } else if (rejectionDateObj instanceof String) {
-                String rejectionDateStr = (String) rejectionDateObj;
-                if (!rejectionDateStr.trim().isEmpty()) {
-                    try {
-                        rejectionDate = LocalDate.parse(rejectionDateStr);
-                    } catch (Exception e) {
-                        logger.warn("Could not parse rejectionDate string: {}, using current date", rejectionDateStr);
-                    }
-                }
-            } else {
-                logger.warn("Unexpected rejectionDate type: {}, using current date", rejectionDateObj.getClass().getSimpleName());
-            }
-        }
+        LocalDate rejectionDate = ProcessVariableUtil.getLocalDate(rejectionDateObj);
         if (rejectionDate == null) {
             rejectionDate = LocalDate.now();
         }
         Object rejectionReasonIdObj = execution.getVariable("rejectionReasonId");
-        Long rejectionReasonId = null;
-        if (rejectionReasonIdObj != null) {
-            if (rejectionReasonIdObj instanceof Long) {
-                rejectionReasonId = (Long) rejectionReasonIdObj;
-            } else if (rejectionReasonIdObj instanceof Integer) {
-                rejectionReasonId = ((Integer) rejectionReasonIdObj).longValue();
-            } else if (rejectionReasonIdObj instanceof String) {
-                try {
-                    rejectionReasonId = Long.parseLong((String) rejectionReasonIdObj);
-                } catch (NumberFormatException e) {
-                    logger.warn("Invalid rejection reason ID format: {}", rejectionReasonIdObj);
-                }
-            } else if (rejectionReasonIdObj instanceof Number) {
-                rejectionReasonId = ((Number) rejectionReasonIdObj).longValue();
-            }
-        }
+        Long rejectionReasonId = ProcessVariableUtil.getLong(rejectionReasonIdObj, DEFAULT_REJECTION_REASON_ID);
         if (rejectionReasonId == null) {
             rejectionReasonId = DEFAULT_REJECTION_REASON_ID;
             logger.warn("No rejection reason ID provided, using default: {}", rejectionReasonId);
@@ -139,7 +109,7 @@ public class ClientRejectionDelegate implements JavaDelegate {
             }
             execution.setVariable("clientRejected", false);
             execution.setVariable("errorMessage", e.getMessage());
-            throw new WorkflowException("Client rejection failed", e, "client rejection", "CLIENT_REJECTION_FAILED");
+            throw new WorkflowException("Client rejection failed", e, "client rejection", WorkflowException.ERROR_CLIENT_REJECTION_FAILED);
         }
     }
 } 

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 /**
  * Delegate for activating a client in the Fineract system.
@@ -39,23 +40,7 @@ public class ClientActivationDelegate implements JavaDelegate {
                 throw new IllegalArgumentException("clientId is missing from process variables");
             }
             Object activationDateObj = execution.getVariable("activationDate");
-            LocalDate activationDate = null;
-            if (activationDateObj != null) {
-                if (activationDateObj instanceof LocalDate) {
-                    activationDate = (LocalDate) activationDateObj;
-                } else if (activationDateObj instanceof String) {
-                    String activationDateStr = (String) activationDateObj;
-                    if (!activationDateStr.trim().isEmpty()) {
-                        try {
-                            activationDate = LocalDate.parse(activationDateStr);
-                        } catch (Exception e) {
-                            logger.warn("Could not parse activationDate string: {}, using current date", activationDateStr);
-                        }
-                    }
-                } else {
-                    logger.warn("Unexpected activationDate type: {}, using current date", activationDateObj.getClass().getSimpleName());
-                }
-            }
+            LocalDate activationDate = ProcessVariableUtil.getLocalDate(activationDateObj);
             if (activationDate == null) {
                 activationDate = LocalDate.now();
             }
@@ -78,7 +63,7 @@ public class ClientActivationDelegate implements JavaDelegate {
             logger.error("Error activating client: {}", e.getMessage(), e);
             execution.setVariable("clientActivated", false);
             execution.setVariable("errorMessage", e.getMessage());
-            throw new WorkflowException("Client activation failed", e, "client activation", "CLIENT_ACTIVATION_FAILED");
+            throw new WorkflowException("Client activation failed", e, "client activation", WorkflowException.ERROR_CLIENT_ACTIVATION_FAILED);
         }
     }
 } 

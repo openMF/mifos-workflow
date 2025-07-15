@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 /**
  * Delegate for assigning staff to a client in the Fineract system.
@@ -39,45 +40,14 @@ public class StaffAssignmentDelegate implements JavaDelegate {
                 throw new IllegalArgumentException("clientId is missing from process variables");
             }
             Object staffIdObj = execution.getVariable("staffId");
-            Long staffId = null;
-            if (staffIdObj != null) {
-                if (staffIdObj instanceof Long) {
-                    staffId = (Long) staffIdObj;
-                } else if (staffIdObj instanceof Integer) {
-                    staffId = ((Integer) staffIdObj).longValue();
-                } else if (staffIdObj instanceof String) {
-                    try {
-                        staffId = Long.parseLong((String) staffIdObj);
-                    } catch (NumberFormatException e) {
-                        logger.warn("Invalid staffId format: {}", staffIdObj);
-                    }
-                } else if (staffIdObj instanceof Number) {
-                    staffId = ((Number) staffIdObj).longValue();
-                }
-            }
+            Long staffId = ProcessVariableUtil.getLong(staffIdObj, null);
             if (staffId == null) {
                 logger.info("No staffId provided, skipping staff assignment for client: {}", clientId);
                 execution.setVariable("staffAssigned", false);
                 return;
             }
             Object assignmentDateObj = execution.getVariable("assignmentDate");
-            LocalDate assignmentDate = null;
-            if (assignmentDateObj != null) {
-                if (assignmentDateObj instanceof LocalDate) {
-                    assignmentDate = (LocalDate) assignmentDateObj;
-                } else if (assignmentDateObj instanceof String) {
-                    String assignmentDateStr = (String) assignmentDateObj;
-                    if (!assignmentDateStr.trim().isEmpty()) {
-                        try {
-                            assignmentDate = LocalDate.parse(assignmentDateStr);
-                        } catch (Exception e) {
-                            logger.warn("Could not parse assignmentDate string: {}, using current date", assignmentDateStr);
-                        }
-                    }
-                } else {
-                    logger.warn("Unexpected assignmentDate type: {}, using current date", assignmentDateObj.getClass().getSimpleName());
-                }
-            }
+            LocalDate assignmentDate = ProcessVariableUtil.getLocalDate(assignmentDateObj);
             if (assignmentDate == null) {
                 assignmentDate = LocalDate.now();
             }
@@ -117,7 +87,7 @@ public class StaffAssignmentDelegate implements JavaDelegate {
             logger.error("Error assigning staff: {}", e.getMessage(), e);
             execution.setVariable("staffAssigned", false);
             execution.setVariable("errorMessage", e.getMessage());
-            throw new WorkflowException("Staff assignment failed", e, "staff assignment", "STAFF_ASSIGNMENT_FAILED");
+            throw new WorkflowException("Staff assignment failed", e, "staff assignment", WorkflowException.ERROR_STAFF_ASSIGNMENT_FAILED);
         }
     }
 } 

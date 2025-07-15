@@ -12,6 +12,7 @@ import org.mifos.workflow.dto.fineract.address.AddressDTO;
 import org.mifos.fineract.client.models.PostClientsResponse;
 import org.mifos.workflow.exception.FineractApiException;
 import org.mifos.workflow.exception.WorkflowException;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -49,27 +50,11 @@ public class ClientCreationDelegate implements JavaDelegate {
             Long legalFormId = (Long) execution.getVariable("legalFormId");
             String externalId = (String) execution.getVariable("externalId");
             Object dateOfBirthObj = execution.getVariable("dateOfBirth");
+            LocalDate dateOfBirth = ProcessVariableUtil.getLocalDate(dateOfBirthObj);
             String dateFormat = (String) execution.getVariable("dateFormat");
             String locale = (String) execution.getVariable("locale");
             Boolean active = (Boolean) execution.getVariable("active");
             String addressJson = (String) execution.getVariable("addressJson");
-            LocalDate dateOfBirth = null;
-            if (dateOfBirthObj != null) {
-                if (dateOfBirthObj instanceof LocalDate) {
-                    dateOfBirth = (LocalDate) dateOfBirthObj;
-                } else if (dateOfBirthObj instanceof String) {
-                    String dateOfBirthStr = (String) dateOfBirthObj;
-                    if (!dateOfBirthStr.trim().isEmpty()) {
-                        try {
-                            dateOfBirth = LocalDate.parse(dateOfBirthStr);
-                        } catch (Exception e) {
-                            logger.warn("Could not parse dateOfBirth string: {}, using null", dateOfBirthStr);
-                        }
-                    }
-                } else {
-                    logger.warn("Unexpected dateOfBirth type: {}, using null", dateOfBirthObj.getClass().getSimpleName());
-                }
-            }
             if (firstName == null || firstName.trim().isEmpty()) {
                 throw new IllegalArgumentException("firstName is required");
             }
@@ -129,7 +114,7 @@ public class ClientCreationDelegate implements JavaDelegate {
             execution.setVariable("clientCreated", false);
             execution.setVariable("clientStatus", "ERROR");
             execution.setVariable("errorMessage", e.getMessage());
-            throw new WorkflowException("Client creation failed", e, "client creation", "CLIENT_CREATION_FAILED");
+            throw new WorkflowException("Client creation failed", e, "client creation", WorkflowException.ERROR_CLIENT_CREATION_FAILED);
         }
     }
 } 
