@@ -42,7 +42,7 @@ public class ClientOnboardingController {
     @PostMapping("/start")
     public ResponseEntity<ProcessInstance> startClientOnboarding(@Valid @RequestBody ClientCreateRequestDTO clientRequest) {
 
-        log.info("Starting client onboarding process for client: {}", clientRequest.getLegalFormId());
+        log.info("Starting client onboarding process for client: {} {}", clientRequest.getFirstName(), clientRequest.getLastName());
 
         Map<String, Object> variables = new HashMap<>();
         variables.put("legalFormId", clientRequest.getLegalFormId());
@@ -72,7 +72,7 @@ public class ClientOnboardingController {
 
         ProcessInstance processInstance = workflowService.startProcess("client-onboarding", variables);
 
-        log.info("Started client onboarding process: {}", processInstance.getId());
+        log.info("Started client onboarding process: {} for client: {} {}", processInstance.getId(), clientRequest.getFirstName(), clientRequest.getLastName());
         return ResponseEntity.ok(processInstance);
     }
 
