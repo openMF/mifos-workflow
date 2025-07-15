@@ -62,7 +62,7 @@ public class FlowableMapper {
                 .createTime(LocalDateTime.ofInstant(task.getCreateTime().toInstant(), ZoneId.systemDefault()))
                 .dueDate(task.getDueDate() != null ? 
                     LocalDateTime.ofInstant(task.getDueDate().toInstant(), ZoneId.systemDefault()) : null)
-                .priority(String.valueOf(task.getPriority()))
+                .priority(task.getPriority())
                 .build();
     }
 
