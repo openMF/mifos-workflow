@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Data
 @Builder
 public class ClientCreateRequestDTO {
+    private static final String DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
     @NotNull
     private String firstName;
     @NotNull
@@ -70,11 +71,11 @@ public class ClientCreateRequestDTO {
         map.put("externalId", externalId);
         map.put("mobileNo", mobileNo);
         if (dateOfBirth != null) {
-            String format = dateFormat != null ? dateFormat : "dd MMMM yyyy";
+            String format = dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT;
             map.put("dateOfBirth", dateOfBirth.format(DateTimeFormatter.ofPattern(format)));
         }
         if (submissionDate != null) {
-            String format = dateFormat != null ? dateFormat : "dd MMMM yyyy";
+            String format = dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT;
             map.put("submittedOnDate", submissionDate.format(DateTimeFormatter.ofPattern(format)));
         }
         map.put("clientClassificationId", clientClassificationId);

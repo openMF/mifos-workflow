@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class ClientRejectRequestDTO {
+    private static final String DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
     @NotNull
     private String dateFormat;
     @NotNull
@@ -28,7 +29,7 @@ public class ClientRejectRequestDTO {
         if (dateFormat != null) map.put("dateFormat", dateFormat);
         if (locale != null) map.put("locale", locale);
         if (rejectionDate != null) {
-            String format = dateFormat != null ? dateFormat : "dd MMMM yyyy";
+            String format = dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT;
             map.put("rejectionDate", rejectionDate.format(java.time.format.DateTimeFormatter.ofPattern(format)));
         }
         if (rejectionReasonId != null) map.put("rejectionReasonId", rejectionReasonId);

@@ -20,5 +20,5 @@ public class TaskInfo {
     private LocalDateTime createTime;
     private LocalDateTime dueDate;
     private String description;
-    private String priority;
+    private int priority;
 }

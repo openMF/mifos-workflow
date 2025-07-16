@@ -58,7 +58,11 @@ public class FlowableMapper {
                 .description(task.getDescription())
                 .assignee(task.getAssignee())
                 .processId(task.getProcessInstanceId())
+                .processDefinitionId(task.getProcessDefinitionId())
                 .createTime(LocalDateTime.ofInstant(task.getCreateTime().toInstant(), ZoneId.systemDefault()))
+                .dueDate(task.getDueDate() != null ? 
+                    LocalDateTime.ofInstant(task.getDueDate().toInstant(), ZoneId.systemDefault()) : null)
+                .priority(task.getPriority())
                 .build();
     }
 
@@ -69,8 +73,8 @@ public class FlowableMapper {
                 .processDefinitionId(historicInstance.getProcessDefinitionId())
                 .businessKey(historicInstance.getBusinessKey())
                 .startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
-                .endTime(historicInstance.getEndTime() != null ?
-                        LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null)
+                .endTime(historicInstance.getEndTime() != null ? 
+                    LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null)
                 .durationInMillis(historicInstance.getDurationInMillis())
                 .outcome(historicInstance.getEndActivityId())
                 .build();

@@ -6,9 +6,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.mifos.workflow.config.WorkflowConfig;
 import org.mifos.workflow.core.engine.WorkflowEngine;
 import org.mifos.workflow.core.engine.WorkflowEngineFactory;
-import org.mifos.workflow.core.model.*;
+import org.mifos.workflow.core.model.ActiveProcess;
+import org.mifos.workflow.core.model.DeploymentInfo;
+import org.mifos.workflow.core.model.DeploymentInfoEnhanced;
+import org.mifos.workflow.core.model.DeploymentResource;
+import org.mifos.workflow.core.model.DeploymentResult;
+import org.mifos.workflow.core.model.ProcessCompletionStatus;
+import org.mifos.workflow.core.model.ProcessDefinition;
+import org.mifos.workflow.core.model.ProcessDefinitionInfo;
+import org.mifos.workflow.core.model.ProcessHistoryInfo;
+import org.mifos.workflow.core.model.ProcessInstance;
+import org.mifos.workflow.core.model.ProcessStatus;
+import org.mifos.workflow.core.model.ProcessVariables;
+import org.mifos.workflow.core.model.TaskInfo;
 import org.mifos.workflow.service.fineract.auth.FineractAuthService;
-import org.mifos.workflow.util.ExceptionHandler;
+import org.mifos.workflow.util.WorkflowErrorHandler;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -42,7 +54,7 @@ public class WorkflowService {
 
         ensureAuthentication();
 
-        return ExceptionHandler.executeWithExceptionHandling("process deployment", filename, () -> {
+        return WorkflowErrorHandler.executeWithExceptionHandling("process deployment", filename, () -> {
             DeploymentResult result = getWorkflowEngine().deployProcess(processDefinition, filename);
             log.info("Process deployment result: {}", result.isSuccess() ? "SUCCESS" : "FAILED");
             return result;
@@ -55,7 +67,7 @@ public class WorkflowService {
 
         ensureAuthentication();
 
-        return ExceptionHandler.executeWithExceptionHandling("process start", processDefinitionKey, () -> {
+        return WorkflowErrorHandler.executeWithExceptionHandling("process start", processDefinitionKey, () -> {
             ProcessVariables processVariables = ProcessVariables.builder().variables(variables).build();
 
             ProcessInstance instance = getWorkflowEngine().startProcess(processDefinitionKey, processVariables);
@@ -70,7 +82,7 @@ public class WorkflowService {
 
         ensureAuthentication();
 
-        ExceptionHandler.executeWithExceptionHandling("task completion", taskId, () -> {
+        WorkflowErrorHandler.executeWithExceptionHandling("task completion", taskId, () -> {
             ProcessVariables processVariables = ProcessVariables.builder().variables(variables).build();
 
             getWorkflowEngine().completeTask(taskId, processVariables);
@@ -84,7 +96,7 @@ public class WorkflowService {
 
         ensureAuthentication();
 
-        return ExceptionHandler.executeWithExceptionHandling("getting pending tasks", userId, () -> {
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting pending tasks", userId, () -> {
             List<TaskInfo> tasks = getWorkflowEngine().getPendingTasks(userId);
             log.debug("Found {} pending tasks for user: {}", tasks.size(), userId);
             return tasks;
@@ -97,7 +109,7 @@ public class WorkflowService {
 
         ensureAuthentication();
 
-        return ExceptionHandler.executeWithExceptionHandling("getting process instances", "all", () -> {
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting process instances", "all", () -> {
             List<ProcessInstance> instances = getWorkflowEngine().getProcessInstances();
             log.debug("Found {} active process instances", instances.size());
             return instances;
@@ -110,10 +122,58 @@ public class WorkflowService {
 
         ensureAuthentication();
 
-        return ExceptionHandler.executeWithExceptionHandling("getting process variables", processInstanceId, () -> {
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting process variables", processInstanceId, () -> {
             ProcessVariables variables = getWorkflowEngine().getProcessVariables(processInstanceId);
             log.debug("Retrieved {} variables for process instance: {}", variables.getVariables().size(), processInstanceId);
             return variables;
+        });
+    }
+
+    public ProcessVariables getHistoricProcessVariables(String processInstanceId) {
+        log.debug("Getting historic variables for process instance: {}", processInstanceId);
+
+        ensureAuthentication();
+
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting historic process variables", processInstanceId, () -> {
+            ProcessVariables variables = getWorkflowEngine().getHistoricProcessVariables(processInstanceId);
+            log.debug("Retrieved {} historic variables for process instance: {}", variables.getVariables().size(), processInstanceId);
+            return variables;
+        });
+    }
+
+    public ProcessVariables getTaskVariables(String taskId) {
+        log.debug("Getting variables for task: {}", taskId);
+
+        ensureAuthentication();
+
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting task variables", taskId, () -> {
+            ProcessVariables variables = getWorkflowEngine().getTaskVariables(taskId);
+            log.debug("Retrieved {} variables for task: {}", variables.getVariables().size(), taskId);
+            return variables;
+        });
+    }
+
+    public List<TaskInfo> getPendingTasksForProcess(String processInstanceId) {
+        log.debug("Getting pending tasks for process: {}", processInstanceId);
+
+        ensureAuthentication();
+
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting pending tasks for process", processInstanceId, () -> {
+            List<TaskInfo> tasks = getWorkflowEngine().getPendingTasksForProcess(processInstanceId);
+            log.debug("Found {} pending tasks for process: {}", tasks.size(), processInstanceId);
+            return tasks;
+        });
+    }
+
+    public List<DeploymentInfo> getDeployments() {
+        log.debug("Getting all deployments");
+
+        ensureAuthentication();
+
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting deployments", "all", () -> {
+            List<DeploymentInfo> deployments = getWorkflowEngine().getDeployments();
+            log.debug("Found {} deployments", deployments.size());
+            return deployments;
         });
     }
 
@@ -123,7 +183,7 @@ public class WorkflowService {
 
         ensureAuthentication();
 
-        return ExceptionHandler.executeWithExceptionHandling("getting process definitions", "all", () -> {
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting process definitions", "all", () -> {
             List<ProcessDefinition> definitions = getWorkflowEngine().getProcessDefinitions();
             log.debug("Found {} process definitions", definitions.size());
             return definitions;
@@ -132,12 +192,110 @@ public class WorkflowService {
 
 
     public boolean isEngineActive() {
-        return ExceptionHandler.executeWithExceptionHandling("checking engine status", "engine", () -> getWorkflowEngine().isEngineActive());
+        return WorkflowErrorHandler.executeWithExceptionHandling("checking engine status", "engine", () -> getWorkflowEngine().isEngineActive());
     }
 
 
     public String getEngineType() {
-        return ExceptionHandler.executeWithExceptionHandling("getting engine type", "engine", () -> getWorkflowEngine().getEngineType().name());
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting engine type", "engine", () -> getWorkflowEngine().getEngineType().name());
+    }
+
+    public void terminateProcess(String processInstanceId, String reason) {
+        log.info("Terminating process instance: {} with reason: {}", processInstanceId, reason);
+        ensureAuthentication();
+        WorkflowErrorHandler.executeWithExceptionHandling("process termination", processInstanceId, () -> {
+            getWorkflowEngine().terminateProcess(processInstanceId, reason);
+            log.info("Process instance {} terminated successfully", processInstanceId);
+        });
+    }
+
+    public ProcessStatus getProcessStatus(String processInstanceId) {
+        log.debug("Getting status for process instance: {}", processInstanceId);
+        ensureAuthentication();
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting process status", processInstanceId, () -> {
+            ProcessStatus status = getWorkflowEngine().getProcessStatus(processInstanceId);
+            log.debug("Retrieved status for process instance: {}", processInstanceId);
+            return status;
+        });
+    }
+
+    public ProcessCompletionStatus getProcessCompletionStatus(String processInstanceId) {
+        log.debug("Getting completion status for process instance: {}", processInstanceId);
+        ensureAuthentication();
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting process completion status", processInstanceId, () -> {
+            ProcessCompletionStatus status = getWorkflowEngine().getProcessCompletionStatus(processInstanceId);
+            log.debug("Retrieved completion status for process instance: {}", processInstanceId);
+            return status;
+        });
+    }
+
+    public List<ActiveProcess> getActiveProcesses() {
+        log.debug("Getting active processes");
+        ensureAuthentication();
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting active processes", "all", () -> {
+            List<ActiveProcess> processes = getWorkflowEngine().getActiveProcesses();
+            log.debug("Found {} active processes", processes.size());
+            return processes;
+        });
+    }
+
+    public List<ProcessDefinitionInfo> getProcessDefinitionsInfo() {
+        log.debug("Getting process definitions info");
+        ensureAuthentication();
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting process definitions info", "all", () -> {
+            List<ProcessDefinitionInfo> definitions = getWorkflowEngine().getProcessDefinitionsInfo();
+            log.debug("Found {} process definitions", definitions.size());
+            return definitions;
+        });
+    }
+
+    public List<ProcessHistoryInfo> getProcessHistoryInfo() {
+        log.debug("Getting process history info");
+        ensureAuthentication();
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting process history info", "all", () -> {
+            List<ProcessHistoryInfo> history = getWorkflowEngine().getProcessHistoryInfo();
+            log.debug("Found {} historic process instances", history.size());
+            return history;
+        });
+    }
+
+    public DeploymentInfoEnhanced getDeploymentInfo(String deploymentId) {
+        log.debug("Getting deployment info for: {}", deploymentId);
+        ensureAuthentication();
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting deployment info", deploymentId, () -> {
+            DeploymentInfoEnhanced info = getWorkflowEngine().getDeploymentInfo(deploymentId);
+            log.debug("Retrieved deployment info for: {}", deploymentId);
+            return info;
+        });
+    }
+
+    public List<DeploymentResource> getDeploymentResources(String deploymentId) {
+        log.debug("Getting deployment resources for: {}", deploymentId);
+        ensureAuthentication();
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting deployment resources", deploymentId, () -> {
+            List<DeploymentResource> resources = getWorkflowEngine().getDeploymentResources(deploymentId);
+            log.debug("Retrieved {} resources for deployment: {}", resources.size(), deploymentId);
+            return resources;
+        });
+    }
+
+    public byte[] getDeploymentResource(String deploymentId, String resourceName) {
+        log.debug("Getting deployment resource: {} from deployment: {}", resourceName, deploymentId);
+        ensureAuthentication();
+        return WorkflowErrorHandler.executeWithExceptionHandling("getting deployment resource", deploymentId + "/" + resourceName, () -> {
+            byte[] resource = getWorkflowEngine().getDeploymentResource(deploymentId, resourceName);
+            log.debug("Retrieved resource: {} from deployment: {}", resourceName, deploymentId);
+            return resource;
+        });
+    }
+
+    public void deleteDeployment(String deploymentId) {
+        log.info("Deleting deployment: {}", deploymentId);
+        ensureAuthentication();
+        WorkflowErrorHandler.executeWithExceptionHandling("deployment deletion", deploymentId, () -> {
+            getWorkflowEngine().deleteDeployment(deploymentId);
+            log.info("Deployment {} deleted successfully", deploymentId);
+        });
     }
 
 
@@ -147,20 +305,12 @@ public class WorkflowService {
             return;
         }
 
-        try {
-            String cachedAuthKey = fineractAuthService.getCachedAuthKey();
-            if (cachedAuthKey == null || cachedAuthKey.isEmpty()) {
-                log.error("Authentication required but no cached authentication key found");
-                throw new IllegalStateException("Authentication required but no authentication key available. Please authenticate first.");
-            } else {
-                log.debug("Authentication key available for workflow operations");
-            }
-        } catch (IllegalStateException e) {
-            log.error("Invalid state while checking authentication status", e);
-            throw e;
-        } catch (RuntimeException e) {
-            log.error("Runtime error while checking authentication status", e);
-            throw new IllegalStateException("Failed to verify authentication status", e);
+        String cachedAuthKey = fineractAuthService.getCachedAuthKey();
+        if (cachedAuthKey == null || cachedAuthKey.isEmpty()) {
+            log.error("Authentication required but no cached authentication key found");
+            throw new IllegalStateException("Authentication required but no authentication key available. Please authenticate first.");
+        } else {
+            log.debug("Authentication key available for workflow operations");
         }
     }
 
