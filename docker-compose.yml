@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    container_name: mifos-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mifos_flowable
+      MYSQL_USER: mifos
+      MYSQL_PASSWORD: password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: mifos-workflow-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/mifos_flowable?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: mifos
+      SPRING_DATASOURCE_PASSWORD: password
+      DB_PASSWORD: password
+      FINERACT_PASSWORD: password
+      SERVER_PORT: 8081
+      WORKFLOW_FINERACT_BASEURL: https://host.docker.internal:8443/fineract-provider/api/v1/
+      JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/tmp/cacerts -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustAll=true"
+      WORKFLOW_FINERACT_VALIDATESSL: false
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    command: >
+      /bin/sh -c "
+        cp /opt/java/openjdk/lib/security/cacerts /tmp/cacerts &&
+        java -jar /app/app.jar
+      "
+
+volumes:
+  mysql-data:
