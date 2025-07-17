@@ -10,6 +10,7 @@ import org.mifos.fineract.client.models.PostAuthenticationResponse;
 import org.mifos.workflow.api.auth.AuthenticationApi;
 import org.mifos.workflow.dto.fineract.auth.AuthenticationRequest;
 import org.mifos.workflow.dto.fineract.auth.AuthenticationResponse;
+import org.mifos.workflow.exception.FineractApiException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -97,7 +98,9 @@ class FineractAuthServiceTest {
         // Act & Assert
         TestObserver<AuthenticationResponse> testObserver = authService.authenticate(validRequest).test();
         testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertError(HttpException.class);
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> ((FineractApiException) e).getHttpStatus() == 401 &&
+                e.getMessage().contains("Failed to authentication for resource testuser: HTTP 401"));
     }
 
     @Test
@@ -109,7 +112,8 @@ class FineractAuthServiceTest {
         // Act & Assert
         TestObserver<AuthenticationResponse> testObserver = authService.authenticate(validRequest).test();
         testObserver.awaitDone(5, TimeUnit.SECONDS);
-        testObserver.assertError(RuntimeException.class);
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> e.getMessage().contains("Failed to authentication for resource testuser"));
     }
 
 
