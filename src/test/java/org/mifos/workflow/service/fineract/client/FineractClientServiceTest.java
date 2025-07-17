@@ -14,6 +14,7 @@ import org.mifos.workflow.dto.fineract.client.*;
 import org.mifos.workflow.dto.fineract.code.CodeDataDTO;
 import org.mifos.workflow.service.fineract.auth.FineractAuthService;
 import org.mifos.workflow.dto.fineract.office.OfficeDTO;
+import org.mifos.workflow.exception.FineractApiException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -505,9 +506,8 @@ class FineractClientServiceTest {
         // Assert
         testObserver.awaitDone(5, TimeUnit.SECONDS);
         testObserver.assertNoValues();
-        testObserver.assertError(IllegalStateException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client rejection reason code not found in the system"));
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> e.getMessage().contains("Failed to retrieve rejection reasons for resource ClientRejectReason"));
 
         verify(clientsApi).retrieveCodes();
         verify(clientsApi, never()).retrieveAllCodeValues(anyLong());
@@ -536,9 +536,8 @@ class FineractClientServiceTest {
         // Assert
         testObserver.awaitDone(5, TimeUnit.SECONDS);
         testObserver.assertNoValues();
-        testObserver.assertError(IllegalStateException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("No rejection reasons found in the system. Please add rejection reasons first."));
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> e.getMessage().contains("Failed to retrieve rejection reasons for resource ClientRejectReason"));
 
         verify(clientsApi).retrieveCodes();
         verify(clientsApi).retrieveAllCodeValues(1L);
@@ -596,9 +595,8 @@ class FineractClientServiceTest {
         // Assert
         testObserver.awaitDone(5, TimeUnit.SECONDS);
         testObserver.assertNoValues();
-        testObserver.assertError(IllegalStateException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client rejection reason code not found in the system"));
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> e.getMessage().contains("Failed to create rejection reason for resource New Reason"));
 
         verify(clientsApi).retrieveCodes();
         verify(clientsApi, never()).createCodeValue(anyLong(), anyMap());
@@ -661,9 +659,8 @@ class FineractClientServiceTest {
         // Assert
         testObserver.awaitDone(5, TimeUnit.SECONDS);
         testObserver.assertNoValues();
-        testObserver.assertError(IllegalStateException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client closure reason code not found in the system"));
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> e.getMessage().contains("Failed to retrieve closure reasons for resource ClientClosureReason"));
 
         verify(clientsApi).retrieveCodes();
         verify(clientsApi, never()).retrieveAllCodeValues(anyLong());
@@ -692,9 +689,8 @@ class FineractClientServiceTest {
         // Assert
         testObserver.awaitDone(5, TimeUnit.SECONDS);
         testObserver.assertNoValues();
-        testObserver.assertError(IllegalStateException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("No closure reasons found in the system. Please add closure reasons first."));
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> e.getMessage().contains("Failed to retrieve closure reasons for resource ClientClosureReason"));
 
         verify(clientsApi).retrieveCodes();
         verify(clientsApi).retrieveAllCodeValues(2L);
@@ -752,9 +748,8 @@ class FineractClientServiceTest {
         // Assert
         testObserver.awaitDone(5, TimeUnit.SECONDS);
         testObserver.assertNoValues();
-        testObserver.assertError(IllegalStateException.class);
-        testObserver.assertError(throwable ->
-                throwable.getMessage().equals("Client closure reason code not found in the system"));
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> e.getMessage().contains("Failed to create closure reason for resource New Reason"));
 
         verify(clientsApi).retrieveCodes();
         verify(clientsApi, never()).createCodeValue(anyLong(), anyMap());
@@ -1414,5 +1409,17 @@ class FineractClientServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             clientService.createClient(createRequest, "dd/MM/yyyy", "en", null);
         });
+    }
+
+    @Test
+    void createClient_ApiError_ThrowsException() {
+        // Arrange
+        when(clientsApi.createClient(anyMap())).thenReturn(Observable.error(new RuntimeException("Network error")));
+
+        // Act
+        TestObserver<PostClientsResponse> testObserver = clientService.createClient(createRequest, DATE_FORMAT, LOCALE, ADDRESS_TYPE_ID).test();
+        testObserver.awaitDone(5, TimeUnit.SECONDS);
+        testObserver.assertError(FineractApiException.class);
+        testObserver.assertError(e -> e.getMessage().contains("Failed to client creation for resource new"));
     }
 }
