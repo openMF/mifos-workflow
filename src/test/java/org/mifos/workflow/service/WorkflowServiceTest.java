@@ -6,6 +6,7 @@ import org.mifos.workflow.config.WorkflowConfig;
 import org.mifos.workflow.core.engine.WorkflowEngine;
 import org.mifos.workflow.core.engine.WorkflowEngineFactory;
 import org.mifos.workflow.core.engine.enums.EngineType;
+import org.mifos.workflow.exception.WorkflowException;
 import org.mifos.workflow.service.fineract.auth.FineractAuthService;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
