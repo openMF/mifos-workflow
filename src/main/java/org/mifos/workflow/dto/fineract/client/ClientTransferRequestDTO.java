@@ -15,12 +15,15 @@ import java.time.LocalDate;
 public class ClientTransferRequestDTO {
     private static final String DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
     private String dateFormat;
+    private String locale;
     private LocalDate transferDate;
     private Long destinationOfficeId;
+    private Long clientId;
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         if (dateFormat != null) map.put("dateFormat", dateFormat);
+        if (locale != null) map.put("locale", locale);
         if (transferDate != null) {
             String format = dateFormat != null ? dateFormat : DEFAULT_DATE_FORMAT;
             map.put("transferDate", transferDate.format(java.time.format.DateTimeFormatter.ofPattern(format)));

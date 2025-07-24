@@ -28,7 +28,7 @@
 
         <!-- Service Task: Submit Transfer Proposal -->
         <serviceTask id="submit-transfer-proposal" name="Submit Transfer Proposal"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientTransferDelegate">
+                     flowable:delegateExpression="${clientTransferDelegate}">
             <documentation>Submit transfer proposal to destination office</documentation>
         </serviceTask>
 
@@ -48,13 +48,13 @@
 
         <!-- Service Task: Accept Client Transfer -->
         <serviceTask id="accept-client-transfer" name="Accept Client Transfer"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.TransferAcceptanceDelegate">
+                     flowable:delegateExpression="${transferAcceptanceDelegate}">
             <documentation>Accept the client transfer</documentation>
         </serviceTask>
 
         <!-- Service Task: Reject Client Transfer -->
         <serviceTask id="reject-client-transfer" name="Reject Client Transfer"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.TransferRejectionDelegate">
+                     flowable:delegateExpression="${transferRejectionDelegate}">
             <documentation>Reject the client transfer</documentation>
         </serviceTask>
 
