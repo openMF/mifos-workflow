@@ -21,7 +21,6 @@
             <extensionElements>
                 <flowable:formProperty id="clientId" name="Client ID" type="long" required="true" />
                 <flowable:formProperty id="hasActiveLoans" name="Has Active Loans" type="boolean" required="true" />
-                <flowable:formProperty id="hasOutstandingBalance" name="Has Outstanding Balance" type="boolean" required="true" />
                 <flowable:formProperty id="clearToClose" name="Clear to Close" type="boolean" required="true" />
                 <flowable:formProperty id="pendingItems" name="Pending Items" type="string" />
             </extensionElements>
@@ -29,7 +28,7 @@
 
         <!-- Service Task: Check Client Accounts -->
         <serviceTask id="check-client-accounts" name="Check Client Accounts"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.AccountVerificationDelegate">
+                     flowable:delegateExpression="${accountVerificationDelegate}">
             <documentation>Check for active loans and outstanding balances</documentation>
         </serviceTask>
 
@@ -38,7 +37,7 @@
 
         <!-- Service Task: Fetch Closure Reasons -->
         <serviceTask id="fetch-closure-reasons" name="Fetch Closure Reasons"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.ClosureReasonDelegate">
+                     flowable:delegateExpression="${closureReasonDelegate}">
             <documentation>Retrieve available closure reasons</documentation>
         </serviceTask>
 
@@ -55,7 +54,7 @@
 
         <!-- Service Task: Close Client Account -->
         <serviceTask id="close-client-account" name="Close Client Account"
-                     flowable:class="org.mifos.workflow.core.engine.delegates.ClientClosureDelegate">
+                     flowable:delegateExpression="${clientClosureDelegate}">
             <documentation>Formally close the client account</documentation>
         </serviceTask>
 
