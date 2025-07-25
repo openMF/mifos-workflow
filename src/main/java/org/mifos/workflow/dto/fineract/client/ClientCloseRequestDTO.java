@@ -23,6 +23,7 @@ public class ClientCloseRequestDTO {
     private LocalDate closureDate;
     @NotNull
     private Long closureReasonId;
+    private Long clientId;
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
