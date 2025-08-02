@@ -1,0 +1,650 @@
+= Deployment Guide
+:doctype: book
+:icons: font
+
+[.navigation]
+* link:index.html[← Back to Home]
+* link:api-reference.html[API Reference]
+* link:workflow-processes.html[Workflow Processes]
+* link:configuration-reference.html[Configuration Reference]
+
+== Overview
+
+This guide provides comprehensive instructions for deploying the Mifos Workflow Integration Service in various environments. The service is designed to run as a Spring Boot application with MySQL database and integrates with Fineract API.
+
+== Prerequisites
+
+=== System Requirements
+
+* **Java**: OpenJDK 21 or later
+* **Database**: MySQL 8.4 or later
+* **Memory**: Minimum 2GB RAM, 4GB recommended
+* **Disk Space**: 10GB available space
+* **Network**: Access to Fineract API endpoints
+
+=== Software Dependencies
+
+* **Maven**: 3.9.11 or later (for building)
+* **Docker**: 20.10 or later (for containerized deployment)
+* **Docker Compose**: 2.0 or later (for multi-container deployment)
+
+== Quick Start
+
+=== Using Docker Compose (Recommended)
+
+The fastest way to get started is using the provided Docker Compose configuration:
+
+[source,bash]
+----
+# Clone the repository
+git clone <repository-url>
+cd mifos-workflow
+
+# Start the services
+docker-compose up -d
+
+# Check service status
+docker-compose ps
+----
+
+This will start:
+* MySQL database on port 3307
+* Mifos Workflow Service on port 8081
+
+=== Manual Setup
+
+For manual deployment:
+
+[source,bash]
+----
+# Build the application
+mvn clean package -DskipTests
+
+# Run the application
+java -jar target/mifos-workflow-*.jar
+----
+
+== Configuration
+
+=== Application Properties
+
+The main configuration file is `src/main/resources/application.properties`:
+
+[source,properties]
+----
+# Application name
+spring.application.name=mifos-workflow
+
+# Database configuration
+spring.datasource.url=jdbc:mysql://127.0.0.1:3307/mifos_flowable?characterEncoding=UTF-8
+spring.datasource.username=mifos
+spring.datasource.password=${DB_PASSWORD}
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA/Hibernate settings
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+# Server port
+server.port=8081
+
+# Workflow Engine
+workflow.engine.type=FLOWABLE
+
+# Flowable settings
+flowable.database-schema-update=true
+flowable.async-executor-activate=true
+workflow.engine.flowable.async-executor-enabled=true
+workflow.engine.flowable.database-schema-update=true
+workflow.engine.flowable.history-enabled=true
+workflow.engine.flowable.database-type=mysql
+
+# Fineract integration
+workflow.fineract.baseUrl=https://localhost:8443/fineract-provider/api/v1/
+workflow.fineract.username=mifos
+workflow.fineract.password=${FINERACT_PASSWORD}
+workflow.fineract.tenantId=default
+workflow.fineract.test-enabled=true
+workflow.fineract.connection-timeout=30000
+workflow.fineract.read-timeout=30000
+
+# Authentication
+workflow.authentication.enabled=true
+workflow.authentication.auth-key-header=Authorization
+workflow.authentication.auth-key-prefix=Basic
+workflow.authentication.token-refresh-interval=3600
+workflow.authentication.auto-refresh=true
+
+# Actuator endpoints
+management.endpoints.web.exposure.include=health,info,metrics
+management.endpoint.health.show-details=always
+management.endpoint.health.show-components=always
+
+# Process settings
+workflow.process.default-assignee=system
+workflow.process.auto-deploy=true
+workflow.process.process-location=classpath:processes/
+workflow.process.enable-process-history=true
+workflow.process.max-process-instances=1000
+workflow.process.process-timeout=86400
+----
+
+=== Environment Variables
+
+Key environment variables that can be overridden:
+
+|===
+|Variable |Default |Description
+|`DB_PASSWORD` |password |MySQL database password
+|`FINERACT_PASSWORD` |password |Fineract API password
+|`SERVER_PORT` |8081 |Application server port
+|`WORKFLOW_FINERACT_BASEURL` |https://localhost:8443/fineract-provider/api/v1/ |Fineract API base URL
+|`WORKFLOW_FINERACT_VALIDATESSL` |false |Validate SSL certificates
+|===
+
+=== Database Setup
+
+==== MySQL Database
+
+Create the database and user:
+
+[source,sql]
+----
+CREATE DATABASE mifos_flowable CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'mifos'@'%' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON mifos_flowable.* TO 'mifos'@'%';
+FLUSH PRIVILEGES;
+----
+
+==== Database Schema
+
+The application automatically creates the required database schema on startup using Hibernate's `ddl-auto=update` setting.
+
+== Docker Deployment
+
+=== Dockerfile
+
+The application uses a multi-stage Docker build:
+
+[source,dockerfile]
+----
+# Build Stage
+FROM maven:3.9.11-eclipse-temurin-21 AS build
+WORKDIR /app
+
+# Copy pom.xml and download dependencies first (for caching)
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy source code
+COPY src ./src
+    
+# Package the application
+RUN mvn clean package -DskipTests
+
+# Run Stage
+FROM eclipse-temurin:21.0.7_6-jre
+WORKDIR /app
+    
+# Copy the built jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
+    
+# Expose application port
+EXPOSE 8081
+    
+# Run the application
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+----
+
+=== Docker Compose
+
+The `docker-compose.yml` file provides a complete development environment:
+
+[source,yaml]
+----
+version: '3.8'
+services:
+  db:
+    image: mysql:8.4
+    container_name: mifos-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mifos_flowable
+      MYSQL_USER: mifos
+      MYSQL_PASSWORD: password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: mifos-workflow-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/mifos_flowable?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: mifos
+      SPRING_DATASOURCE_PASSWORD: password
+      DB_PASSWORD: password
+      FINERACT_PASSWORD: password
+      SERVER_PORT: 8081
+      WORKFLOW_FINERACT_BASEURL: https://host.docker.internal:8443/fineract-provider/api/v1/
+      JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/tmp/cacerts -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustAll=true"
+      WORKFLOW_FINERACT_VALIDATESSL: false
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    command: >
+      /bin/sh -c "
+        cp /opt/java/openjdk/lib/security/cacerts /tmp/cacerts &&
+        java -jar /app/app.jar
+      "
+
+volumes:
+  mysql-data:
+----
+
+=== Docker Commands
+
+[source,bash]
+----
+# Build and start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f app
+
+# Stop services
+docker-compose down
+
+# Rebuild and restart
+docker-compose up -d --build
+
+# Access database
+docker-compose exec db mysql -u mifos -p mifos_flowable
+----
+
+== Production Deployment
+
+=== Production Configuration
+
+Create `application-prod.properties` for production settings:
+
+[source,properties]
+----
+# Production database
+spring.datasource.url=jdbc:mysql://prod-db:3306/mifos_flowable?characterEncoding=UTF-8&useSSL=true
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+
+# Production Fineract
+workflow.fineract.baseUrl=${FINERACT_BASE_URL}
+workflow.fineract.username=${FINERACT_USERNAME}
+workflow.fineract.password=${FINERACT_PASSWORD}
+workflow.fineract.test-enabled=false
+workflow.fineract.validate-ssl=true
+
+# Security
+workflow.authentication.enabled=true
+workflow.authentication.token-refresh-interval=1800
+
+# Logging
+logging.level.org.springframework=WARN
+logging.level.org.mifos=INFO
+logging.level.org.flowable=WARN
+
+# Performance
+spring.jpa.show-sql=false
+workflow.engine.flowable.async-executor-enabled=true
+workflow.process.max-process-instances=5000
+----
+
+=== Production Docker Compose
+
+[source,yaml]
+----
+version: '3.8'
+services:
+  db:
+    image: mysql:8.4
+    container_name: mifos-mysql-prod
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: mifos_flowable
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql-prod-data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
+    networks:
+      - mifos-network
+
+  app:
+    image: mifos-workflow:latest
+    container_name: mifos-workflow-prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      FINERACT_BASE_URL: ${FINERACT_BASE_URL}
+      FINERACT_USERNAME: ${FINERACT_USERNAME}
+      FINERACT_PASSWORD: ${FINERACT_PASSWORD}
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - mifos-network
+
+volumes:
+  mysql-prod-data:
+
+networks:
+  mifos-network:
+    driver: bridge
+----
+
+=== Environment File
+
+Create `.env` file for production:
+
+[source,env]
+----
+# Database
+DB_USERNAME=mifos_prod
+DB_PASSWORD=secure_password_here
+MYSQL_ROOT_PASSWORD=secure_root_password
+
+# Fineract
+FINERACT_BASE_URL=https://fineract.example.com/fineract-provider/api/v1/
+FINERACT_USERNAME=mifos_prod
+FINERACT_PASSWORD=secure_fineract_password
+----
+
+== Health Checks
+
+=== Application Health
+
+The application provides health check endpoints:
+
+[source,http]
+----
+GET /actuator/health
+----
+
+Response:
+[source,json]
+----
+{
+  "status": "UP",
+  "components": {
+    "db": {
+      "status": "UP",
+      "details": {
+        "database": "MySQL",
+        "validationQuery": "isValid()"
+      }
+    },
+    "diskSpace": {
+      "status": "UP",
+      "details": {
+        "total": 107374182400,
+        "free": 21474836480,
+        "threshold": 10485760
+      }
+    }
+    }
+}
+----
+
+=== Database Health
+
+[source,http]
+----
+GET /actuator/health/db
+----
+
+=== Metrics
+
+[source,http]
+----
+GET /actuator/metrics
+----
+
+== Monitoring and Logging
+
+=== Application Logs
+
+The application uses SLF4J with Logback for logging:
+
+[source,properties]
+----
+# Logging configuration
+logging.level.org.springframework=INFO
+logging.level.org.mifos=DEBUG
+logging.level.org.flowable=INFO
+----
+
+=== Docker Logs
+
+[source,bash]
+----
+# View application logs
+docker-compose logs -f app
+
+# View database logs
+docker-compose logs -f db
+
+# View all logs
+docker-compose logs -f
+----
+
+=== Health Monitoring
+
+Monitor the application health:
+
+[source,bash]
+----
+# Check application status
+curl -f http://localhost:8081/actuator/health
+
+# Check database connectivity
+curl -f http://localhost:8081/actuator/health/db
+----
+
+== Troubleshooting
+
+=== Error Handling Architecture
+
+[.error-handling-diagram]
+image::ErrorHandling.png[Error Handling and Troubleshooting Flow, width=100%]
+
+*Note: Comprehensive error handling and troubleshooting workflow*
+
+=== Common Issues
+
+==== Database Connection Issues
+
+**Problem**: Application fails to start with database connection errors
+
+**Solution**:
+[source,bash]
+----
+# Check database status
+docker-compose ps db
+
+# Check database logs
+docker-compose logs db
+
+# Verify database connectivity
+docker-compose exec db mysql -u mifos -p -e "SELECT 1;"
+----
+
+==== Fineract API Connection Issues
+
+**Problem**: Workflow processes fail due to Fineract API connectivity
+
+**Solution**:
+[source,bash]
+----
+# Test Fineract connectivity
+curl -k https://localhost:8443/fineract-provider/api/v1/self/user
+
+# Check Fineract configuration
+docker-compose exec app env | grep FINERACT
+----
+
+==== Port Conflicts
+
+**Problem**: Application fails to start due to port conflicts
+
+**Solution**:
+[source,bash]
+----
+# Check port usage
+netstat -tulpn | grep 8081
+
+# Change port in docker-compose.yml
+ports:
+  - "8082:8081"
+----
+
+==== Memory Issues
+
+**Problem**: Application runs out of memory
+
+**Solution**:
+[source,bash]
+----
+# Increase JVM memory
+environment:
+  JAVA_OPTS: "-Xmx2g -Xms1g"
+----
+
+=== Performance Tuning
+
+==== Database Optimization
+
+[source,sql]
+----
+-- Optimize MySQL for workflow engine
+SET GLOBAL innodb_buffer_pool_size = 1073741824; -- 1GB
+SET GLOBAL innodb_log_file_size = 268435456; -- 256MB
+SET GLOBAL max_connections = 200;
+----
+
+==== JVM Tuning
+
+[source,bash]
+----
+# Production JVM settings
+JAVA_OPTS="-Xms1g -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+----
+
+== Security Considerations
+
+=== Database Security
+
+* Use strong passwords for database users
+* Restrict database access to application servers only
+* Enable SSL/TLS for database connections in production
+* Regular database backups
+
+=== API Security
+
+* Use HTTPS in production environments
+* Implement proper authentication and authorization
+* Validate all input data
+* Rate limiting for API endpoints
+
+=== Container Security
+
+* Use non-root users in containers
+* Regular security updates for base images
+* Scan containers for vulnerabilities
+* Implement resource limits
+
+== Backup and Recovery
+
+=== Database Backup
+
+[source,bash]
+----
+# Create database backup
+docker-compose exec db mysqldump -u mifos -p mifos_flowable > backup.sql
+
+# Restore database
+docker-compose exec -T db mysql -u mifos -p mifos_flowable < backup.sql
+----
+
+=== Application Data
+
+* Backup process definitions from `src/main/resources/processes/`
+* Backup configuration files
+* Backup Docker volumes for persistent data
+
+== Scaling
+
+=== Horizontal Scaling
+
+For high availability and load distribution:
+
+[source,yaml]
+----
+version: '3.8'
+services:
+  app:
+    image: mifos-workflow:latest
+    deploy:
+      replicas: 3
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    networks:
+      - mifos-network
+    depends_on:
+      - db
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - mifos-network
+----
+
+=== Load Balancing
+
+Use a reverse proxy like Nginx or HAProxy for load balancing:
+
+[source,nginx]
+----
+upstream mifos_workflow {
+    server app1:8081;
+    server app2:8081;
+    server app3:8081;
+}
+
+server {
+    listen 80;
+    server_name workflow.example.com;
+    
+    location / {
+        proxy_pass http://mifos_workflow;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+----

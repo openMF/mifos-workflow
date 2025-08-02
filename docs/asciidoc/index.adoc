@@ -1,33 +1,410 @@
-= Mifos-Workflow Project Documentation
+= Home
 :doctype: book
 :icons: font
-:source-highlighter: highlightjs
-:highlightjs-theme: github
-:toc: left
-:toclevels: 3
-:sectnums:
-:sectanchors:
+:revdate: 2025-01-08
 
-== Introduction
+[.version-info]
+Version: 0.0.1-SNAPSHOT
 
-Add your project introduction here.
+[.organization-info]
+Organization: OpenMF
 
-== Getting Started
+== Overview
 
-Add getting started information here.
+The Mifos Workflow Integration Service is a Spring Boot application that provides workflow automation for client lifecycle management in Fineract-based microfinance systems. The service implements BPMN 2.0 workflows using the Flowable workflow engine and integrates seamlessly with the Fineract API.
+
+== Key Features
+
+* **BPMN 2.0 Workflows**: Standard-compliant business process modeling
+* **Client Lifecycle Management**: Complete workflows for onboarding, offboarding, and transfer
+* **Fineract Integration**: Seamless integration with Fineract API through the Fineract Client KMP JVM library
+* **RESTful API**: Comprehensive REST API for workflow management
+* **Process Monitoring**: Real-time process monitoring and management
+* **Docker Support**: Containerized deployment with Docker and Docker Compose
+
+== Architecture
+
+=== System Architecture
+
+[.architecture-diagram]
+image::Architectural_overview .png[Mifos Workflow Application Architecture, width=100%]
+
+*Note: Architecture diagram shows the complete system architecture with all layers and components*
+
+=== Layered Architecture
+
+The application follows a layered architecture pattern:
+
+* **Controllers Layer**: REST API endpoints for workflow operations
+* **Service Layer**: Business logic and workflow orchestration
+* **Engine Layer**: Workflow engine abstraction and implementations
+* **Integration Layer**: External system integrations (Fineract API)
+* **Data Layer**: Database persistence and data access
+
+=== Technology Stack
+
+* **Framework**: Spring Boot 3.x
+* **Workflow Engine**: Flowable 6.x
+* **Database**: MySQL 8.4
+* **Fineract Client**: Fineract Client KMP JVM (v1.0.6)
+* **Build Tool**: Maven 3.9.11
+* **Container**: Docker with multi-stage builds
+* **Documentation**: AsciiDoc with Maven AsciiDoctor Plugin
+
+== Quick Start
+
+=== Prerequisites
+
+* Java 21 (OpenJDK or Oracle JDK)
+* MySQL 8.4 or later
+* Maven 3.9.11 or later
+* Docker and Docker Compose (optional)
+
+=== Using Docker Compose
+
+[source,bash]
+----
+# Clone the repository
+git clone https://github.com/openMF/mifos-workflow.git
+cd mifos-workflow
+
+# Start the services
+docker-compose up -d
+
+# Verify deployment
+curl http://localhost:8081/actuator/health
+----
+
+=== Manual Setup
+
+[source,bash]
+----
+# Build the application
+mvn clean package -DskipTests
+
+# Run the application
+java -jar target/mifos-workflow-*.jar
+----
 
 == Configuration
 
-Add configuration details here.
+=== Application Properties
+
+The main configuration is in `src/main/resources/application.properties`:
+
+[source,properties]
+----
+# Application name
+spring.application.name=mifos-workflow
+
+# Database configuration
+spring.datasource.url=jdbc:mysql://127.0.0.1:3307/mifos_flowable?characterEncoding=UTF-8
+spring.datasource.username=mifos
+spring.datasource.password=${DB_PASSWORD}
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# Server port
+server.port=8081
+
+# Workflow Engine
+workflow.engine.type=FLOWABLE
+
+# Fineract integration
+workflow.fineract.baseUrl=https://localhost:8443/fineract-provider/api/v1/
+workflow.fineract.username=mifos
+workflow.fineract.password=${FINERACT_PASSWORD}
+workflow.fineract.tenantId=default
+----
+
+=== Environment Variables
+
+|===
+|Variable |Default |Description
+|`DB_PASSWORD` |password |MySQL database password
+|`FINERACT_PASSWORD` |password |Fineract API password
+|`SERVER_PORT` |8081 |Application server port
+|`WORKFLOW_FINERACT_BASEURL` |https://localhost:8443/fineract-provider/api/v1/ |Fineract API base URL
+|===
+
+=== Database Setup
+
+[source,sql]
+----
+CREATE DATABASE mifos_flowable CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'mifos'@'%' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON mifos_flowable.* TO 'mifos'@'%';
+FLUSH PRIVILEGES;
+----
 
 == API Reference
 
-Add API documentation here.
+=== Base URL
+
+All API endpoints are relative to:
+
+[source,text]
+----
+http://localhost:8081/api/v1
+----
+
+=== Authentication
+
+All endpoints require Basic Authentication:
+
+[source,http]
+----
+Authorization: Basic <base64-encoded-credentials>
+----
+
+=== Key Endpoints
+
+==== Authentication
+* `POST /auth/authenticate` - Authenticate user
+* `GET /auth/status` - Check authentication status
+* `DELETE /auth/logout` - Logout user
+
+==== Client Onboarding
+* `POST /workflow/client-onboarding/start` - Start onboarding process
+* `GET /workflow/client-onboarding/tasks` - Get pending tasks
+* `POST /workflow/client-onboarding/tasks/{taskId}/complete` - Complete task
+
+==== Client Offboarding
+* `POST /workflow/client-offboarding/start` - Start offboarding process
+* `GET /workflow/client-offboarding/tasks` - Get pending tasks
+* `POST /workflow/client-offboarding/tasks/{taskId}/complete` - Complete task
+
+==== Client Transfer
+* `POST /workflow/client-transfer/start` - Start transfer process
+* `GET /workflow/client-transfer/tasks` - Get pending tasks
+* `POST /workflow/client-transfer/tasks/{taskId}/complete` - Complete task
+
+==== Process Management
+* `GET /workflow/*/processes` - Get active processes
+* `GET /workflow/*/processes/{processInstanceId}/status` - Get process status
+* `DELETE /workflow/*/processes/{processInstanceId}` - Terminate process
+
+For complete API documentation, see link:api-reference.html[API Reference].
+
+== Workflow Processes
+
+The service implements three core business processes:
+
+=== Client Onboarding Process
+
+Complete workflow for registering and activating new clients:
+
+1. **Start Event**: Client application received
+2. **Create Inactive Client**: Create client record in pending state
+3. **Verify Client Data**: Manual verification of client information
+4. **Decision Gateway**: Application approved or rejected
+5. **Assign Staff**: Assign loan officer (approved path)
+6. **Activate Client**: Activate client in Fineract (approved path)
+7. **Reject Client**: Reject application (rejected path)
+
+=== Client Offboarding Process
+
+Process for closing client accounts with proper verification:
+
+1. **Start Event**: Client closure requested
+2. **Verify Pre-conditions**: Check closure requirements
+3. **Check Accounts**: Verify no outstanding obligations
+4. **Decision Gateway**: Clear to close or handle pending items
+5. **Fetch Closure Reasons**: Get available closure reasons
+6. **Select Closure Reason**: User selects and confirms reason
+7. **Close Account**: Formally close client account
+
+=== Client Transfer Process
+
+Workflow for transferring clients between offices:
+
+1. **Start Event**: Transfer request initiated
+2. **Propose Transfer**: Select destination office
+3. **Submit Proposal**: Submit to destination office
+4. **Review Proposal**: Destination manager reviews
+5. **Decision Gateway**: Transfer accepted or rejected
+6. **Accept Transfer**: Execute transfer (accepted path)
+7. **Reject Transfer**: Reject transfer (rejected path)
+
+For detailed process documentation, see link:workflow-processes.html[Workflow Processes].
+
+== Deployment
+
+=== Docker Deployment
+
+The application includes comprehensive Docker support:
+
+[source,bash]
+----
+# Development environment
+docker-compose up -d
+
+# Production environment
+docker-compose -f docker-compose.prod.yml up -d
+----
+
+=== Production Configuration
+
+For production deployment:
+
+1. **Environment Variables**: Set secure passwords and URLs
+2. **SSL/TLS**: Enable HTTPS for all communications
+3. **Database**: Use production-grade MySQL with proper security
+4. **Monitoring**: Configure health checks and logging
+5. **Backup**: Implement regular database backups
+
+For complete deployment instructions, see link:deployment-guide.html[Deployment Guide].
+
+== Monitoring and Health Checks
+
+=== Health Endpoints
+
+* `GET /actuator/health` - Overall application health
+* `GET /actuator/health/db` - Database connectivity
+* `GET /actuator/metrics` - Application metrics
+
+=== Health Check Response
+
+[source,json]
+----
+{
+  "status": "UP",
+  "components": {
+    "db": {
+      "status": "UP",
+      "details": {
+        "database": "MySQL",
+        "validationQuery": "isValid()"
+      }
+    },
+    "diskSpace": {
+      "status": "UP",
+      "details": {
+        "total": 107374182400,
+        "free": 21474836480,
+        "threshold": 10485760
+      }
+    }
+  }
+}
+----
+
+== Security
+
+=== Authentication
+
+* **Basic Authentication**: Required for all API endpoints
+* **Token Management**: Automatic token refresh and caching
+* **Session Management**: Secure session handling
+
+=== Data Protection
+
+* **Input Validation**: Comprehensive input validation
+* **SQL Injection Prevention**: Parameterized queries
+* **XSS Protection**: Output encoding and validation
+
+=== Network Security
+
+* **HTTPS**: SSL/TLS encryption for all communications
+* **Firewall**: Network-level access control
+* **Rate Limiting**: API rate limiting to prevent abuse
+
+== Troubleshooting
+
+=== Common Issues
+
+==== Database Connection Issues
+* Verify MySQL service is running
+* Check database credentials and permissions
+* Ensure network connectivity
+
+==== Fineract API Issues
+* Verify Fineract service is accessible
+* Check API credentials and permissions
+* Validate SSL certificates
+
+==== Process Execution Issues
+* Check workflow engine logs
+* Verify process definitions are deployed
+* Monitor system resources
+
+=== Debug Mode
+
+Enable debug logging for troubleshooting:
+
+[source,properties]
+----
+logging.level.org.mifos=DEBUG
+logging.level.org.flowable=DEBUG
+----
+
+=== Support Information
+
+When seeking support, provide:
+* Application version and configuration
+* Error logs and stack traces
+* Steps to reproduce the issue
+* System environment details
 
 == Development
 
-Add development guidelines here.
+=== Building from Source
 
-== Contributing
+[source,bash]
+----
+# Clone repository
+git clone <repository-url>
+cd mifos-workflow
 
-Add contribution guidelines here. 
+# Build application
+mvn clean install
+
+# Run tests
+mvn test
+
+# Generate documentation
+mvn asciidoctor:process-asciidoc
+----
+
+=== Project Structure
+
+[source,text]
+----
+src/
+├── main/
+│   ├── java/org/mifos/workflow/
+│   │   ├── api/           # REST API controllers
+│   │   ├── config/        # Configuration classes
+│   │   ├── controller/    # REST controllers
+│   │   ├── core/          # Core workflow models
+│   │   ├── dto/           # Data transfer objects
+│   │   ├── engine/        # Workflow engine implementations
+│   │   ├── exception/     # Exception handling
+│   │   └── service/       # Business logic services
+│   └── resources/
+│       ├── application.properties
+│       └── processes/     # BPMN process definitions
+└── test/                  # Test classes
+----
+
+=== Adding New Processes
+
+1. **Create BPMN File**: Define process in `src/main/resources/processes/`
+2. **Implement Delegates**: Create Java delegate classes
+3. **Add Controllers**: Create REST endpoints
+4. **Update Configuration**: Register new process
+
+== Configuration Reference
+
+For detailed configuration options, see link:configuration-reference.html[Configuration Reference].
+
+== API Reference
+
+For complete API documentation, see link:api-reference.html[API Reference].
+
+== Workflow Processes
+
+For detailed process documentation, see link:workflow-processes.html[Workflow Processes].
+
+== Deployment Guide
+
+For deployment instructions, see link:deployment-guide.html[Deployment Guide]. 

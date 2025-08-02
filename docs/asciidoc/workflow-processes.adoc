@@ -1,0 +1,403 @@
+= Workflow Processes
+:doctype: book
+:icons: font
+
+[.navigation]
+* link:index.html[← Back to Home]
+* link:api-reference.html[API Reference]
+* link:deployment-guide.html[Deployment Guide]
+* link:configuration-reference.html[Configuration Reference]
+
+== Overview
+
+The Mifos Workflow Integration Service implements three core business processes using BPMN 2.0 workflows:
+
+* **Client Onboarding**: Complete workflow for registering and activating new clients
+* **Client Offboarding**: Process for closing client accounts with proper verification
+* **Client Transfer**: Workflow for transferring clients between offices
+
+All processes are implemented using the Flowable workflow engine and integrate with the Fineract API for client lifecycle management.
+
+== Client Onboarding Process
+
+=== Process Overview
+
+The client onboarding process manages the complete lifecycle of registering a new client, from initial application to final activation.
+
+=== Visual Process Diagram
+
+[.bpmn-diagram]
+image::Onboarding-BPMN.png[Client Onboarding BPMN Process Flow, width=100%]
+
+*Note: Visual representation of the client onboarding workflow process*
+
+=== Process Steps
+
+==== 1. Start Event: Client Application Received
+* **Activity ID**: `start-client-onboarding`
+* **Type**: Start Event
+* **Description**: Triggered when a client submits their application
+
+==== 2. Service Task: Create Inactive Client
+* **Activity ID**: `create-inactive-client`
+* **Type**: Service Task
+* **Delegate**: `${clientCreationDelegate}`
+* **Description**: Create client record in pending state using FineractClientService
+* **Assignee**: System (automated)
+
+==== 3. User Task: Verify Client Data and Documents
+* **Activity ID**: `verify-client-data`
+* **Type**: User Task
+* **Assignee**: `${assignee}` (default: "system")
+* **Description**: Back office officer reviews client details and documents
+* **Form Properties**:
+  * `clientId` (long, required): Client ID
+  * `approved` (boolean, required): Application Approved
+  * `rejectionReason` (string): Rejection Reason
+  * `comments` (string): Comments
+
+==== 4. Exclusive Gateway: Application Approved?
+* **Activity ID**: `application-approved-gateway`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on verification result
+
+==== 5. Service Task: Assign Staff (Approved Path)
+* **Activity ID**: `assign-staff`
+* **Type**: Service Task
+* **Delegate**: `${staffAssignmentDelegate}`
+* **Description**: Assign loan officer to the client
+* **Form Properties**:
+  * `staffId` (long, required): Staff ID
+
+==== 6. Service Task: Activate Client (Approved Path)
+* **Activity ID**: `activate-client`
+* **Type**: Service Task
+* **Delegate**: `${clientActivationDelegate}`
+* **Description**: Activate the client in Fineract system
+
+==== 7. End Event: Client Onboarding Complete (Approved Path)
+* **Activity ID**: `client-onboarding-complete`
+* **Type**: End Event
+* **Description**: Client successfully onboarded and activated
+
+==== 8. Service Task: Reject Client (Rejected Path)
+* **Activity ID**: `reject-client`
+* **Type**: Service Task
+* **Delegate**: `${clientRejectionDelegate}`
+* **Description**: Reject the client application
+
+==== 9. End Event: Client Application Rejected (Rejected Path)
+* **Activity ID**: `client-application-rejected`
+* **Type**: End Event
+* **Description**: Client application rejected
+
+=== Process Variables
+
+|===
+|Variable |Type |Description |Source
+|`legalFormId` |Long |Legal form identifier |Request
+|`firstName` |String |Client's first name |Request
+|`lastName` |String |Client's last name |Request
+|`mobileNo` |String |Client's mobile number |Request
+|`dateOfBirth` |String |Client's date of birth |Request
+|`externalId` |String |External identifier |Request
+|`officeId` |Long |Office ID |Request
+|`active` |Boolean |Active status |Request
+|`dateFormat` |String |Date format |Request
+|`locale` |String |Locale |Request
+|`addressJson` |String |Serialized address data |Request
+|`assignee` |String |Task assignee |System
+|`staffId` |Long |Staff ID |System
+|`approved` |Boolean |Verification result |User Task
+|`rejectionReason` |String |Rejection reason |User Task
+|`comments` |String |Additional comments |User Task
+|===
+
+=== API Integration
+
+==== Start Process
+[source,http]
+----
+POST /api/v1/workflow/client-onboarding/start
+----
+
+==== Complete Verification Task
+[source,http]
+----
+POST /api/v1/workflow/client-onboarding/tasks/{taskId}/complete
+----
+
+== Client Offboarding Process
+
+=== Process Overview
+
+The client offboarding process ensures proper verification and closure of client accounts with comprehensive checks for outstanding obligations.
+
+=== Visual Process Diagram
+
+[.bpmn-diagram]
+image::clientoffboarding.png[Client Offboarding BPMN Process Flow, width=100%]
+
+*Note: Visual representation of the client offboarding workflow process*
+
+=== Process Steps
+
+==== 1. Start Event: Client Closure Requested
+* **Activity ID**: `start-client-offboarding`
+* **Type**: Start Event
+* **Description**: Triggered when client closure is requested
+
+==== 2. User Task: Verify Closure Pre-conditions
+* **Activity ID**: `verify-closure-preconditions`
+* **Type**: User Task
+* **Assignee**: `${operationsOfficer}` (default: "system")
+* **Description**: Operations team verifies closure conditions
+* **Form Properties**:
+  * `clientId` (long, required): Client ID
+  * `hasActiveLoans` (boolean, required): Has Active Loans
+  * `clearToClose` (boolean, required): Clear to Close
+  * `pendingItems` (string): Pending Items
+
+==== 3. Service Task: Check Client Accounts
+* **Activity ID**: `check-client-accounts`
+* **Type**: Service Task
+* **Delegate**: `${accountVerificationDelegate}`
+* **Description**: Check for active loans and outstanding balances
+
+==== 4. Exclusive Gateway: Is Client Clear to Close?
+* **Activity ID**: `clear-to-close-gateway`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on account verification
+
+==== 5. Service Task: Fetch Closure Reasons (Clear Path)
+* **Activity ID**: `fetch-closure-reasons`
+* **Type**: Service Task
+* **Delegate**: `${closureReasonDelegate}`
+* **Description**: Retrieve available closure reasons
+
+==== 6. User Task: Select and Confirm Closure Reason (Clear Path)
+* **Activity ID**: `select-closure-reason`
+* **Type**: User Task
+* **Assignee**: `${operationsOfficer}` (default: "system")
+* **Description**: User selects closure reason and confirms
+* **Form Properties**:
+  * `closureReasonId` (long, required): Closure Reason ID
+  * `closureComments` (string): Closure Comments
+  * `confirmed` (boolean, required): Closure Confirmed
+
+==== 7. Service Task: Close Client Account (Clear Path)
+* **Activity ID**: `close-client-account`
+* **Type**: Service Task
+* **Delegate**: `${clientClosureDelegate}`
+* **Description**: Formally close the client account
+
+==== 8. End Event: Client Account Closed (Clear Path)
+* **Activity ID**: `client-account-closed`
+* **Type**: End Event
+* **Description**: Client account successfully closed
+
+==== 9. User Task: Handle Pending Items (Not Clear Path)
+* **Activity ID**: `handle-pending-items`
+* **Type**: User Task
+* **Assignee**: `${operationsOfficer}` (default: "system")
+* **Description**: Handle any pending items before closure
+* **Form Properties**:
+  * `pendingItemsResolved` (boolean, required): Pending Items Resolved
+  * `resolutionNotes` (string): Resolution Notes
+
+==== 10. End Event: Closure Halted (Not Clear Path)
+* **Activity ID**: `closure-halted`
+* **Type**: End Event
+* **Description**: Closure process halted due to pending items
+
+=== Process Variables
+
+|===
+|Variable |Type |Description |Source
+|`clientId` |Long |Client identifier |Request
+|`closureReasonId` |Long |Closure reason code |Request
+|`closureDate` |String |Closure date |Request
+|`dateFormat` |String |Date format |Request
+|`locale` |String |Locale |Request
+|`operationsOfficer` |String |Operations officer |System
+|`clearToClose` |Boolean |Clear to close status |User Task
+|`pendingItems` |String |Pending items description |User Task
+|`closureComments` |String |Closure comments |User Task
+|`confirmed` |Boolean |Closure confirmation |User Task
+|`pendingItemsResolved` |Boolean |Pending items resolution |User Task
+|`resolutionNotes` |String |Resolution notes |User Task
+|===
+
+=== API Integration
+
+==== Start Process
+[source,http]
+----
+POST /api/v1/workflow/client-offboarding/start
+----
+
+==== Complete Offboarding Task
+[source,http]
+----
+POST /api/v1/workflow/client-offboarding/tasks/{taskId}/complete
+----
+
+== Client Transfer Process
+
+=== Process Overview
+
+The client transfer process manages the transfer of clients between offices with proper approval workflows and validation.
+
+=== Visual Process Diagram
+
+[.bpmn-diagram]
+image::Transfer-BPMN.png[Client Transfer BPMN Process Flow, width=100%]
+
+*Note: Visual representation of the client transfer workflow process*
+
+=== Process Steps
+
+==== 1. Start Event: Transfer Requested
+* **Activity ID**: `start-transfer`
+* **Type**: Start Event
+* **Description**: Transfer request initiated by originating office
+
+==== 2. User Task: Select Destination Office and Propose Transfer
+* **Activity ID**: `propose-transfer`
+* **Type**: User Task
+* **Assignee**: `${originatingOfficer}` (default: "system")
+* **Description**: Loan officer selects client and destination office
+* **Form Properties**:
+  * `clientId` (long, required): Client ID
+  * `destinationOfficeId` (long, required): Destination Office ID
+  * `transferReason` (string, required): Transfer Reason
+  * `effectiveDate` (date, required): Effective Date
+
+==== 3. Service Task: Submit Transfer Proposal
+* **Activity ID**: `submit-transfer-proposal`
+* **Type**: Service Task
+* **Delegate**: `${clientTransferDelegate}`
+* **Description**: Submit transfer proposal to destination office
+
+==== 4. User Task: Review Transfer Proposal
+* **Activity ID**: `review-transfer-proposal`
+* **Type**: User Task
+* **Assignee**: `${destinationManager}` (default: "system")
+* **Description**: Branch manager reviews the transfer proposal
+* **Form Properties**:
+  * `transferAccepted` (boolean, required): Transfer Accepted
+  * `rejectionReason` (string): Rejection Reason
+  * `reviewComments` (string): Review Comments
+
+==== 5. Exclusive Gateway: Transfer Accepted?
+* **Activity ID**: `transfer-accepted-gateway`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on transfer review
+
+==== 6. Service Task: Accept Client Transfer (Accepted Path)
+* **Activity ID**: `accept-client-transfer`
+* **Type**: Service Task
+* **Delegate**: `${transferAcceptanceDelegate}`
+* **Description**: Accept the client transfer
+
+==== 7. End Event: Transfer Complete (Accepted Path)
+* **Activity ID**: `transfer-complete`
+* **Type**: End Event
+* **Description**: Client transfer successfully completed
+
+==== 8. Service Task: Reject Client Transfer (Rejected Path)
+* **Activity ID**: `reject-client-transfer`
+* **Type**: Service Task
+* **Delegate**: `${transferRejectionDelegate}`
+* **Description**: Reject the client transfer
+
+==== 9. End Event: Transfer Rejected (Rejected Path)
+* **Activity ID**: `transfer-rejected`
+* **Type**: End Event
+* **Description**: Client transfer rejected by destination office
+
+=== Process Variables
+
+|===
+|Variable |Type |Description |Source
+|`clientId` |Long |Client identifier |Request
+|`destinationOfficeId` |Long |Destination office ID |Request
+|`effectiveDate` |String |Effective transfer date |Request
+|`dateFormat` |String |Date format |Request
+|`locale` |String |Locale |Request
+|`assignee` |String |Task assignee |System
+|`originatingOfficer` |String |Originating officer |System
+|`destinationManager` |String |Destination manager |System
+|`transferAccepted` |Boolean |Transfer acceptance |User Task
+|`rejectionReason` |String |Rejection reason |User Task
+|`reviewComments` |String |Review comments |User Task
+|===
+
+=== API Integration
+
+==== Start Process
+[source,http]
+----
+POST /api/v1/workflow/client-transfer/start
+----
+
+==== Complete Transfer Task
+[source,http]
+----
+POST /api/v1/workflow/client-transfer/tasks/{taskId}/complete
+----
+
+== Process Delegates
+
+The workflow processes use Spring delegate expressions to invoke business logic. The following delegates are configured:
+
+|===
+|Delegate |Class |Purpose
+|`${clientCreationDelegate}` |`ClientCreationDelegate` |Create client in Fineract
+|`${clientActivationDelegate}` |`ClientActivationDelegate` |Activate client in Fineract
+|`${clientRejectionDelegate}` |`ClientRejectionDelegate` |Reject client application
+|`${staffAssignmentDelegate}` |`StaffAssignmentDelegate` |Assign staff to client
+|`${accountVerificationDelegate}` |`AccountVerificationDelegate` |Verify client accounts
+|`${closureReasonDelegate}` |`ClosureReasonDelegate` |Fetch closure reasons
+|`${clientClosureDelegate}` |`ClientClosureDelegate` |Close client account
+|`${clientTransferDelegate}` |`ClientTransferDelegate` |Submit transfer proposal
+|`${transferAcceptanceDelegate}` |`TransferAcceptanceDelegate` |Accept client transfer
+|`${transferRejectionDelegate}` |`TransferRejectionDelegate` |Reject client transfer
+|===
+
+== Process Management
+
+=== Process Deployment
+
+All processes are automatically deployed from the `classpath:processes/` directory during application startup.
+
+=== Process Monitoring
+
+Each process provides comprehensive monitoring capabilities:
+
+* **Active Processes**: View all running process instances
+* **Process History**: Complete audit trail of process execution
+* **Process Variables**: Current state and data for each process
+* **Task Management**: View and complete pending tasks
+* **Process Status**: Real-time status of process instances
+
+=== Error Handling
+
+Processes include comprehensive error handling:
+
+* **Service Task Failures**: Automatic retry with exponential backoff
+* **User Task Timeouts**: Escalation to supervisors
+* **Process Variables**: Validation and type checking
+* **External API Failures**: Graceful degradation and recovery
+
+== Integration with Fineract
+
+All workflow processes integrate with the Fineract API for:
+
+* **Client Management**: Create, update, and close clients
+* **Account Verification**: Check for active loans and balances
+* **Staff Assignment**: Assign loan officers to clients
+* **Office Management**: Handle office transfers
+* **Code Values**: Retrieve closure reasons and other reference data
+
+The integration uses the configured Fineract API endpoints and authentication mechanisms defined in the application properties.

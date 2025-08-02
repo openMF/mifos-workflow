@@ -1,0 +1,1231 @@
+= API Reference
+:doctype: book
+:icons: font
+
+[.navigation]
+* link:index.html[← Back to Home]
+* link:workflow-processes.html[Workflow Processes]
+* link:deployment-guide.html[Deployment Guide]
+* link:configuration-reference.html[Configuration Reference]
+
+== Overview
+
+The Mifos Workflow Integration Service provides a RESTful API for managing client lifecycle workflows. All endpoints require authentication and return JSON responses.
+
+=== Integration Architecture
+
+[.integration-diagram]
+image::FineractIngegration.png[Fineract Integration Architecture, width=100%]
+
+*Note: Shows the integration flow between Mifos Workflow Service and Fineract API*
+
+== Base URL
+
+All API endpoints are relative to the base URL:
+
+[source,text]
+----
+http://localhost:8081/api/v1
+----
+
+== Authentication
+
+=== Basic Authentication
+
+All API endpoints require Basic Authentication using Fineract credentials:
+
+[source,http]
+----
+Authorization: Basic <base64-encoded-credentials>
+----
+
+Example:
+[source,http]
+----
+Authorization: Basic bWlmb3M6cGFzc3dvcmQ=
+----
+
+=== Authentication Endpoints
+
+==== Authenticate User
+
+[source,http]
+----
+POST /auth/authenticate
+Content-Type: application/json
+
+{
+  "username": "mifos",
+  "password": "password"
+}
+----
+
+Response:
+[source,json]
+----
+{
+  "authenticated": true,
+  "base64EncodedAuthenticationKey": "bWlmb3M6cGFzc3dvcmQ=",
+  "username": "mifos"
+}
+----
+
+==== Get Authentication Status
+
+[source,http]
+----
+GET /auth/status
+----
+
+Response:
+[source,json]
+----
+{
+  "authenticated": true
+}
+----
+
+==== Logout
+
+[source,http]
+----
+DELETE /auth/logout
+----
+
+== Client Onboarding API
+
+=== Start Client Onboarding Process
+
+Initiates the client onboarding workflow for a new client.
+
+[source,http]
+----
+POST /workflow/client-onboarding/start
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "officeId": 1,
+  "dateFormat": "dd MMMM yyyy",
+  "locale": "en",
+  "active": true,
+  "legalFormId": 1,
+  "externalId": "EXT001",
+  "mobileNo": "+1234567890",
+  "dateOfBirth": "1990-01-01",
+  "clientClassificationId": 1,
+  "address": [
+    {
+      "addressTypeId": 1,
+      "addressLine1": "123 Main St",
+      "addressLine2": "Apt 4B",
+      "city": "New York",
+      "stateProvinceId": 1,
+      "countryId": 1,
+      "postalCode": "10001"
+    }
+  ]
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`firstName` |String |Yes |Client's first name
+|`lastName` |String |Yes |Client's last name
+|`officeId` |Long |Yes |Office ID where the client will be registered
+|`dateFormat` |String |Yes |Date format (e.g., "dd MMMM yyyy")
+|`locale` |String |Yes |Locale (e.g., "en")
+|`active` |Boolean |Yes |Whether the client should be active
+|`legalFormId` |Long |Yes |Legal form identifier
+|`externalId` |String |No |External identifier for the client
+|`mobileNo` |String |No |Client's mobile number
+|`dateOfBirth` |String |No |Client's date of birth (YYYY-MM-DD)
+|`clientClassificationId` |Long |No |Client classification identifier
+|`address` |Array |No |Array of address objects
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "id": "proc-123",
+  "processDefinitionId": "client-onboarding",
+  "processDefinitionName": "Client Onboarding Process",
+  "businessKey": null,
+  "startTime": "2024-01-01T10:00:00Z",
+  "endTime": null,
+  "duration": null,
+  "startUserId": "system",
+  "startActivityId": "start-client-onboarding",
+  "deleteReason": null,
+  "tenantId": null,
+  "state": "active"
+}
+----
+
+=== Get Client Onboarding Tasks
+
+Retrieves all pending tasks for client onboarding processes.
+
+[source,http]
+----
+GET /workflow/client-onboarding/tasks
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "task-123",
+    "name": "Verify Client Data and Documents",
+    "description": "Back office officer reviews client details and documents",
+    "assignee": "system",
+    "created": "2024-01-01T10:00:00Z",
+    "dueDate": null,
+    "processInstanceId": "proc-123",
+    "processDefinitionId": "client-onboarding",
+    "taskDefinitionKey": "verify-client-data",
+    "formKey": null,
+    "category": null,
+    "tenantId": null
+  }
+]
+----
+
+=== Complete Verification Task
+
+Completes a verification task in the client onboarding process.
+
+[source,http]
+----
+POST /workflow/client-onboarding/tasks/{taskId}/complete
+Content-Type: application/json
+
+{
+  "approved": true,
+  "rejectionReason": null,
+  "comments": "Client data verified successfully"
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`approved` |Boolean |Yes |Whether the application is approved
+|`rejectionReason` |String |No |Reason for rejection if not approved
+|`comments` |String |No |Additional comments
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "success": true,
+  "message": "Task completed successfully",
+  "taskId": "task-123",
+  "processInstanceId": "proc-123"
+}
+----
+
+=== Get Process Variables
+
+Retrieves variables for a specific process instance.
+
+[source,http]
+----
+GET /workflow/client-onboarding/processes/{processInstanceId}/variables
+----
+
+Response:
+[source,json]
+----
+{
+  "legalFormId": 1,
+  "firstName": "John",
+  "lastName": "Doe",
+  "mobileNo": "+1234567890",
+  "dateOfBirth": "1990-01-01",
+  "externalId": "EXT001",
+  "officeId": 1,
+  "active": true,
+  "dateFormat": "dd MMMM yyyy",
+  "locale": "en",
+  "addressJson": "[{\"addressTypeId\":1,\"addressLine1\":\"123 Main St\"}]",
+  "assignee": "system",
+  "staffId": 1
+}
+----
+
+=== Get Active Processes
+
+Retrieves all active client onboarding processes.
+
+[source,http]
+----
+GET /workflow/client-onboarding/processes
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "proc-123",
+    "processDefinitionId": "client-onboarding",
+    "processDefinitionName": "Client Onboarding Process",
+    "businessKey": null,
+    "startTime": "2024-01-01T10:00:00Z",
+    "endTime": null,
+    "duration": null,
+    "startUserId": "system",
+    "startActivityId": "start-client-onboarding",
+    "deleteReason": null,
+    "tenantId": null,
+    "state": "active"
+  }
+]
+----
+
+=== Get Process Definitions
+
+Retrieves all process definitions.
+
+[source,http]
+----
+GET /workflow/client-onboarding/process-definitions
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "client-onboarding",
+    "name": "Client Onboarding Process",
+    "version": 1,
+    "deploymentId": "deployment-123",
+    "deployed": true,
+    "deploymentTime": "2024-01-01T09:00:00Z"
+  }
+]
+----
+
+=== Get Process History
+
+Retrieves process history information.
+
+[source,http]
+----
+GET /workflow/client-onboarding/history
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "proc-123",
+    "processDefinitionId": "client-onboarding",
+    "processDefinitionName": "Client Onboarding Process",
+    "startTime": "2024-01-01T10:00:00Z",
+    "endTime": "2024-01-01T11:00:00Z",
+    "duration": 3600000,
+    "startUserId": "system",
+    "deleteReason": null,
+    "tenantId": null,
+    "state": "completed"
+  }
+]
+----
+
+=== Get Process Status
+
+Retrieves the status of a specific process instance.
+
+[source,http]
+----
+GET /workflow/client-onboarding/processes/{processInstanceId}/status
+----
+
+Response:
+[source,json]
+----
+{
+  "processInstanceId": "proc-123",
+  "processDefinitionId": "client-onboarding",
+  "processDefinitionName": "Client Onboarding Process",
+  "status": "RUNNING",
+  "currentTask": "verify-client-data",
+  "taskName": "Verify Client Data and Documents",
+  "assignee": "system",
+  "variables": {
+    "legalFormId": 1,
+    "firstName": "John",
+    "lastName": "Doe",
+    "mobileNo": "+1234567890",
+    "dateOfBirth": "1990-01-01",
+    "externalId": "EXT001",
+    "officeId": 1,
+    "active": true,
+    "dateFormat": "dd MMMM yyyy",
+    "locale": "en",
+    "addressJson": "[{\"addressTypeId\":1,\"addressLine1\":\"123 Main St\"}]",
+    "assignee": "system",
+    "staffId": 1
+  },
+  "startTime": "2024-01-01T10:00:00Z",
+  "lastUpdated": "2024-01-01T10:30:00Z"
+}
+----
+
+=== Terminate Process
+
+Terminates a running process instance.
+
+[source,http]
+----
+DELETE /workflow/client-onboarding/processes/{processInstanceId}
+----
+
+Response:
+[source,json]
+----
+{
+  "success": true,
+  "message": "Process terminated successfully",
+  "processInstanceId": "proc-123"
+}
+----
+
+== Client Offboarding API
+
+=== Start Client Offboarding Process
+
+Initiates the client offboarding workflow for an existing client.
+
+[source,http]
+----
+POST /workflow/client-offboarding/start
+Content-Type: application/json
+
+{
+  "clientId": 123,
+  "closureDate": "2024-01-01",
+  "closureReasonId": 1,
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en"
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`clientId` |Long |Yes |Unique identifier for the client
+|`closureDate` |String |Yes |Date when the client should be closed (YYYY-MM-DD)
+|`closureReasonId` |Long |Yes |Reason code for client closure
+|`dateFormat` |String |Yes |Date format (e.g., "yyyy-MM-dd")
+|`locale` |String |Yes |Locale (e.g., "en")
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "id": "proc-456",
+  "processDefinitionId": "client-offboarding",
+  "processDefinitionName": "Client Offboarding Process",
+  "businessKey": null,
+  "startTime": "2024-01-01T10:00:00Z",
+  "endTime": null,
+  "duration": null,
+  "startUserId": "system",
+  "startActivityId": "start-client-offboarding",
+  "deleteReason": null,
+  "tenantId": null,
+  "state": "active"
+}
+----
+
+=== Get Client Offboarding Tasks
+
+Retrieves all pending tasks for client offboarding processes.
+
+[source,http]
+----
+GET /workflow/client-offboarding/tasks
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "task-456",
+    "name": "Verify Closure Pre-conditions",
+    "description": "Operations team verifies closure conditions",
+    "assignee": "system",
+    "created": "2024-01-01T10:00:00Z",
+    "dueDate": null,
+    "processInstanceId": "proc-456",
+    "processDefinitionId": "client-offboarding",
+    "taskDefinitionKey": "verify-closure-preconditions",
+    "formKey": null,
+    "category": null,
+    "tenantId": null
+  }
+]
+----
+
+=== Complete Offboarding Task
+
+Completes a task in the client offboarding process.
+
+[source,http]
+----
+POST /workflow/client-offboarding/tasks/{taskId}/complete
+Content-Type: application/json
+
+{
+  "clearToClose": true,
+  "pendingItems": null
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`clearToClose` |Boolean |Yes |Whether the client is clear to close
+|`pendingItems` |String |No |Description of any pending items
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "success": true,
+  "message": "Task completed successfully",
+  "taskId": "task-456",
+  "processInstanceId": "proc-456"
+}
+----
+
+=== Get Process Variables
+
+Retrieves variables for a specific process instance.
+
+[source,http]
+----
+GET /workflow/client-offboarding/processes/{processInstanceId}/variables
+----
+
+Response:
+[source,json]
+----
+{
+  "clientId": 123,
+  "closureReasonId": 1,
+  "closureDate": "2024-01-01",
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en",
+  "operationsOfficer": "system"
+}
+----
+
+=== Get Active Processes
+
+Retrieves all active client offboarding processes.
+
+[source,http]
+----
+GET /workflow/client-offboarding/processes
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "proc-456",
+    "processDefinitionId": "client-offboarding",
+    "processDefinitionName": "Client Offboarding Process",
+    "businessKey": null,
+    "startTime": "2024-01-01T10:00:00Z",
+    "endTime": null,
+    "duration": null,
+    "startUserId": "system",
+    "startActivityId": "start-client-offboarding",
+    "deleteReason": null,
+    "tenantId": null,
+    "state": "active"
+  }
+]
+----
+
+=== Get Process Definitions
+
+Retrieves all process definitions.
+
+[source,http]
+----
+GET /workflow/client-offboarding/process-definitions
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "client-offboarding",
+    "name": "Client Offboarding Process",
+    "version": 1,
+    "deploymentId": "deployment-456",
+    "deployed": true,
+    "deploymentTime": "2024-01-01T09:00:00Z"
+  }
+]
+----
+
+=== Get Process History
+
+Retrieves process history information.
+
+[source,http]
+----
+GET /workflow/client-offboarding/history
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "proc-456",
+    "processDefinitionId": "client-offboarding",
+    "processDefinitionName": "Client Offboarding Process",
+    "startTime": "2024-01-01T10:00:00Z",
+    "endTime": "2024-01-01T11:00:00Z",
+    "duration": 3600000,
+    "startUserId": "system",
+    "deleteReason": null,
+    "tenantId": null,
+    "state": "completed"
+  }
+]
+----
+
+=== Get Process Status
+
+Retrieves the status of a specific process instance.
+
+[source,http]
+----
+GET /workflow/client-offboarding/processes/{processInstanceId}/status
+----
+
+Response:
+[source,json]
+----
+{
+  "processInstanceId": "proc-456",
+  "processDefinitionId": "client-offboarding",
+  "processDefinitionName": "Client Offboarding Process",
+  "status": "RUNNING",
+  "currentTask": "verify-closure-preconditions",
+  "taskName": "Verify Closure Pre-conditions",
+  "assignee": "system",
+  "variables": {
+    "clientId": 123,
+    "closureReasonId": 1,
+    "closureDate": "2024-01-01",
+    "dateFormat": "yyyy-MM-dd",
+    "locale": "en",
+    "operationsOfficer": "system"
+  },
+  "startTime": "2024-01-01T10:00:00Z",
+  "lastUpdated": "2024-01-01T10:30:00Z"
+}
+----
+
+=== Terminate Process
+
+Terminates a running process instance.
+
+[source,http]
+----
+DELETE /workflow/client-offboarding/processes/{processInstanceId}
+----
+
+Response:
+[source,json]
+----
+{
+  "success": true,
+  "message": "Process terminated successfully",
+  "processInstanceId": "proc-456"
+}
+----
+
+== Client Transfer API
+
+=== Start Client Transfer Process
+
+Initiates the client transfer workflow to move a client between offices.
+
+[source,http]
+----
+POST /workflow/client-transfer/start
+Content-Type: application/json
+
+{
+  "clientId": 123,
+  "destinationOfficeId": 2,
+  "transferDate": "2024-01-01",
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en"
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`clientId` |Long |Yes |Unique identifier for the client
+|`destinationOfficeId` |Long |Yes |Office ID where the client will be transferred
+|`transferDate` |String |Yes |Date when the transfer should occur (YYYY-MM-DD)
+|`dateFormat` |String |No |Date format (e.g., "yyyy-MM-dd")
+|`locale` |String |No |Locale (e.g., "en")
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "id": "proc-789",
+  "processDefinitionId": "client-transfer",
+  "processDefinitionName": "Client Transfer Process",
+  "businessKey": null,
+  "startTime": "2024-01-01T10:00:00Z",
+  "endTime": null,
+  "duration": null,
+  "startUserId": "system",
+  "startActivityId": "start-transfer",
+  "deleteReason": null,
+  "tenantId": null,
+  "state": "active"
+}
+----
+
+=== Get Client Transfer Tasks
+
+Retrieves all pending tasks for client transfer processes.
+
+[source,http]
+----
+GET /workflow/client-transfer/tasks
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "task-789",
+    "name": "Select Destination Office and Propose Transfer",
+    "description": "Loan officer selects client and destination office",
+    "assignee": "system",
+    "created": "2024-01-01T10:00:00Z",
+    "dueDate": null,
+    "processInstanceId": "proc-789",
+    "processDefinitionId": "client-transfer",
+    "taskDefinitionKey": "propose-transfer",
+    "formKey": null,
+    "category": null,
+    "tenantId": null
+  }
+]
+----
+
+=== Complete Transfer Task
+
+Completes a task in the client transfer process.
+
+[source,http]
+----
+POST /workflow/client-transfer/tasks/{taskId}/complete
+Content-Type: application/json
+
+{
+  "transferAccepted": true,
+  "rejectionReason": null,
+  "reviewComments": "Transfer approved"
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`transferAccepted` |Boolean |Yes |Whether the transfer is accepted
+|`rejectionReason` |String |No |Reason for rejection if not accepted
+|`reviewComments` |String |No |Review comments
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "success": true,
+  "message": "Task completed successfully",
+  "taskId": "task-789",
+  "processInstanceId": "proc-789"
+}
+----
+
+=== Get Process Variables
+
+Retrieves variables for a specific process instance.
+
+[source,http]
+----
+GET /workflow/client-transfer/processes/{processInstanceId}/variables
+----
+
+Response:
+[source,json]
+----
+{
+  "clientId": 123,
+  "destinationOfficeId": 2,
+  "effectiveDate": "2024-01-01",
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en",
+  "assignee": "system",
+  "originatingOfficer": "system",
+  "destinationManager": "system"
+}
+----
+
+=== Get Active Processes
+
+Retrieves all active client transfer processes.
+
+[source,http]
+----
+GET /workflow/client-transfer/processes
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "proc-789",
+    "processDefinitionId": "client-transfer",
+    "processDefinitionName": "Client Transfer Process",
+    "businessKey": null,
+    "startTime": "2024-01-01T10:00:00Z",
+    "endTime": null,
+    "duration": null,
+    "startUserId": "system",
+    "startActivityId": "start-transfer",
+    "deleteReason": null,
+    "tenantId": null,
+    "state": "active"
+  }
+]
+----
+
+=== Get Process Definitions
+
+Retrieves all process definitions.
+
+[source,http]
+----
+GET /workflow/client-transfer/process-definitions
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "client-transfer",
+    "name": "Client Transfer Process",
+    "version": 1,
+    "deploymentId": "deployment-789",
+    "deployed": true,
+    "deploymentTime": "2024-01-01T09:00:00Z"
+  }
+]
+----
+
+=== Get Process History
+
+Retrieves process history information.
+
+[source,http]
+----
+GET /workflow/client-transfer/history
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "proc-789",
+    "processDefinitionId": "client-transfer",
+    "processDefinitionName": "Client Transfer Process",
+    "startTime": "2024-01-01T10:00:00Z",
+    "endTime": "2024-01-01T11:00:00Z",
+    "duration": 3600000,
+    "startUserId": "system",
+    "deleteReason": null,
+    "tenantId": null,
+    "state": "completed"
+  }
+]
+----
+
+=== Get Process Status
+
+Retrieves the status of a specific process instance.
+
+[source,http]
+----
+GET /workflow/client-transfer/processes/{processInstanceId}/status
+----
+
+Response:
+[source,json]
+----
+{
+  "processInstanceId": "proc-789",
+  "processDefinitionId": "client-transfer",
+  "processDefinitionName": "Client Transfer Process",
+  "status": "RUNNING",
+  "currentTask": "propose-transfer",
+  "taskName": "Select Destination Office and Propose Transfer",
+  "assignee": "system",
+  "variables": {
+    "clientId": 123,
+    "destinationOfficeId": 2,
+    "effectiveDate": "2024-01-01",
+    "dateFormat": "yyyy-MM-dd",
+    "locale": "en",
+    "assignee": "system",
+    "originatingOfficer": "system",
+    "destinationManager": "system"
+  },
+  "startTime": "2024-01-01T10:00:00Z",
+  "lastUpdated": "2024-01-01T10:30:00Z"
+}
+----
+
+=== Terminate Process
+
+Terminates a running process instance.
+
+[source,http]
+----
+DELETE /workflow/client-transfer/processes/{processInstanceId}
+----
+
+Response:
+[source,json]
+----
+{
+  "success": true,
+  "message": "Process terminated successfully",
+  "processInstanceId": "proc-789"
+}
+----
+
+== Deployment Management API
+
+=== Get Deployments
+
+Retrieves all deployments.
+
+[source,http]
+----
+GET /workflow/client-onboarding/deployments
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "deployment-123",
+    "name": "Client Onboarding Process",
+    "deploymentTime": "2024-01-01T09:00:00Z",
+    "category": null,
+    "url": null,
+    "tenantId": null
+  }
+]
+----
+
+=== Get Deployment Details
+
+Retrieves detailed information about a specific deployment.
+
+[source,http]
+----
+GET /workflow/client-onboarding/deployments/{deploymentId}
+----
+
+Response:
+[source,json]
+----
+{
+  "id": "deployment-123",
+  "name": "Client Onboarding Process",
+  "deploymentTime": "2024-01-01T09:00:00Z",
+  "category": null,
+  "url": null,
+  "tenantId": null,
+  "processDefinitions": [
+    {
+      "id": "client-onboarding",
+      "name": "Client Onboarding Process",
+      "version": 1,
+      "deploymentId": "deployment-123",
+      "deployed": true,
+      "deploymentTime": "2024-01-01T09:00:00Z"
+    }
+  ]
+}
+----
+
+=== Get Deployment Resources
+
+Retrieves resources for a specific deployment.
+
+[source,http]
+----
+GET /workflow/client-onboarding/deployments/{deploymentId}/resources
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "resource-123",
+    "name": "client-onboarding.bpmn20.xml",
+    "deploymentId": "deployment-123",
+    "description": null,
+    "localizedName": null,
+    "localizedDescription": null,
+    "mimeType": "text/xml",
+    "tenantId": null
+  }
+]
+----
+
+=== Get Deployment Resource
+
+Retrieves a specific resource from a deployment.
+
+[source,http]
+----
+GET /workflow/client-onboarding/deployments/{deploymentId}/resources/{resourceName}
+----
+
+Response:
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://mifos.org/workflow/client-onboarding"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/20100524/MODEL">
+
+    <process id="client-onboarding" name="Client Onboarding Process" isExecutable="true">
+        <!-- Process definition content -->
+    </process>
+
+</definitions>
+----
+
+=== Deploy Process
+
+Deploys a new process definition.
+
+[source,http]
+----
+POST /workflow/client-onboarding/deployments
+Content-Type: multipart/form-data
+
+file: <BPMN file>
+----
+
+Response:
+[source,json]
+----
+{
+  "id": "deployment-999",
+  "name": "New Process",
+  "deploymentTime": "2024-01-01T10:00:00Z",
+  "category": null,
+  "url": null,
+  "tenantId": null,
+  "processDefinitions": [
+    {
+      "id": "new-process",
+      "name": "New Process",
+      "version": 1,
+      "deploymentId": "deployment-999",
+      "deployed": true,
+      "deploymentTime": "2024-01-01T10:00:00Z"
+    }
+  ]
+}
+----
+
+=== Delete Deployment
+
+Deletes a deployment.
+
+[source,http]
+----
+DELETE /workflow/client-onboarding/deployments/{deploymentId}
+----
+
+Response:
+[source,json]
+----
+{
+  "success": true,
+  "message": "Deployment deleted successfully",
+  "deploymentId": "deployment-123"
+}
+----
+
+== Error Handling
+
+=== Error Response Format
+
+All error responses follow a consistent format:
+
+[source,json]
+----
+{
+  "timestamp": "2024-01-01T10:00:00Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Required variable 'approved' is missing",
+  "path": "/api/v1/workflow/client-onboarding/tasks/task-123/complete"
+}
+----
+
+=== Common Error Codes
+
+|===
+|Error Code |HTTP Status |Description
+|`400` |Bad Request |Invalid request parameters or missing required fields
+|`401` |Unauthorized |Authentication required
+|`404` |Not Found |Resource not found
+|`500` |Internal Server Error |Internal server error
+|===
+
+== API Versioning
+
+The API uses URL versioning with the format `/api/v{version}/`. The current version is `v1`.
+
+* **Current Version**: v1
+* **Base Path**: `/api/v1`
+
+== cURL Examples
+
+=== Start Client Onboarding
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/client-onboarding/start" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Doe",
+    "officeId": 1,
+    "dateFormat": "dd MMMM yyyy",
+    "locale": "en",
+    "active": true,
+    "legalFormId": 1,
+    "externalId": "EXT001",
+    "mobileNo": "+1234567890",
+    "dateOfBirth": "1990-01-01"
+  }'
+----
+
+=== Get Process Status
+
+[source,bash]
+----
+curl -X GET "http://localhost:8081/api/v1/workflow/client-onboarding/processes/proc-123/status" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ="
+----
+
+=== Complete Task
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/client-onboarding/tasks/task-123/complete" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "approved": true,
+    "comments": "Client data verified successfully"
+  }'
+----
+
+=== Start Client Offboarding
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/client-offboarding/start" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "clientId": 123,
+    "closureDate": "2024-01-01",
+    "closureReasonId": 1,
+    "dateFormat": "yyyy-MM-dd",
+    "locale": "en"
+  }'
+----
+
+=== Start Client Transfer
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/client-transfer/start" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "clientId": 123,
+    "destinationOfficeId": 2,
+    "transferDate": "2024-01-01",
+    "dateFormat": "yyyy-MM-dd",
+    "locale": "en"
+  }'
+----

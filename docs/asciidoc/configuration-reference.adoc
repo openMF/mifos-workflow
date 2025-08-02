@@ -1,0 +1,524 @@
+= Configuration Reference
+:doctype: book
+:icons: font
+
+[.navigation]
+* link:index.html[← Back to Home]
+* link:api-reference.html[API Reference]
+* link:workflow-processes.html[Workflow Processes]
+* link:deployment-guide.html[Deployment Guide]
+
+== Overview
+
+This document provides a comprehensive reference for all configuration properties available in the Mifos Workflow Integration Service. The configuration is managed through Spring Boot's property system and can be customized for different environments.
+
+== Configuration Sources
+
+The application supports multiple configuration sources in order of precedence:
+
+1. **Command Line Arguments**: `--property=value`
+2. **Environment Variables**: `PROPERTY_NAME=value`
+3. **Application Properties Files**: `application.properties`, `application-{profile}.properties`
+4. **Default Values**: Built-in Spring Boot defaults
+
+== Application Properties
+
+=== Core Application Settings
+
+|===
+|Property |Default |Description
+|`spring.application.name` |mifos-workflow |Application name for identification
+|`server.port` |8081 |HTTP server port
+|`server.address` |0.0.0.0 |Server bind address
+|`server.servlet.context-path` |/ |Application context path
+|===
+
+=== Database Configuration
+
+|===
+|Property |Default |Description
+|`spring.datasource.url` |jdbc:mysql://127.0.0.1:3307/mifos_flowable?characterEncoding=UTF-8 |Database connection URL
+|`spring.datasource.username` |mifos |Database username
+|`spring.datasource.password` |${DB_PASSWORD} |Database password (from environment variable)
+|`spring.datasource.driver-class-name` |com.mysql.cj.jdbc.Driver |JDBC driver class
+|`spring.datasource.hikari.maximum-pool-size` |20 |Maximum connection pool size
+|`spring.datasource.hikari.minimum-idle` |5 |Minimum idle connections
+|`spring.datasource.hikari.connection-timeout` |30000 |Connection timeout (ms)
+|`spring.datasource.hikari.idle-timeout` |600000 |Idle timeout (ms)
+|`spring.datasource.hikari.max-lifetime` |1800000 |Connection max lifetime (ms)
+|===
+
+=== JPA/Hibernate Settings
+
+|===
+|Property |Default |Description
+|`spring.jpa.hibernate.ddl-auto` |update |Database schema update strategy
+|`spring.jpa.show-sql` |true |Show SQL queries in logs
+|`spring.jpa.properties.hibernate.dialect` |org.hibernate.dialect.MySQLDialect |Hibernate dialect
+|`spring.jpa.properties.hibernate.format_sql` |true |Format SQL output
+|`spring.jpa.properties.hibernate.use_sql_comments` |true |Show SQL comments
+|`spring.jpa.properties.hibernate.jdbc.batch_size` |20 |JDBC batch size
+|`spring.jpa.properties.hibernate.order_inserts` |true |Order inserts for batching
+|`spring.jpa.properties.hibernate.order_updates` |true |Order updates for batching
+|===
+
+=== Workflow Engine Configuration
+
+|===
+|Property |Default |Description
+|`workflow.engine.type` |FLOWABLE |Workflow engine type (FLOWABLE, TEMPORAL)
+|`flowable.database-schema-update` |true |Auto-update Flowable schema
+|`flowable.async-executor-activate` |true |Enable async executor
+|`workflow.engine.flowable.async-executor-enabled` |true |Enable Flowable async executor
+|`workflow.engine.flowable.database-schema-update` |true |Update Flowable database schema
+|`workflow.engine.flowable.history-enabled` |true |Enable process history
+|`workflow.engine.flowable.database-type` |mysql |Flowable database type
+|`workflow.engine.flowable.database-url` |${spring.datasource.url} |Flowable database URL
+|`workflow.engine.flowable.database-username` |${spring.datasource.username} |Flowable database username
+|`workflow.engine.flowable.database-password` |${spring.datasource.password} |Flowable database password
+|===
+
+=== Fineract Integration Settings
+
+|===
+|Property |Default |Description
+|`workflow.fineract.baseUrl` |https://localhost:8443/fineract-provider/api/v1/ |Fineract API base URL
+|`workflow.fineract.username` |mifos |Fineract API username
+|`workflow.fineract.password` |${FINERACT_PASSWORD} |Fineract API password
+|`workflow.fineract.tenantId` |default |Fineract tenant ID
+|`workflow.fineract.test-enabled` |true |Enable test mode
+|`workflow.fineract.connection-timeout` |30000 |Connection timeout (ms)
+|`workflow.fineract.read-timeout` |30000 |Read timeout (ms)
+|`workflow.fineract.validate-ssl` |false |Validate SSL certificates
+|`workflow.fineract.tenantId` |default |Fineract tenant ID
+|`workflow.fineract.test-enabled` |true |Enable test mode
+|===
+
+=== Authentication Settings
+
+|===
+|Property |Default |Description
+|`workflow.authentication.enabled` |true |Enable authentication
+|`workflow.authentication.auth-key-header` |Authorization |Authentication header name
+|`workflow.authentication.auth-key-prefix` |Basic |Authentication header prefix
+|`workflow.authentication.token-refresh-interval` |3600 |Token refresh interval (seconds)
+|`workflow.authentication.auto-refresh` |true |Auto-refresh authentication tokens
+|===
+
+=== Process Settings
+
+|===
+|Property |Default |Description
+|`workflow.process.default-assignee` |system |Default task assignee
+|`workflow.process.auto-deploy` |true |Auto-deploy process definitions
+|`workflow.process.process-location` |classpath:processes/ |Process definition location
+|`workflow.process.enable-process-history` |true |Enable process history tracking
+|`workflow.process.max-process-instances` |1000 |Maximum process instances
+|`workflow.process.process-timeout` |86400 |Process timeout (seconds)
+|`workflow.process.default-assignee` |system |Default task assignee
+|`workflow.process.auto-deploy` |true |Auto-deploy process definitions
+|`workflow.process.process-location` |classpath:processes/ |Process definition location
+|`workflow.process.enable-process-history` |true |Enable process history tracking
+|`workflow.process.max-process-instances` |1000 |Maximum process instances
+|===
+
+=== Actuator Configuration
+
+|===
+|Property |Default |Description
+|`management.endpoints.web.exposure.include` |health,info,metrics |Exposed actuator endpoints
+|`management.endpoint.health.show-details` |always |Show health details
+|`management.endpoint.health.show-components` |always |Show health components
+|`management.endpoints.web.base-path` |/actuator |Actuator base path
+|`management.endpoint.health.enabled` |true |Enable health endpoint
+|`management.endpoint.info.enabled` |true |Enable info endpoint
+|`management.endpoint.metrics.enabled` |true |Enable metrics endpoint
+|===
+
+=== Logging Configuration
+
+|===
+|Property |Default |Description
+|`logging.level.org.springframework` |INFO |Spring framework log level
+|`logging.level.org.mifos` |DEBUG |Application log level
+|`logging.level.org.flowable` |INFO |Flowable log level
+|`logging.level.org.hibernate.SQL` |DEBUG |SQL query logging
+|`logging.level.org.hibernate.type.descriptor.sql.BasicBinder` |TRACE |SQL parameter logging
+|`logging.pattern.console` |%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n |Console log pattern
+|`logging.pattern.file` |%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n |File log pattern
+|`logging.file.name` |logs/application.log |Log file name
+|`logging.file.max-size` |10MB |Maximum log file size
+|`logging.file.max-history` |30 |Maximum log file history
+|===
+
+== Environment-Specific Configuration
+
+=== Development Profile
+
+Create `application-dev.properties` for development settings:
+
+[source,properties]
+----
+# Development database
+spring.datasource.url=jdbc:mysql://localhost:3307/mifos_flowable?characterEncoding=UTF-8
+spring.datasource.username=mifos
+spring.datasource.password=password
+
+# Development Fineract
+workflow.fineract.baseUrl=https://localhost:8443/fineract-provider/api/v1/
+workflow.fineract.username=mifos
+workflow.fineract.password=password
+workflow.fineract.test-enabled=true
+workflow.fineract.validate-ssl=false
+
+# Development logging
+logging.level.org.mifos=DEBUG
+logging.level.org.flowable=DEBUG
+spring.jpa.show-sql=true
+
+# Development server
+server.port=8081
+----
+
+=== Production Profile
+
+Create `application-prod.properties` for production settings:
+
+[source,properties]
+----
+# Production database
+spring.datasource.url=jdbc:mysql://prod-db:3306/mifos_flowable?characterEncoding=UTF-8&useSSL=true
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+
+# Production Fineract
+workflow.fineract.baseUrl=${FINERACT_BASE_URL}
+workflow.fineract.username=${FINERACT_USERNAME}
+workflow.fineract.password=${FINERACT_PASSWORD}
+workflow.fineract.test-enabled=false
+workflow.fineract.validate-ssl=true
+
+# Production security
+workflow.authentication.enabled=true
+workflow.authentication.token-refresh-interval=1800
+
+# Production logging
+logging.level.org.springframework=WARN
+logging.level.org.mifos=INFO
+logging.level.org.flowable=WARN
+spring.jpa.show-sql=false
+
+# Production performance
+workflow.engine.flowable.async-executor-enabled=true
+workflow.process.max-process-instances=5000
+
+# Production server
+server.port=8081
+server.address=0.0.0.0
+----
+
+=== Test Profile
+
+Create `application-test.properties` for testing settings:
+
+[source,properties]
+----
+# Test database (H2 in-memory)
+spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+# Test Fineract (mocked)
+workflow.fineract.test-enabled=true
+workflow.fineract.baseUrl=http://localhost:8080/mock-fineract/
+
+# Test logging
+logging.level.org.mifos=DEBUG
+logging.level.org.flowable=DEBUG
+
+# Test server
+server.port=0
+----
+
+== Environment Variables
+
+The application supports the following environment variables for configuration:
+
+|===
+|Environment Variable |Property |Default |Description
+|`DB_PASSWORD` |spring.datasource.password |password |Database password
+|`DB_USERNAME` |spring.datasource.username |mifos |Database username
+|`DB_HOST` |spring.datasource.url |127.0.0.1:3307 |Database host
+|`FINERACT_PASSWORD` |workflow.fineract.password |password |Fineract API password
+|`FINERACT_USERNAME` |workflow.fineract.username |mifos |Fineract API username
+|`FINERACT_BASE_URL` |workflow.fineract.baseUrl |https://localhost:8443/fineract-provider/api/v1/ |Fineract API base URL
+|`SERVER_PORT` |server.port |8081 |Application server port
+|`SPRING_PROFILES_ACTIVE` |spring.profiles.active |default |Active Spring profiles
+|`JAVA_OPTS` |JVM options | |JVM startup options
+|`WORKFLOW_FINERACT_VALIDATESSL` |workflow.fineract.validate-ssl |false |Validate SSL certificates
+|===
+
+== Docker Configuration
+
+=== Docker Environment Variables
+
+When running in Docker containers, additional environment variables are available:
+
+|===
+|Environment Variable |Description
+|`SPRING_DATASOURCE_URL` |Database URL for Docker networking
+|`SPRING_DATASOURCE_USERNAME` |Database username
+|`SPRING_DATASOURCE_PASSWORD` |Database password
+|`JAVA_TOOL_OPTIONS` |JVM tool options for SSL configuration
+|`WORKFLOW_FINERACT_BASEURL` |Fineract URL for Docker networking
+|===
+
+=== Docker Compose Environment
+
+Example Docker Compose environment configuration:
+
+[source,yaml]
+----
+environment:
+  SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/mifos_flowable?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+  SPRING_DATASOURCE_USERNAME: mifos
+  SPRING_DATASOURCE_PASSWORD: password
+  DB_PASSWORD: password
+  FINERACT_PASSWORD: password
+  SERVER_PORT: 8081
+  WORKFLOW_FINERACT_BASEURL: https://host.docker.internal:8443/fineract-provider/api/v1/
+  JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/tmp/cacerts -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustAll=true"
+  WORKFLOW_FINERACT_VALIDATESSL: false
+----
+
+== Configuration Validation
+
+=== Required Properties
+
+The following properties are required for the application to function:
+
+* `spring.datasource.url` - Database connection URL
+* `spring.datasource.username` - Database username
+* `spring.datasource.password` - Database password
+* `workflow.fineract.baseUrl` - Fineract API base URL
+* `workflow.fineract.username` - Fineract API username
+* `workflow.fineract.password` - Fineract API password
+
+=== Property Validation
+
+The application validates configuration properties on startup:
+
+[source,properties]
+----
+# Enable configuration validation
+spring.config.import=optional:configtree:/run/secrets/
+spring.config.import=optional:file:./config/
+----
+
+=== Configuration Health Check
+
+The application includes a configuration health indicator:
+
+[source,http]
+----
+GET /actuator/health/config
+----
+
+Response:
+[source,json]
+----
+{
+  "status": "UP",
+  "details": {
+    "database": {
+      "status": "UP",
+      "details": {
+        "url": "jdbc:mysql://localhost:3307/mifos_flowable"
+      }
+    },
+    "fineract": {
+      "status": "UP",
+      "details": {
+        "baseUrl": "https://localhost:8443/fineract-provider/api/v1/"
+      }
+    }
+  }
+}
+----
+
+== Configuration Examples
+
+=== Basic Configuration
+
+Minimal configuration for local development:
+
+[source,properties]
+----
+# Database
+spring.datasource.url=jdbc:mysql://localhost:3307/mifos_flowable
+spring.datasource.username=mifos
+spring.datasource.password=password
+
+# Fineract
+workflow.fineract.baseUrl=https://localhost:8443/fineract-provider/api/v1/
+workflow.fineract.username=mifos
+workflow.fineract.password=password
+
+# Server
+server.port=8081
+----
+
+=== Production Configuration
+
+Production-ready configuration with security:
+
+[source,properties]
+----
+# Database
+spring.datasource.url=jdbc:mysql://prod-db:3306/mifos_flowable?useSSL=true&requireSSL=true
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+
+# Fineract
+workflow.fineract.baseUrl=${FINERACT_BASE_URL}
+workflow.fineract.username=${FINERACT_USERNAME}
+workflow.fineract.password=${FINERACT_PASSWORD}
+workflow.fineract.test-enabled=false
+workflow.fineract.validate-ssl=true
+
+# Security
+workflow.authentication.enabled=true
+workflow.authentication.token-refresh-interval=1800
+
+# Performance
+spring.jpa.show-sql=false
+workflow.engine.flowable.async-executor-enabled=true
+workflow.process.max-process-instances=5000
+
+# Logging
+logging.level.org.springframework=WARN
+logging.level.org.mifos=INFO
+logging.level.org.flowable=WARN
+----
+
+=== High Availability Configuration
+
+Configuration for high availability deployment:
+
+[source,properties]
+----
+# Database (with connection pooling)
+spring.datasource.hikari.maximum-pool-size=50
+spring.datasource.hikari.minimum-idle=10
+spring.datasource.hikari.connection-timeout=30000
+spring.datasource.hikari.idle-timeout=600000
+spring.datasource.hikari.max-lifetime=1800000
+
+# Workflow Engine
+workflow.engine.flowable.async-executor-enabled=true
+workflow.engine.flowable.async-executor-activate=true
+workflow.process.max-process-instances=10000
+
+# Performance
+spring.jpa.properties.hibernate.jdbc.batch_size=50
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+
+# Monitoring
+management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoint.health.show-details=when-authorized
+----
+
+== Configuration Best Practices
+
+=== Security
+
+* Use environment variables for sensitive data (passwords, API keys)
+* Enable SSL/TLS for all external communications
+* Use strong passwords and rotate them regularly
+* Implement proper access controls
+
+=== Performance
+
+* Configure appropriate connection pool sizes
+* Enable async execution for workflow tasks
+* Use batch processing for database operations
+* Monitor and tune JVM settings
+
+=== Monitoring
+
+* Enable health checks and metrics endpoints
+* Configure appropriate log levels
+* Set up log aggregation and monitoring
+* Use structured logging for better analysis
+
+=== Deployment
+
+* Use profiles for different environments
+* Validate configuration on startup
+* Implement graceful shutdown
+* Set up proper backup and recovery procedures
+
+== Troubleshooting Configuration
+
+=== Common Issues
+
+==== Database Connection Issues
+
+**Problem**: Application fails to start with database connection errors
+
+**Solutions**:
+* Verify database is running and accessible
+* Check database credentials and permissions
+* Ensure network connectivity
+* Validate database URL format
+
+==== Fineract API Issues
+
+**Problem**: Workflow processes fail due to Fineract API connectivity
+
+**Solutions**:
+* Verify Fineract service is accessible
+* Check API credentials and permissions
+* Validate SSL certificates
+* Test API connectivity manually
+
+==== Configuration Validation
+
+**Problem**: Configuration validation fails on startup
+
+**Solutions**:
+* Check required properties are set
+* Validate property formats and values
+* Review environment variable names
+* Check for typos in configuration files
+
+=== Debug Configuration
+
+Enable debug logging for configuration issues:
+
+[source,properties]
+----
+# Configuration debugging
+logging.level.org.springframework.boot.autoconfigure=DEBUG
+logging.level.org.springframework.boot.context.config=DEBUG
+logging.level.org.springframework.core.env=DEBUG
+
+# Property resolution debugging
+logging.level.org.springframework.boot.context.config=TRACE
+----
+
+=== Configuration Validation Commands
+
+[source,bash]
+----
+# Validate configuration
+java -jar app.jar --debug
+
+# Check configuration with profile
+java -jar app.jar --spring.profiles.active=prod --debug
+
+# Validate specific properties
+java -jar app.jar --spring.config.location=classpath:/application.properties --debug
+---- 
