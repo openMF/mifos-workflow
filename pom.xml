@@ -67,7 +67,10 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -187,6 +190,7 @@
                         <highlightjs-theme>github</highlightjs-theme>
                         <icons>font</icons>
                         <experimental>true</experimental>
+                        <imagesdir>../images</imagesdir>
                     </attributes>
                 </configuration>
                 <executions>
@@ -196,6 +200,29 @@
                         <goals>
                             <goal>process-asciidoc</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-images</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>docs/generated/images</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>docs/images</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
