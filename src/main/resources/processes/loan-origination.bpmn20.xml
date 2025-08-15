@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.activiti.org/bpmn"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+
+  <process id="loan-origination" name="Loan Origination Process" isExecutable="true">
+    
+    <startEvent id="startLoanOrigination" name="Start Loan Origination">
+      <documentation>Start the loan origination process</documentation>
+    </startEvent>
+
+    <userTask id="submitLoanApplication" name="Submit Loan Application" flowable:assignee="${loanOfficer}">
+      <documentation>Loan officer submits the loan application</documentation>
+      <extensionElements>
+        <flowable:formProperty id="clientId" name="Client ID" type="long" required="true" />
+        <flowable:formProperty id="productId" name="Product ID" type="long" required="true" />
+        <flowable:formProperty id="principal" name="Principal Amount" type="double" required="true" />
+        <flowable:formProperty id="loanTermFrequency" name="Loan Term Frequency" type="long" required="true" />
+        <flowable:formProperty id="loanTermFrequencyType" name="Loan Term Frequency Type" type="long" required="true" />
+        <flowable:formProperty id="loanType" name="Loan Type" type="string" required="true" />
+        <flowable:formProperty id="loanPurposeId" name="Loan Purpose ID" type="long" required="true" />
+        <flowable:formProperty id="interestRatePerPeriod" name="Interest Rate" type="double" required="true" />
+        <flowable:formProperty id="interestRateFrequencyType" name="Interest Rate Frequency Type" type="long" required="true" />
+        <flowable:formProperty id="amortizationType" name="Amortization Type" type="long" required="true" />
+        <flowable:formProperty id="interestType" name="Interest Type" type="long" required="true" />
+        <flowable:formProperty id="interestCalculationPeriodType" name="Interest Calculation Period Type" type="long" required="true" />
+        <flowable:formProperty id="transactionProcessingStrategyCode" name="Transaction Processing Strategy Code" type="string" required="true" />
+        <flowable:formProperty id="numberOfRepayments" name="Number of Repayments" type="long" required="true" />
+        <flowable:formProperty id="repaymentEvery" name="Repayment Every" type="long" required="true" />
+        <flowable:formProperty id="repaymentFrequencyType" name="Repayment Frequency Type" type="long" required="true" />
+        <flowable:formProperty id="expectedDisbursementDate" name="Expected Disbursement Date" type="date" required="true" />
+        <flowable:formProperty id="submittedOnDate" name="Submitted On Date" type="date" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <serviceTask id="createLoanInFineract" name="Create Loan in Fineract" flowable:delegateExpression="${loanCreationDelegate}">
+      <documentation>Create the loan application in Fineract system</documentation>
+    </serviceTask>
+
+    <userTask id="reviewLoanApplication" name="Review Loan Application" flowable:assignee="${assignee}">
+      <documentation>Review the loan application for completeness and accuracy</documentation>
+      <extensionElements>
+        <flowable:formProperty id="approved" name="Application Approved" type="boolean" required="true" />
+        <flowable:formProperty id="reviewNotes" name="Review Notes" type="string" />
+      </extensionElements>
+    </userTask>
+
+    <exclusiveGateway id="loanReviewDecision" name="Loan Review Decision">
+      <documentation>Decision gateway for loan application review</documentation>
+    </exclusiveGateway>
+
+    <userTask id="requestAdditionalInfo" name="Request Additional Information" flowable:assignee="${loanOfficer}">
+      <documentation>Request additional information from the client</documentation>
+      <extensionElements>
+        <flowable:formProperty id="informationRequested" name="Information Requested" type="string" required="true" />
+        <flowable:formProperty id="deadline" name="Deadline" type="date" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="provideAdditionalInfo" name="Provide Additional Information" flowable:assignee="${assignee}">
+      <documentation>Client provides additional information</documentation>
+      <extensionElements>
+        <flowable:formProperty id="additionalInfoProvided" name="Additional Information" type="string" />
+        <flowable:formProperty id="infoComplete" name="Information Complete" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="creditAssessment" name="Credit Assessment" flowable:assignee="${assignee}">
+      <documentation>Perform credit assessment and risk analysis</documentation>
+      <extensionElements>
+        <flowable:formProperty id="creditScore" name="Credit Score" type="long" />
+        <flowable:formProperty id="riskLevel" name="Risk Level" type="string" required="true" />
+        <flowable:formProperty id="assessmentNotes" name="Assessment Notes" type="string" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="loanApproval" name="Loan Approval" flowable:assignee="${approver}">
+      <documentation>Approve or reject the loan application</documentation>
+      <extensionElements>
+        <flowable:formProperty id="approvedOnDate" name="Approved On Date" type="date" required="true" />
+        <flowable:formProperty id="rejectedOnDate" name="Rejected On Date" type="date" />
+        <flowable:formProperty id="approved" name="Loan Approved" type="boolean" required="true" />
+        <flowable:formProperty id="approvalNotes" name="Approval Notes" type="string" />
+        <flowable:formProperty id="approvedAmount" name="Approved Amount" type="double" />
+        <flowable:formProperty id="approvedTerms" name="Approved Terms" type="string" />
+      </extensionElements>
+    </userTask>
+
+    <exclusiveGateway id="approvalDecision" name="Approval Decision">
+      <documentation>Decision gateway for loan approval</documentation>
+    </exclusiveGateway>
+
+    <serviceTask id="approveLoanInFineract" name="Approve Loan in Fineract" flowable:delegateExpression="${loanApprovalDelegate}">
+      <documentation>Approve the loan in Fineract system</documentation>
+    </serviceTask>
+
+    <serviceTask id="rejectLoanInFineract" name="Reject Loan in Fineract" flowable:delegateExpression="${loanRejectionDelegate}">
+      <documentation>Reject the loan in Fineract system</documentation>
+    </serviceTask>
+
+    <userTask id="notifyClientApproval" name="Notify Client - Approval" flowable:assignee="${loanOfficer}">
+      <documentation>Notify client of loan approval</documentation>
+      <extensionElements>
+        <flowable:formProperty id="notificationMethod" name="Notification Method" type="string" required="true" />
+        <flowable:formProperty id="notificationSent" name="Notification Sent" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="notifyClientRejection" name="Notify Client - Rejection" flowable:assignee="${loanOfficer}">
+      <documentation>Notify client of loan rejection</documentation>
+      <extensionElements>
+        <flowable:formProperty id="rejectionReason" name="Rejection Reason" type="string" required="true" />
+        <flowable:formProperty id="notificationMethod" name="Notification Method" type="string" required="true" />
+        <flowable:formProperty id="notificationSent" name="Notification Sent" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <endEvent id="loanApproved" name="Loan Approved">
+      <documentation>Loan application approved successfully</documentation>
+    </endEvent>
+
+    <endEvent id="loanRejected" name="Loan Rejected">
+      <documentation>Loan application rejected</documentation>
+    </endEvent>
+
+    <!-- Sequence Flows -->
+    <sequenceFlow id="flow1" sourceRef="startLoanOrigination" targetRef="submitLoanApplication" />
+    <sequenceFlow id="flow2" sourceRef="submitLoanApplication" targetRef="createLoanInFineract" />
+    <sequenceFlow id="flow3" sourceRef="createLoanInFineract" targetRef="reviewLoanApplication" />
+    <sequenceFlow id="flow4" sourceRef="reviewLoanApplication" targetRef="loanReviewDecision" />
+    
+    <sequenceFlow id="flow5" sourceRef="loanReviewDecision" targetRef="requestAdditionalInfo">
+      <conditionExpression xsi:type="tFormalExpression">${!approved}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow6" sourceRef="loanReviewDecision" targetRef="creditAssessment">
+      <conditionExpression xsi:type="tFormalExpression">${approved}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow7" sourceRef="requestAdditionalInfo" targetRef="provideAdditionalInfo" />
+    <sequenceFlow id="flow8" sourceRef="provideAdditionalInfo" targetRef="reviewLoanApplication" />
+    <sequenceFlow id="flow9" sourceRef="creditAssessment" targetRef="loanApproval" />
+    <sequenceFlow id="flow10" sourceRef="loanApproval" targetRef="approvalDecision" />
+    
+    <sequenceFlow id="flow11" sourceRef="approvalDecision" targetRef="approveLoanInFineract">
+      <conditionExpression xsi:type="tFormalExpression">${approved}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow12" sourceRef="approvalDecision" targetRef="rejectLoanInFineract">
+      <conditionExpression xsi:type="tFormalExpression">${!approved}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow13" sourceRef="approveLoanInFineract" targetRef="notifyClientApproval" />
+    <sequenceFlow id="flow14" sourceRef="rejectLoanInFineract" targetRef="notifyClientRejection" />
+    <sequenceFlow id="flow15" sourceRef="notifyClientApproval" targetRef="loanApproved" />
+    <sequenceFlow id="flow16" sourceRef="notifyClientRejection" targetRef="loanRejected" />
+
+  </process>
+
+</definitions>

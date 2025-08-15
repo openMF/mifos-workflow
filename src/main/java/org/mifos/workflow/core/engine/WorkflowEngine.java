@@ -19,6 +19,7 @@ import org.mifos.workflow.core.model.TaskInfo;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Generic interface for workflow engine operations.
@@ -42,6 +43,8 @@ public interface WorkflowEngine {
     List<ProcessInstance> getProcessInstances();
 
     ProcessVariables getProcessVariables(String processInstanceId);
+
+    void setProcessVariables(String processInstanceId, Map<String, Object> variables);
 
     // Task Operations
     void completeTask(String taskId, ProcessVariables variables);
