@@ -6,19 +6,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.mifos.workflow.config.WorkflowConfig;
 import org.mifos.workflow.core.engine.WorkflowEngine;
 import org.mifos.workflow.core.engine.WorkflowEngineFactory;
-import org.mifos.workflow.core.model.ActiveProcess;
 import org.mifos.workflow.core.model.DeploymentInfo;
-import org.mifos.workflow.core.model.DeploymentInfoEnhanced;
-import org.mifos.workflow.core.model.DeploymentResource;
 import org.mifos.workflow.core.model.DeploymentResult;
-import org.mifos.workflow.core.model.ProcessCompletionStatus;
 import org.mifos.workflow.core.model.ProcessDefinition;
-import org.mifos.workflow.core.model.ProcessDefinitionInfo;
-import org.mifos.workflow.core.model.ProcessHistoryInfo;
 import org.mifos.workflow.core.model.ProcessInstance;
-import org.mifos.workflow.core.model.ProcessStatus;
 import org.mifos.workflow.core.model.ProcessVariables;
 import org.mifos.workflow.core.model.TaskInfo;
+import org.mifos.workflow.core.model.ActiveProcess;
+import org.mifos.workflow.core.model.ProcessStatus;
+import org.mifos.workflow.core.model.ProcessCompletionStatus;
+import org.mifos.workflow.core.model.ProcessDefinitionInfo;
+import org.mifos.workflow.core.model.ProcessHistoryInfo;
+import org.mifos.workflow.core.model.DeploymentInfoEnhanced;
+import org.mifos.workflow.core.model.DeploymentResource;
 import org.mifos.workflow.service.fineract.auth.FineractAuthService;
 import org.mifos.workflow.util.WorkflowErrorHandler;
 import org.springframework.stereotype.Service;
@@ -153,6 +153,18 @@ public class WorkflowService {
         });
     }
 
+    public void setProcessVariables(String processInstanceId, Map<String, Object> variables) {
+        log.debug("Setting variables for process instance: {}", processInstanceId);
+
+        ensureAuthentication();
+
+        WorkflowErrorHandler.executeWithExceptionHandling("setting process variables", processInstanceId, () -> {
+            getWorkflowEngine().setProcessVariables(processInstanceId, variables);
+            log.debug("Set {} variables for process instance: {}", variables.size(), processInstanceId);
+            return null;
+        });
+    }
+
     public List<TaskInfo> getPendingTasksForProcess(String processInstanceId) {
         log.debug("Getting pending tasks for process: {}", processInstanceId);
 
@@ -260,21 +272,21 @@ public class WorkflowService {
     }
 
     public DeploymentInfoEnhanced getDeploymentInfo(String deploymentId) {
-        log.debug("Getting deployment info for: {}", deploymentId);
+        log.debug("Getting deployment info: {}", deploymentId);
         ensureAuthentication();
         return WorkflowErrorHandler.executeWithExceptionHandling("getting deployment info", deploymentId, () -> {
             DeploymentInfoEnhanced info = getWorkflowEngine().getDeploymentInfo(deploymentId);
-            log.debug("Retrieved deployment info for: {}", deploymentId);
+            log.debug("Retrieved deployment info: {}", deploymentId);
             return info;
         });
     }
 
     public List<DeploymentResource> getDeploymentResources(String deploymentId) {
-        log.debug("Getting deployment resources for: {}", deploymentId);
+        log.debug("Getting deployment resources: {}", deploymentId);
         ensureAuthentication();
         return WorkflowErrorHandler.executeWithExceptionHandling("getting deployment resources", deploymentId, () -> {
             List<DeploymentResource> resources = getWorkflowEngine().getDeploymentResources(deploymentId);
-            log.debug("Retrieved {} resources for deployment: {}", resources.size(), deploymentId);
+            log.debug("Found {} resources for deployment: {}", resources.size(), deploymentId);
             return resources;
         });
     }
