@@ -85,13 +85,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
 
             logger.info("Successfully deployed process: {} with deployment ID: {}", filename, deployment.getId());
 
-            return DeploymentResult.builder()
-                    .deploymentId(deployment.getId())
-                    .name(deployment.getName())
-                    .deploymentTime(LocalDateTime.ofInstant(deployment.getDeploymentTime().toInstant(), ZoneId.systemDefault()))
-                    .success(true)
-                    .errors(Collections.emptyList())
-                    .build();
+            return DeploymentResult.builder().deploymentId(deployment.getId()).name(deployment.getName()).deploymentTime(LocalDateTime.ofInstant(deployment.getDeploymentTime().toInstant(), ZoneId.systemDefault())).success(true).errors(Collections.emptyList()).build();
         });
     }
 
@@ -139,6 +133,14 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
         return WorkflowErrorHandler.executeWithExceptionHandling("retrieving process variables", processInstanceId, () -> {
             Map<String, Object> variables = runtimeService.getVariables(processInstanceId);
             return ProcessVariables.builder().variables(variables).build();
+        });
+    }
+
+    @Override
+    public void setProcessVariables(String processInstanceId, Map<String, Object> variables) {
+        WorkflowErrorHandler.executeWithExceptionHandling("setting process variables", processInstanceId, () -> {
+            runtimeService.setVariables(processInstanceId, variables);
+            return null;
         });
     }
 
@@ -229,15 +231,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
                 return null;
             }
 
-            return ProcessHistory.builder()
-                    .historyId(historicInstance.getId())
-                    .processId(processInstanceId)
-                    .processDefinitionId(historicInstance.getProcessDefinitionId())
-                    .startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
-                    .endTime(historicInstance.getEndTime() != null ? 
-                        LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null)
-                    .durationInMillis(historicInstance.getDurationInMillis())
-                    .build();
+            return ProcessHistory.builder().historyId(historicInstance.getId()).processId(processInstanceId).processDefinitionId(historicInstance.getProcessDefinitionId()).startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault())).endTime(historicInstance.getEndTime() != null ? LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null).durationInMillis(historicInstance.getDurationInMillis()).build();
         });
     }
 
@@ -300,24 +294,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
 
                 org.flowable.engine.repository.ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(historicInstance.getProcessDefinitionId()).singleResult();
 
-                return ProcessStatus.builder()
-                        .processInstanceId(processInstanceId)
-                        .processDefinitionKey(processDefinition != null ? processDefinition.getKey() : null)
-                        .processDefinitionName(processDefinition != null ? processDefinition.getName() : null)
-                        .status("COMPLETED")
-                        .currentActivityName(null)
-                        .currentActivityId(null)
-                        .startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
-                        .endTime(historicInstance.getEndTime() != null ? 
-                            LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null)
-                        .businessKey(historicInstance.getBusinessKey())
-                        .duration(historicInstance.getDurationInMillis())
-                        .startedBy(historicInstance.getStartUserId())
-                        .variables(new HashMap<>())
-                        .assignee(null)
-                        .suspended(false)
-                        .ended(true)
-                        .build();
+                return ProcessStatus.builder().processInstanceId(processInstanceId).processDefinitionKey(processDefinition != null ? processDefinition.getKey() : null).processDefinitionName(processDefinition != null ? processDefinition.getName() : null).status("COMPLETED").currentActivityName(null).currentActivityId(null).startTime(LocalDateTime.ofInstant(historicInstance.getStartTime().toInstant(), ZoneId.systemDefault())).endTime(historicInstance.getEndTime() != null ? LocalDateTime.ofInstant(historicInstance.getEndTime().toInstant(), ZoneId.systemDefault()) : null).businessKey(historicInstance.getBusinessKey()).duration(historicInstance.getDurationInMillis()).startedBy(historicInstance.getStartUserId()).variables(new HashMap<>()).assignee(null).suspended(false).ended(true).build();
             }
 
             org.flowable.engine.repository.ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(flowableInstance.getProcessDefinitionId()).singleResult();
@@ -352,23 +329,7 @@ public class FlowableWorkflowEngine implements WorkflowEngine {
 
             Map<String, Object> variables = runtimeService.getVariables(processInstanceId);
 
-            return ProcessStatus.builder()
-                    .processInstanceId(processInstanceId)
-                    .processDefinitionKey(processDefinition != null ? processDefinition.getKey() : null)
-                    .processDefinitionName(processDefinition != null ? processDefinition.getName() : null)
-                    .status("ACTIVE")
-                    .currentActivityName(currentActivityName)
-                    .currentActivityId(currentActivityId)
-                    .startTime(LocalDateTime.ofInstant(flowableInstance.getStartTime().toInstant(), ZoneId.systemDefault()))
-                    .endTime(null)
-                    .businessKey(flowableInstance.getBusinessKey())
-                    .duration(System.currentTimeMillis() - flowableInstance.getStartTime().getTime())
-                    .startedBy(flowableInstance.getStartUserId())
-                    .variables(variables)
-                    .assignee(assignee)
-                    .suspended(flowableInstance.isSuspended())
-                    .ended(flowableInstance.isEnded())
-                    .build();
+            return ProcessStatus.builder().processInstanceId(processInstanceId).processDefinitionKey(processDefinition != null ? processDefinition.getKey() : null).processDefinitionName(processDefinition != null ? processDefinition.getName() : null).status("ACTIVE").currentActivityName(currentActivityName).currentActivityId(currentActivityId).startTime(LocalDateTime.ofInstant(flowableInstance.getStartTime().toInstant(), ZoneId.systemDefault())).endTime(null).businessKey(flowableInstance.getBusinessKey()).duration(System.currentTimeMillis() - flowableInstance.getStartTime().getTime()).startedBy(flowableInstance.getStartUserId()).variables(variables).assignee(assignee).suspended(flowableInstance.isSuspended()).ended(flowableInstance.isEnded()).build();
         });
     }
 
