@@ -18,6 +18,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 
 import org.mifos.workflow.api.auth.AuthenticationApi;
 import org.mifos.workflow.api.client.ClientsApi;
+import org.mifos.workflow.api.loan.LoansApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import retrofit2.Retrofit;
@@ -138,5 +139,11 @@ public class FineractApiConfig {
     public ClientsApi clientApi(Retrofit retrofit) {
         log.info("Creating ClientsApi bean");
         return retrofit.create(ClientsApi.class);
+    }
+
+    @Bean
+    public LoansApi loansApi(Retrofit retrofit) {
+        log.info("Creating LoansApi bean");
+        return retrofit.create(LoansApi.class);
     }
 }
