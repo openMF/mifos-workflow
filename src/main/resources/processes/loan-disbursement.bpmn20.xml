@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.activiti.org/bpmn"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+
+  <process id="loan-disbursement" name="Loan Disbursement Process" isExecutable="true">
+    
+    <startEvent id="startLoanDisbursement" name="Start Loan Disbursement">
+      <documentation>Start the loan disbursement process</documentation>
+    </startEvent>
+
+    <userTask id="initiateDisbursementRequest" name="Initiate Disbursement Request" flowable:assignee="${disbursementOfficer}">
+      <documentation>Initiate the loan disbursement request with basic information</documentation>
+      <extensionElements>
+        <flowable:formProperty id="loanId" name="Loan ID" type="long" required="true" />
+        <flowable:formProperty id="disbursementAmount" name="Disbursement Amount" type="double" required="true" />
+        <flowable:formProperty id="disbursementDate" name="Disbursement Date" type="date" required="true" />
+        <flowable:formProperty id="disbursementMethod" name="Disbursement Method" type="string" required="true" />
+        <flowable:formProperty id="accountNumber" name="Account Number" type="string" />
+        <flowable:formProperty id="requestNotes" name="Request Notes" type="string" />
+      </extensionElements>
+    </userTask>
+
+    <serviceTask id="verifyLoanStatus" name="Verify Loan Status" flowable:delegateExpression="${loanStatusVerificationDelegate}">
+      <documentation>Verify that the loan is approved and ready for disbursement</documentation>
+    </serviceTask>
+
+    <exclusiveGateway id="loanStatusDecision" name="Loan Status Decision">
+      <documentation>Decision gateway for loan status verification</documentation>
+    </exclusiveGateway>
+
+    <userTask id="handleLoanNotReady" name="Handle Loan Not Ready" flowable:assignee="${disbursementOfficer}">
+      <documentation>Handle cases where loan is not ready for disbursement</documentation>
+      <extensionElements>
+        <flowable:formProperty id="issueIdentified" name="Issue Identified" type="string" required="true" />
+        <flowable:formProperty id="resolutionAction" name="Resolution Action" type="string" required="true" />
+        <flowable:formProperty id="escalateToManager" name="Escalate to Manager" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="managerReview" name="Manager Review" flowable:assignee="${manager}">
+      <documentation>Manager reviews the disbursement request</documentation>
+      <extensionElements>
+        <flowable:formProperty id="managerApproved" name="Manager Approved" type="boolean" required="true" />
+        <flowable:formProperty id="managerNotes" name="Manager Notes" type="string" />
+        <flowable:formProperty id="approvedAmount" name="Approved Amount" type="double" />
+        <flowable:formProperty id="approvedDate" name="Approved Date" type="date" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <exclusiveGateway id="managerDecision" name="Manager Decision">
+      <documentation>Decision gateway for manager approval</documentation>
+    </exclusiveGateway>
+
+    <userTask id="prepareDisbursementDocuments" name="Prepare Disbursement Documents" flowable:assignee="${disbursementOfficer}">
+      <documentation>Prepare all required disbursement documents</documentation>
+      <extensionElements>
+        <flowable:formProperty id="documentsPrepared" name="Documents Prepared" type="boolean" required="true" />
+        <flowable:formProperty id="documentList" name="Document List" type="string" />
+        <flowable:formProperty id="preparationNotes" name="Preparation Notes" type="string" />
+        <flowable:formProperty id="complianceCheck" name="Compliance Check" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <serviceTask id="executeDisbursement" name="Execute Disbursement" flowable:delegateExpression="${loanDisbursementDelegate}">
+      <documentation>Execute the loan disbursement in Fineract system</documentation>
+    </serviceTask>
+
+    <exclusiveGateway id="disbursementExecutionDecision" name="Disbursement Execution Decision">
+      <documentation>Decision gateway for disbursement execution</documentation>
+    </exclusiveGateway>
+
+    <userTask id="verifyDisbursement" name="Verify Disbursement" flowable:assignee="${disbursementOfficer}">
+      <documentation>Verify that disbursement was successful</documentation>
+      <extensionElements>
+        <flowable:formProperty id="disbursementVerified" name="Disbursement Verified" type="boolean" required="true" />
+        <flowable:formProperty id="verificationNotes" name="Verification Notes" type="string" />
+        <flowable:formProperty id="transactionId" name="Transaction ID" type="string" />
+        <flowable:formProperty id="actualDisbursementDate" name="Actual Disbursement Date" type="date" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="notifyClientDisbursement" name="Notify Client - Disbursement" flowable:assignee="${disbursementOfficer}">
+      <documentation>Notify client of successful disbursement</documentation>
+      <extensionElements>
+        <flowable:formProperty id="notificationMethod" name="Notification Method" type="string" required="true" />
+        <flowable:formProperty id="notificationSent" name="Notification Sent" type="boolean" required="true" />
+        <flowable:formProperty id="disbursementDetails" name="Disbursement Details" type="string" />
+        <flowable:formProperty id="clientAcknowledged" name="Client Acknowledged" type="boolean" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="handleDisbursementFailure" name="Handle Disbursement Failure" flowable:assignee="${disbursementOfficer}">
+      <documentation>Handle disbursement failure and initiate recovery</documentation>
+      <extensionElements>
+        <flowable:formProperty id="failureReason" name="Failure Reason" type="string" required="true" />
+        <flowable:formProperty id="recoveryAction" name="Recovery Action" type="string" required="true" />
+        <flowable:formProperty id="clientNotified" name="Client Notified" type="boolean" required="true" />
+        <flowable:formProperty id="escalateToIT" name="Escalate to IT" type="boolean" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="itSupportResolution" name="IT Support Resolution" flowable:assignee="${itSupport}">
+      <documentation>IT support resolves technical issues</documentation>
+      <extensionElements>
+        <flowable:formProperty id="issueResolved" name="Issue Resolved" type="boolean" required="true" />
+        <flowable:formProperty id="resolutionDetails" name="Resolution Details" type="string" />
+        <flowable:formProperty id="retryDisbursement" name="Retry Disbursement" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <exclusiveGateway id="itResolutionDecision" name="IT Resolution Decision">
+      <documentation>Decision gateway for IT resolution</documentation>
+    </exclusiveGateway>
+
+    <userTask id="updateLoanStatus" name="Update Loan Status" flowable:assignee="${disbursementOfficer}">
+      <documentation>Update loan status to disbursed</documentation>
+      <extensionElements>
+        <flowable:formProperty id="statusUpdated" name="Status Updated" type="boolean" required="true" />
+        <flowable:formProperty id="newStatus" name="New Status" type="string" required="true" />
+        <flowable:formProperty id="updateNotes" name="Update Notes" type="string" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="finalReview" name="Final Review" flowable:assignee="${manager}">
+      <documentation>Final review of completed disbursement</documentation>
+      <extensionElements>
+        <flowable:formProperty id="reviewCompleted" name="Review Completed" type="boolean" required="true" />
+        <flowable:formProperty id="reviewNotes" name="Review Notes" type="string" />
+        <flowable:formProperty id="processComplete" name="Process Complete" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <endEvent id="disbursementCompleted" name="Disbursement Completed">
+      <documentation>Loan disbursement completed successfully</documentation>
+    </endEvent>
+
+    <endEvent id="disbursementFailed" name="Disbursement Failed">
+      <documentation>Loan disbursement failed</documentation>
+    </endEvent>
+
+    <endEvent id="disbursementCancelled" name="Disbursement Cancelled">
+      <documentation>Loan disbursement cancelled</documentation>
+    </endEvent>
+
+    <!-- Sequence Flows -->
+    <sequenceFlow id="flow1" sourceRef="startLoanDisbursement" targetRef="initiateDisbursementRequest" />
+    <sequenceFlow id="flow2" sourceRef="initiateDisbursementRequest" targetRef="verifyLoanStatus" />
+    <sequenceFlow id="flow3" sourceRef="verifyLoanStatus" targetRef="loanStatusDecision" />
+    
+    <sequenceFlow id="flow4" sourceRef="loanStatusDecision" targetRef="handleLoanNotReady">
+      <conditionExpression xsi:type="tFormalExpression">${!loanReadyForDisbursement}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow5" sourceRef="loanStatusDecision" targetRef="managerReview">
+      <conditionExpression xsi:type="tFormalExpression">${loanReadyForDisbursement}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow6" sourceRef="handleLoanNotReady" targetRef="managerReview" />
+    <sequenceFlow id="flow7" sourceRef="managerReview" targetRef="managerDecision" />
+    
+    <sequenceFlow id="flow8" sourceRef="managerDecision" targetRef="prepareDisbursementDocuments">
+      <conditionExpression xsi:type="tFormalExpression">${managerApproved}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow9" sourceRef="managerDecision" targetRef="disbursementCancelled">
+      <conditionExpression xsi:type="tFormalExpression">${!managerApproved}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow10" sourceRef="prepareDisbursementDocuments" targetRef="executeDisbursement" />
+    <sequenceFlow id="flow11" sourceRef="executeDisbursement" targetRef="disbursementExecutionDecision" />
+    
+    <sequenceFlow id="flow12" sourceRef="disbursementExecutionDecision" targetRef="verifyDisbursement">
+      <conditionExpression xsi:type="tFormalExpression">${loanDisbursementSuccess}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow13" sourceRef="disbursementExecutionDecision" targetRef="handleDisbursementFailure">
+      <conditionExpression xsi:type="tFormalExpression">${!loanDisbursementSuccess}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow14" sourceRef="verifyDisbursement" targetRef="notifyClientDisbursement" />
+    <sequenceFlow id="flow15" sourceRef="notifyClientDisbursement" targetRef="updateLoanStatus" />
+    <sequenceFlow id="flow16" sourceRef="updateLoanStatus" targetRef="finalReview" />
+    <sequenceFlow id="flow17" sourceRef="finalReview" targetRef="disbursementCompleted" />
+    
+    <sequenceFlow id="flow18" sourceRef="handleDisbursementFailure" targetRef="itResolutionDecision" />
+    
+    <sequenceFlow id="flow19" sourceRef="itResolutionDecision" targetRef="itSupportResolution">
+      <conditionExpression xsi:type="tFormalExpression">${escalateToIT}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow20" sourceRef="itResolutionDecision" targetRef="disbursementFailed">
+      <conditionExpression xsi:type="tFormalExpression">${!escalateToIT}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow21" sourceRef="itSupportResolution" targetRef="itResolutionDecision" />
+    
+    <sequenceFlow id="flow22" sourceRef="itResolutionDecision" targetRef="executeDisbursement">
+      <conditionExpression xsi:type="tFormalExpression">${retryDisbursement}</conditionExpression>
+    </sequenceFlow>
+
+  </process>
+
+</definitions>
