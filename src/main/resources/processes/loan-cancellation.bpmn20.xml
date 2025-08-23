@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.activiti.org/bpmn"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+
+  <process id="loan-cancellation" name="Loan Cancellation Process" isExecutable="true">
+    
+    <startEvent id="startLoanCancellation" name="Start Loan Cancellation">
+      <documentation>Start the loan cancellation process</documentation>
+    </startEvent>
+
+    <userTask id="submitCancellationRequest" name="Submit Cancellation Request" flowable:assignee="${loanOfficer != null ? loanOfficer : 'system'}">
+      <documentation>Submit the loan cancellation request</documentation>
+      <extensionElements>
+        <flowable:formProperty id="loanId" name="Loan ID" type="long" required="true" />
+        <flowable:formProperty id="externalId" name="External ID" type="string" />
+        <flowable:formProperty id="cancellationReason" name="Cancellation Reason" type="string" required="true" />
+        <flowable:formProperty id="cancellationDate" name="Cancellation Date" type="date" required="true" />
+        <flowable:formProperty id="cancelledBy" name="Cancelled By" type="string" required="true" />
+        <flowable:formProperty id="notes" name="Notes" type="string" />
+      </extensionElements>
+    </userTask>
+
+    <serviceTask id="verifyLoanStatus" name="Verify Loan Status" flowable:delegateExpression="${loanStatusVerificationDelegate}">
+      <documentation>Verify that the loan is eligible for cancellation</documentation>
+    </serviceTask>
+
+    <userTask id="reviewCancellationRequest" name="Review Cancellation Request" flowable:assignee="${assignee != null ? assignee : 'system'}">
+      <documentation>Review the cancellation request for validity and impact</documentation>
+      <extensionElements>
+        <flowable:formProperty id="reviewed" name="Review Approved" type="boolean" required="true" />
+        <flowable:formProperty id="reviewNotes" name="Review Notes" type="string" />
+        <flowable:formProperty id="impactAssessment" name="Impact Assessment" type="string" />
+        <flowable:formProperty id="complianceCheck" name="Compliance Check" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <exclusiveGateway id="cancellationReviewDecision" name="Cancellation Review Decision">
+      <documentation>Decision gateway for cancellation request review</documentation>
+    </exclusiveGateway>
+
+    <userTask id="requestAdditionalInfo" name="Request Additional Information" flowable:assignee="${loanOfficer != null ? loanOfficer : 'system'}">
+      <documentation>Request additional information for cancellation</documentation>
+      <extensionElements>
+        <flowable:formProperty id="informationRequested" name="Information Requested" type="string" required="true" />
+        <flowable:formProperty id="deadline" name="Deadline" type="date" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="provideAdditionalInfo" name="Provide Additional Information" flowable:assignee="${assignee != null ? assignee : 'system'}">
+      <documentation>Provide additional information for cancellation</documentation>
+      <extensionElements>
+        <flowable:formProperty id="additionalInfoProvided" name="Additional Information" type="string" />
+        <flowable:formProperty id="infoComplete" name="Information Complete" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="cancellationApproval" name="Cancellation Approval" flowable:assignee="${approver != null ? approver : 'manager'}">
+      <documentation>Approve or reject the cancellation request</documentation>
+      <extensionElements>
+        <flowable:formProperty id="approved" name="Cancellation Approved" type="boolean" required="true" />
+        <flowable:formProperty id="approvalNotes" name="Approval Notes" type="string" />
+        <flowable:formProperty id="approvalDate" name="Approval Date" type="date" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <exclusiveGateway id="cancellationApprovalDecision" name="Cancellation Approval Decision">
+      <documentation>Decision gateway for cancellation approval</documentation>
+    </exclusiveGateway>
+
+    <serviceTask id="executeCancellation" name="Execute Cancellation" flowable:delegateExpression="${loanCancellationDelegate}">
+      <documentation>Execute the loan cancellation in Fineract system</documentation>
+    </serviceTask>
+
+    <userTask id="updateRecords" name="Update Records" flowable:assignee="${loanOfficer != null ? loanOfficer : 'system'}">
+      <documentation>Update internal records and documentation</documentation>
+      <extensionElements>
+        <flowable:formProperty id="recordsUpdated" name="Records Updated" type="boolean" required="true" />
+        <flowable:formProperty id="documentationComplete" name="Documentation Complete" type="boolean" required="true" />
+        <flowable:formProperty id="updateNotes" name="Update Notes" type="string" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="notifyClientCancellation" name="Notify Client - Cancellation" flowable:assignee="${loanOfficer != null ? loanOfficer : 'system'}">
+      <documentation>Notify client of successful cancellation</documentation>
+      <extensionElements>
+        <flowable:formProperty id="notificationMethod" name="Notification Method" type="string" required="true" />
+        <flowable:formProperty id="notificationSent" name="Notification Sent" type="boolean" required="true" />
+        <flowable:formProperty id="cancellationDetails" name="Cancellation Details" type="string" />
+      </extensionElements>
+    </userTask>
+
+    <userTask id="notifyClientRejection" name="Notify Client - Rejection" flowable:assignee="${loanOfficer != null ? loanOfficer : 'system'}">
+      <documentation>Notify client of cancellation rejection</documentation>
+      <extensionElements>
+        <flowable:formProperty id="rejectionReason" name="Rejection Reason" type="string" required="true" />
+        <flowable:formProperty id="notificationMethod" name="Notification Method" type="string" required="true" />
+        <flowable:formProperty id="notificationSent" name="Notification Sent" type="boolean" required="true" />
+      </extensionElements>
+    </userTask>
+
+    <endEvent id="cancellationApproved" name="Cancellation Approved">
+      <documentation>Loan cancellation approved successfully</documentation>
+    </endEvent>
+
+    <endEvent id="cancellationRejected" name="Cancellation Rejected">
+      <documentation>Loan cancellation rejected</documentation>
+    </endEvent>
+
+    <!-- Sequence Flows -->
+    <sequenceFlow id="flow1" sourceRef="startLoanCancellation" targetRef="submitCancellationRequest" />
+    <sequenceFlow id="flow2" sourceRef="submitCancellationRequest" targetRef="verifyLoanStatus" />
+    <sequenceFlow id="flow3" sourceRef="verifyLoanStatus" targetRef="reviewCancellationRequest" />
+    <sequenceFlow id="flow4" sourceRef="reviewCancellationRequest" targetRef="cancellationReviewDecision" />
+    
+    <sequenceFlow id="flow5" sourceRef="cancellationReviewDecision" targetRef="requestAdditionalInfo">
+      <conditionExpression xsi:type="tFormalExpression">${!reviewed || reviewed == false}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow6" sourceRef="cancellationReviewDecision" targetRef="cancellationApproval">
+      <conditionExpression xsi:type="tFormalExpression">${reviewed == true}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow7" sourceRef="requestAdditionalInfo" targetRef="provideAdditionalInfo" />
+    <sequenceFlow id="flow8" sourceRef="provideAdditionalInfo" targetRef="reviewCancellationRequest" />
+    <sequenceFlow id="flow9" sourceRef="cancellationApproval" targetRef="cancellationApprovalDecision" />
+    
+    <sequenceFlow id="flow10" sourceRef="cancellationApprovalDecision" targetRef="executeCancellation">
+      <conditionExpression xsi:type="tFormalExpression">${approved}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow11" sourceRef="cancellationApprovalDecision" targetRef="notifyClientRejection">
+      <conditionExpression xsi:type="tFormalExpression">${!approved}</conditionExpression>
+    </sequenceFlow>
+    
+    <sequenceFlow id="flow12" sourceRef="executeCancellation" targetRef="updateRecords" />
+    <sequenceFlow id="flow13" sourceRef="updateRecords" targetRef="notifyClientCancellation" />
+    <sequenceFlow id="flow14" sourceRef="notifyClientCancellation" targetRef="cancellationApproved" />
+    <sequenceFlow id="flow15" sourceRef="notifyClientRejection" targetRef="cancellationRejected" />
+
+  </process>
+
+</definitions>
