@@ -16,6 +16,7 @@ import org.mifos.workflow.core.model.TaskInfo;
 import org.mifos.workflow.dto.fineract.client.ClientCloseRequestDTO;
 import org.mifos.workflow.service.WorkflowService;
 import org.springframework.http.ResponseEntity;
+import org.mifos.workflow.util.ApiResponse;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,11 +69,11 @@ public class ClientOffboardingController {
     }
 
     @PostMapping("/tasks/{taskId}/complete")
-    public ResponseEntity<Void> completeOffboardingTask(@PathVariable String taskId, @RequestBody Map<String, Object> taskVariables) {
+    public ResponseEntity<ApiResponse<Void>> completeOffboardingTask(@PathVariable String taskId, @RequestBody Map<String, Object> taskVariables) {
         log.info("Completing offboarding task: {}", taskId);
         workflowService.completeTask(taskId, taskVariables);
         log.info("Offboarding task {} completed successfully", taskId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Offboarding task completed successfully"));
     }
 
     @GetMapping("/processes/{processInstanceId}/variables")
@@ -131,11 +132,11 @@ public class ClientOffboardingController {
     }
 
     @DeleteMapping("/processes/{processInstanceId}")
-    public ResponseEntity<Void> terminateProcess(@PathVariable String processInstanceId) {
+    public ResponseEntity<ApiResponse<Void>> terminateProcess(@PathVariable String processInstanceId) {
         log.info("Terminating process instance: {}", processInstanceId);
         workflowService.terminateProcess(processInstanceId, "Manual termination via API");
         log.info("Process instance {} terminated successfully", processInstanceId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Process terminated successfully"));
     }
 
     @GetMapping("/processes/{processInstanceId}/status")
@@ -181,11 +182,11 @@ public class ClientOffboardingController {
     }
 
     @DeleteMapping("/deployments/{deploymentId}")
-    public ResponseEntity<Void> deleteDeployment(@PathVariable String deploymentId) {
+    public ResponseEntity<ApiResponse<Void>> deleteDeployment(@PathVariable String deploymentId) {
         log.info("Deleting deployment: {}", deploymentId);
         workflowService.deleteDeployment(deploymentId);
         log.info("Deployment {} deleted successfully", deploymentId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Deployment deleted successfully"));
     }
 
     @PostMapping("/deployments")

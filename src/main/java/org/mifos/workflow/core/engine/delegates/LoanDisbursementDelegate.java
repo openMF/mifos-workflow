@@ -123,9 +123,12 @@ public class LoanDisbursementDelegate implements JavaDelegate {
         }
         request.put("actualDisbursementDate", disbursementDateStr);
 
-        Object amt = execution.getVariable("transactionAmount");
+        Object approvedAmt = execution.getVariable("approvedAmount");
+        Object originalAmt = execution.getVariable("transactionAmount");
+        Object amt = approvedAmt != null ? approvedAmt : originalAmt;
         if (amt != null) {
             request.put("transactionAmount", amt);
+            log.info("Using amount for disbursement: {} (approved: {}, original: {})", amt, approvedAmt, originalAmt);
         }
         Object note = execution.getVariable("note");
         if (note != null) {

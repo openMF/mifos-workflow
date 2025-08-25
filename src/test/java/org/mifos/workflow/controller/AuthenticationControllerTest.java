@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.mifos.workflow.util.ApiResponse;
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.HttpException;
 import retrofit2.Response;
@@ -146,12 +147,14 @@ class AuthenticationControllerTest {
         doNothing().when(fineractAuthService).clearCachedAuthKey();
 
         // When
-        ResponseEntity<Void> response = authenticationController.logout();
+        ResponseEntity<ApiResponse<Void>> response = authenticationController.logout();
 
         // Then
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNull(response.getBody());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isSuccess());
+        assertEquals("Logged out successfully", response.getBody().getMessage());
         verify(fineractAuthService).clearCachedAuthKey();
     }
 }

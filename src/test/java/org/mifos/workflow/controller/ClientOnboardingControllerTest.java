@@ -17,6 +17,7 @@ import org.mifos.workflow.core.model.ProcessVariables;
 import org.mifos.workflow.core.model.TaskInfo;
 import org.mifos.workflow.dto.fineract.client.ClientCreateRequestDTO;
 import org.mifos.workflow.service.WorkflowService;
+import org.mifos.workflow.util.ApiResponse;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -97,7 +98,7 @@ class ClientOnboardingControllerTest {
         doNothing().when(workflowService).completeTask(anyString(), any(Map.class));
 
         // When
-        ResponseEntity<Void> response = clientOnboardingController.completeVerificationTask("task-123", taskVariables);
+        ResponseEntity<ApiResponse<Void>> response = clientOnboardingController.completeVerificationTask("task-123", taskVariables);
 
         // Then
         assertNotNull(response);
@@ -254,7 +255,7 @@ class ClientOnboardingControllerTest {
         doNothing().when(workflowService).terminateProcess(anyString(), anyString());
 
         // When
-        ResponseEntity<Void> response = clientOnboardingController.terminateProcess("process-123");
+        ResponseEntity<ApiResponse<Void>> response = clientOnboardingController.terminateProcess("process-123");
 
         // Then
         assertNotNull(response);
@@ -370,7 +371,7 @@ class ClientOnboardingControllerTest {
         doNothing().when(workflowService).deleteDeployment("deploy-123");
 
         // When
-        ResponseEntity<Void> response = clientOnboardingController.deleteDeployment("deploy-123");
+        ResponseEntity<ApiResponse<Void>> response = clientOnboardingController.deleteDeployment("deploy-123");
 
         // Then
         assertNotNull(response);
