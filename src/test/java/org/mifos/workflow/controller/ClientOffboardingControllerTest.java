@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.mifos.workflow.util.ApiResponse;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
@@ -111,7 +112,7 @@ class ClientOffboardingControllerTest {
         doNothing().when(workflowService).completeTask(anyString(), any(Map.class));
 
         // When
-        ResponseEntity<Void> response = clientOffboardingController.completeOffboardingTask("task-123", taskVariables);
+        ResponseEntity<ApiResponse<Void>> response = clientOffboardingController.completeOffboardingTask("task-123", taskVariables);
 
         // Then
         assertNotNull(response);
@@ -268,7 +269,7 @@ class ClientOffboardingControllerTest {
         doNothing().when(workflowService).terminateProcess(anyString(), anyString());
 
         // When
-        ResponseEntity<Void> response = clientOffboardingController.terminateProcess("process-123");
+        ResponseEntity<ApiResponse<Void>> response = clientOffboardingController.terminateProcess("process-123");
 
         // Then
         assertNotNull(response);
@@ -384,7 +385,7 @@ class ClientOffboardingControllerTest {
         doNothing().when(workflowService).deleteDeployment("deploy-123");
 
         // When
-        ResponseEntity<Void> response = clientOffboardingController.deleteDeployment("deploy-123");
+        ResponseEntity<ApiResponse<Void>> response = clientOffboardingController.deleteDeployment("deploy-123");
 
         // Then
         assertNotNull(response);
