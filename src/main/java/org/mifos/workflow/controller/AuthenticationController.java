@@ -9,6 +9,7 @@ import org.mifos.workflow.exception.FineractApiException;
 import org.mifos.workflow.service.fineract.auth.FineractAuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.mifos.workflow.util.ApiResponse;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -56,10 +57,10 @@ public class AuthenticationController {
     }
 
     @DeleteMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<ApiResponse<Void>> logout() {
         log.info("Logout request received");
         fineractAuthService.clearCachedAuthKey();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
     }
 
 

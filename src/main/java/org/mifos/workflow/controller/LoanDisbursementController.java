@@ -6,6 +6,7 @@ import org.mifos.workflow.core.model.*;
 import org.mifos.workflow.dto.fineract.loan.LoanDisbursementRequestDTO;
 import org.mifos.workflow.service.WorkflowService;
 import org.springframework.http.ResponseEntity;
+import org.mifos.workflow.util.ApiResponse;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -117,7 +118,7 @@ public class LoanDisbursementController {
     }
 
     @PostMapping("/retry/{processInstanceId}")
-    public ResponseEntity<ProcessInstance> retryDisbursement(@PathVariable String processInstanceId,
+    public ResponseEntity<ApiResponse<Void>> retryDisbursement(@PathVariable String processInstanceId,
                                                              @RequestBody Map<String, Object> retryVariables) {
         log.info("Retrying loan disbursement for process instance: {}", processInstanceId);
 
@@ -132,11 +133,11 @@ public class LoanDisbursementController {
             workflowService.completeTask(tasks.get(0).getTaskId(), retryVariables);
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Disbursement retry triggered"));
     }
 
     @PostMapping("/escalate/{processInstanceId}")
-    public ResponseEntity<Void> escalateDisbursement(@PathVariable String processInstanceId,
+    public ResponseEntity<ApiResponse<Void>> escalateDisbursement(@PathVariable String processInstanceId,
                                                      @RequestBody Map<String, Object> escalationVariables) {
         log.info("Escalating loan disbursement for process instance: {}", processInstanceId);
 
@@ -146,11 +147,11 @@ public class LoanDisbursementController {
 
         workflowService.setProcessVariables(processInstanceId, escalationVariables);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Disbursement escalated"));
     }
 
     @PostMapping("/approve/{processInstanceId}")
-    public ResponseEntity<Void> approveDisbursement(@PathVariable String processInstanceId,
+    public ResponseEntity<ApiResponse<Void>> approveDisbursement(@PathVariable String processInstanceId,
                                                     @RequestBody Map<String, Object> approvalVariables) {
         log.info("Approving loan disbursement for process instance: {}", processInstanceId);
 
@@ -168,11 +169,11 @@ public class LoanDisbursementController {
             }
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Disbursement approved"));
     }
 
     @PostMapping("/reject/{processInstanceId}")
-    public ResponseEntity<Void> rejectDisbursement(@PathVariable String processInstanceId,
+    public ResponseEntity<ApiResponse<Void>> rejectDisbursement(@PathVariable String processInstanceId,
                                                    @RequestBody Map<String, Object> rejectionVariables) {
         log.info("Rejecting loan disbursement for process instance: {}", processInstanceId);
 
@@ -190,7 +191,7 @@ public class LoanDisbursementController {
             }
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Disbursement rejected"));
     }
 
     @GetMapping("/tasks")
@@ -208,11 +209,11 @@ public class LoanDisbursementController {
     }
 
     @PostMapping("/tasks/{taskId}/complete")
-    public ResponseEntity<Void> completeTask(@PathVariable String taskId, @RequestBody Map<String, Object> taskVariables) {
+    public ResponseEntity<ApiResponse<Void>> completeTask(@PathVariable String taskId, @RequestBody Map<String, Object> taskVariables) {
         log.info("Completing task: {} with variables: {}", taskId, taskVariables);
         workflowService.completeTask(taskId, taskVariables);
         log.info("Task {} completed successfully", taskId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Task completed successfully"));
     }
 
     @GetMapping("/processes/{processInstanceId}/variables")
@@ -223,10 +224,10 @@ public class LoanDisbursementController {
     }
 
     @PostMapping("/processes/{processInstanceId}/variables")
-    public ResponseEntity<Void> setProcessVariables(@PathVariable String processInstanceId, @RequestBody Map<String, Object> variables) {
+    public ResponseEntity<ApiResponse<Void>> setProcessVariables(@PathVariable String processInstanceId, @RequestBody Map<String, Object> variables) {
         log.info("Setting variables for process instance: {} with variables: {}", processInstanceId, variables);
         workflowService.setProcessVariables(processInstanceId, variables);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Process variables updated"));
     }
 
     @GetMapping("/processes")
@@ -244,11 +245,11 @@ public class LoanDisbursementController {
     }
 
     @DeleteMapping("/processes/{processInstanceId}")
-    public ResponseEntity<Void> terminateProcess(@PathVariable String processInstanceId) {
+    public ResponseEntity<ApiResponse<Void>> terminateProcess(@PathVariable String processInstanceId) {
         log.info("Terminating process instance: {}", processInstanceId);
         workflowService.terminateProcess(processInstanceId, "Manual termination via API");
         log.info("Process instance {} terminated successfully", processInstanceId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Process terminated successfully"));
     }
 
     @GetMapping("/processes/{processInstanceId}/status")

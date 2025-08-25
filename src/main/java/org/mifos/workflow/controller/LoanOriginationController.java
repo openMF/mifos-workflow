@@ -7,6 +7,7 @@ import org.mifos.workflow.dto.fineract.loan.LoanCreateRequestDTO;
 import org.mifos.workflow.dto.fineract.loan.LoanApprovalRequestDTO;
 import org.mifos.workflow.dto.fineract.loan.LoanRejectionRequestDTO;
 import org.mifos.workflow.service.WorkflowService;
+import org.mifos.workflow.util.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -157,7 +158,7 @@ public class LoanOriginationController {
     }
 
     @PostMapping("/tasks/{taskId}/complete")
-    public ResponseEntity<Void> completeTask(@PathVariable String taskId, @RequestBody Map<String, Object> taskVariables) {
+    public ResponseEntity<ApiResponse<Void>> completeTask(@PathVariable String taskId, @RequestBody Map<String, Object> taskVariables) {
         log.info("Completing task: {} with variables: {}", taskId, taskVariables);
 
         if (taskVariables.containsKey("loanType")) {
@@ -169,7 +170,7 @@ public class LoanOriginationController {
 
         workflowService.completeTask(taskId, taskVariables);
         log.info("Task {} completed successfully", taskId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Task completed successfully"));
     }
 
     @GetMapping("/processes/{processInstanceId}/variables")
@@ -194,18 +195,18 @@ public class LoanOriginationController {
     }
 
     @PostMapping("/processes/{processInstanceId}/variables")
-    public ResponseEntity<Void> setProcessVariables(@PathVariable String processInstanceId, @RequestBody Map<String, Object> variables) {
+    public ResponseEntity<ApiResponse<Void>> setProcessVariables(@PathVariable String processInstanceId, @RequestBody Map<String, Object> variables) {
         log.info("Setting variables for process instance: {} with variables: {}", processInstanceId, variables);
         workflowService.setProcessVariables(processInstanceId, variables);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Process variables updated"));
     }
 
     @DeleteMapping("/processes/{processInstanceId}")
-    public ResponseEntity<Void> terminateProcess(@PathVariable String processInstanceId) {
+    public ResponseEntity<ApiResponse<Void>> terminateProcess(@PathVariable String processInstanceId) {
         log.info("Terminating process instance: {}", processInstanceId);
         workflowService.terminateProcess(processInstanceId, "Manual termination via API");
         log.info("Process instance {} terminated successfully", processInstanceId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Process terminated successfully"));
     }
 
     @GetMapping("/processes/{processInstanceId}/status")

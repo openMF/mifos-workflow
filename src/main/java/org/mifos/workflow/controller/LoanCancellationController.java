@@ -7,6 +7,7 @@ import org.mifos.workflow.dto.fineract.loan.LoanCancellationRequestDTO;
 import org.mifos.workflow.service.WorkflowService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.mifos.workflow.util.ApiResponse;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -55,7 +56,7 @@ public class LoanCancellationController {
 
 
     @PostMapping("/tasks/{taskId}/complete")
-    public ResponseEntity<Void> completeTask(@PathVariable String taskId,
+    public ResponseEntity<ApiResponse<Void>> completeTask(@PathVariable String taskId,
                                              @RequestBody Map<String, Object> variables) {
         log.info("Completing task in loan cancellation workflow. Task ID: {}", taskId);
 
@@ -75,7 +76,7 @@ public class LoanCancellationController {
 
         workflowService.completeTask(taskId, variables);
         log.info("Task completed successfully. Task ID: {}", taskId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Task completed successfully"));
     }
 
 
@@ -106,12 +107,12 @@ public class LoanCancellationController {
 
 
     @PostMapping("/processes/{processInstanceId}/terminate")
-    public ResponseEntity<Void> terminateProcess(@PathVariable String processInstanceId,
+    public ResponseEntity<ApiResponse<Void>> terminateProcess(@PathVariable String processInstanceId,
                                                  @RequestBody ProcessTerminationRequest request) {
         log.info("Terminating process instance. Process Instance ID: {}", processInstanceId);
 
         workflowService.terminateProcess(processInstanceId, request.getReason());
         log.info("Process instance terminated successfully. Process Instance ID: {}", processInstanceId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Process terminated successfully"));
     }
 }

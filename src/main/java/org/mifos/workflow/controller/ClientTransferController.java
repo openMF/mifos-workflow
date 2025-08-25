@@ -16,6 +16,7 @@ import org.mifos.workflow.core.model.TaskInfo;
 import org.mifos.workflow.dto.fineract.client.ClientTransferRequestDTO;
 import org.mifos.workflow.service.WorkflowService;
 import org.springframework.http.ResponseEntity;
+import org.mifos.workflow.util.ApiResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,11 +63,11 @@ public class ClientTransferController {
     }
 
     @PostMapping("/tasks/{taskId}/complete")
-    public ResponseEntity<Void> completeTransferTask(@PathVariable String taskId, @RequestBody Map<String, Object> taskVariables) {
+    public ResponseEntity<ApiResponse<Void>> completeTransferTask(@PathVariable String taskId, @RequestBody Map<String, Object> taskVariables) {
         log.info("Completing transfer task: {}", taskId);
         workflowService.completeTask(taskId, taskVariables);
         log.info("Transfer task {} completed successfully", taskId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Transfer task completed successfully"));
     }
 
     @GetMapping("/processes/{processInstanceId}/variables")
@@ -125,11 +126,11 @@ public class ClientTransferController {
     }
 
     @DeleteMapping("/processes/{processInstanceId}")
-    public ResponseEntity<Void> terminateProcess(@PathVariable String processInstanceId) {
+    public ResponseEntity<ApiResponse<Void>> terminateProcess(@PathVariable String processInstanceId) {
         log.info("Terminating process instance: {}", processInstanceId);
         workflowService.terminateProcess(processInstanceId, "Manual termination via API");
         log.info("Process instance {} terminated successfully", processInstanceId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Process terminated successfully"));
     }
 
     @GetMapping("/processes/{processInstanceId}/status")
@@ -175,11 +176,11 @@ public class ClientTransferController {
     }
 
     @DeleteMapping("/deployments/{deploymentId}")
-    public ResponseEntity<Void> deleteDeployment(@PathVariable String deploymentId) {
+    public ResponseEntity<ApiResponse<Void>> deleteDeployment(@PathVariable String deploymentId) {
         log.info("Deleting deployment: {}", deploymentId);
         workflowService.deleteDeployment(deploymentId);
         log.info("Deployment {} deleted successfully", deploymentId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Deployment deleted successfully"));
     }
 
     @PostMapping("/deployments")
