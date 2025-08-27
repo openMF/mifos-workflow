@@ -29,6 +29,12 @@ public class WorkflowException extends RuntimeException {
     public static final String ERROR_CLIENT_REJECTION_FAILED = "CLIENT_REJECTION_FAILED";
     public static final String ERROR_STAFF_ASSIGNMENT_FAILED = "STAFF_ASSIGNMENT_FAILED";
     public static final String ERROR_CLIENT_ACTIVATION_FAILED = "CLIENT_ACTIVATION_FAILED";
+    public static final String ERROR_LOAN_CREATION_FAILED = "LOAN_CREATION_FAILED";
+    public static final String ERROR_LOAN_APPROVAL_FAILED = "LOAN_APPROVAL_FAILED";
+    public static final String ERROR_LOAN_REJECTION_FAILED = "LOAN_REJECTION_FAILED";
+    public static final String ERROR_LOAN_CANCELLATION_FAILED = "LOAN_CANCELLATION_FAILED";
+    public static final String ERROR_LOAN_DISBURSEMENT_FAILED = "LOAN_DISBURSEMENT_FAILED";
+    public static final String ERROR_LOAN_STATUS_VERIFICATION_FAILED = "LOAN_STATUS_VERIFICATION_FAILED";
 
 
     public WorkflowException(String message, String operation, String errorCode, String processId, String taskId) {
