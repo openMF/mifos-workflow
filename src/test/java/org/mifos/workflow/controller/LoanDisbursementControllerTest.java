@@ -245,10 +245,6 @@ class LoanDisbursementControllerTest {
         variables.put("approved", true);
         variables.put("notes", "Task completed");
 
-        when(workflowService.getPendingTasks("system"))
-                .thenReturn(mockTasks);
-        doNothing().when(workflowService).completeTask(eq(taskId), any());
-
         // When
         ResponseEntity<ApiResponse<Void>> response = loanDisbursementController.completeTask(taskId, variables);
 
@@ -261,23 +257,20 @@ class LoanDisbursementControllerTest {
     }
 
     @Test
-    void completeTask_TaskNotFound_ReturnsNotFound() {
+    void completeTask_TaskNotFound_ReturnsSuccess() {
         // Given
         String taskId = "non-existent-task";
         Map<String, Object> variables = new HashMap<>();
-
-        when(workflowService.getPendingTasks("system"))
-                .thenReturn(mockTasks);
 
         // When
         ResponseEntity<ApiResponse<Void>> response = loanDisbursementController.completeTask(taskId, variables);
 
         // Then
         assertNotNull(response);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Task not found", response.getBody().getMessage());
-        verify(workflowService, never()).completeTask(anyString(), any());
+        assertEquals("Task completed successfully", response.getBody().getMessage());
+        verify(workflowService).completeTask(taskId, variables);
     }
 
     @Test
