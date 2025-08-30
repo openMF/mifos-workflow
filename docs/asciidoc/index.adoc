@@ -1,7 +1,7 @@
 = Home
 :doctype: book
 :icons: font
-:revdate: 2025-01-08
+:revdate: 2025-09-01
 
 [.version-info]
 Version: 0.0.1-SNAPSHOT
@@ -187,7 +187,7 @@ For complete API documentation, see link:api-reference.html[API Reference].
 
 == Workflow Processes
 
-The service implements three core business processes:
+The service implements six core business processes:
 
 === Client Onboarding Process
 
@@ -224,6 +224,52 @@ Workflow for transferring clients between offices:
 5. **Decision Gateway**: Transfer accepted or rejected
 6. **Accept Transfer**: Execute transfer (accepted path)
 7. **Reject Transfer**: Reject transfer (rejected path)
+
+=== Loan Origination Process
+
+Comprehensive workflow for loan application and approval:
+
+1. **Start Event**: Loan application initiated
+2. **Submit Application**: Loan officer submits complete application
+3. **Create Loan**: Create loan in Fineract system
+4. **Review Application**: Review for completeness and accuracy
+5. **Decision Gateway**: Application approved or needs additional info
+6. **Credit Assessment**: Perform credit assessment and risk analysis
+7. **Loan Approval**: Approve or reject the loan application
+8. **Decision Gateway**: Final approval decision
+9. **Execute Approval/Rejection**: Update loan status in Fineract
+10. **Notify Client**: Notify client of decision
+
+=== Loan Disbursement Process
+
+Process for loan disbursement with verification and compliance:
+
+1. **Start Event**: Disbursement request initiated
+2. **Initiate Request**: Submit disbursement request with details
+3. **Verify Loan Status**: Check loan is approved and ready
+4. **Decision Gateway**: Loan ready or needs handling
+5. **Manager Review**: Manager reviews disbursement request
+6. **Decision Gateway**: Manager approval decision
+7. **Prepare Documents**: Prepare all required documents
+8. **Execute Disbursement**: Execute disbursement in Fineract
+9. **Decision Gateway**: Disbursement execution result
+10. **Verify Disbursement**: Verify successful disbursement
+11. **Notify Client**: Notify client of successful disbursement
+
+=== Loan Cancellation Process
+
+Workflow for loan cancellation with proper approval and documentation:
+
+1. **Start Event**: Cancellation request initiated
+2. **Submit Request**: Submit cancellation request with reason
+3. **Verify Loan Status**: Check loan eligibility for cancellation
+4. **Review Request**: Review cancellation for validity and impact
+5. **Decision Gateway**: Review approved or needs additional info
+6. **Cancellation Approval**: Approve or reject cancellation request
+7. **Decision Gateway**: Final cancellation decision
+8. **Execute Cancellation**: Execute cancellation in Fineract
+9. **Update Records**: Update internal records and documentation
+10. **Notify Client**: Notify client of successful cancellation
 
 For detailed process documentation, see link:workflow-processes.html[Workflow Processes].
 
