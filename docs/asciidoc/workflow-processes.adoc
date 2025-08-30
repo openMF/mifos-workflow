@@ -10,13 +10,16 @@
 
 == Overview
 
-The Mifos Workflow Integration Service implements three core business processes using BPMN 2.0 workflows:
+The Mifos Workflow Integration Service implements six core business processes using BPMN 2.0 workflows:
 
 * **Client Onboarding**: Complete workflow for registering and activating new clients
 * **Client Offboarding**: Process for closing client accounts with proper verification
 * **Client Transfer**: Workflow for transferring clients between offices
+* **Loan Origination**: Comprehensive loan application and approval workflow
+* **Loan Disbursement**: Process for loan disbursement with verification and compliance checks
+* **Loan Cancellation**: Workflow for loan cancellation with proper approval and documentation
 
-All processes are implemented using the Flowable workflow engine and integrate with the Fineract API for client lifecycle management.
+All processes are implemented using the Flowable workflow engine and integrate with the Fineract API for client and loan lifecycle management.
 
 == Client Onboarding Process
 
@@ -347,6 +350,615 @@ POST /api/v1/workflow/client-transfer/start
 POST /api/v1/workflow/client-transfer/tasks/{taskId}/complete
 ----
 
+== Loan Origination Process
+
+=== Process Overview
+
+The loan origination process manages the complete lifecycle of loan applications, from initial submission through approval or rejection. This comprehensive workflow includes application review, credit assessment, approval processes, and client notification.
+
+=== Visual Process Diagram
+
+[.bpmn-diagram]
+image::loanoriginationworkflow.png[Loan Origination BPMN Process Flow, width=100%]
+
+*Note: Visual representation of the loan origination workflow process*
+
+=== Process Steps
+
+==== 1. Start Event: Loan Application Initiated
+* **Activity ID**: `startLoanOrigination`
+* **Type**: Start Event
+* **Description**: Triggered when a loan application is submitted
+
+==== 2. User Task: Submit Loan Application
+* **Activity ID**: `submitLoanApplication`
+* **Type**: User Task
+* **Assignee**: `${loanOfficer}` (default: "system")
+* **Description**: Loan officer submits the complete loan application
+* **Form Properties**:
+  * `clientId` (long, required): Client ID
+  * `productId` (long, required): Product ID
+  * `principal` (double, required): Principal Amount
+  * `loanTermFrequency` (long, required): Loan Term Frequency
+  * `loanTermFrequencyType` (long, required): Loan Term Frequency Type
+  * `loanType` (string, required): Loan Type
+  * `loanPurposeId` (long, required): Loan Purpose ID
+  * `interestRatePerPeriod` (double, required): Interest Rate
+  * `interestRateFrequencyType` (long, required): Interest Rate Frequency Type
+  * `amortizationType` (long, required): Amortization Type
+  * `interestType` (long, required): Interest Type
+  * `interestCalculationPeriodType` (long, required): Interest Calculation Period Type
+  * `transactionProcessingStrategyCode` (string, required): Transaction Processing Strategy Code
+  * `numberOfRepayments` (long, required): Number of Repayments
+  * `repaymentEvery` (long, required): Repayment Every
+  * `repaymentFrequencyType` (long, required): Repayment Frequency Type
+  * `expectedDisbursementDate` (date, required): Expected Disbursement Date
+  * `submittedOnDate` (date, required): Submitted On Date
+
+==== 3. Service Task: Create Loan in Fineract
+* **Activity ID**: `createLoanInFineract`
+* **Type**: Service Task
+* **Delegate**: `${loanCreationDelegate}`
+* **Description**: Create the loan application in Fineract system
+* **Assignee**: System (automated)
+
+==== 4. User Task: Review Loan Application
+* **Activity ID**: `reviewLoanApplication`
+* **Type**: User Task
+* **Assignee**: `${assignee}` (default: "system")
+* **Description**: Review the loan application for completeness and accuracy
+* **Form Properties**:
+  * `approved` (boolean, required): Application Approved
+  * `reviewNotes` (string): Review Notes
+
+==== 5. Exclusive Gateway: Application Review Decision
+* **Activity ID**: `loanReviewDecision`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on application review
+
+==== 6. User Task: Request Additional Information (Rejected Path)
+* **Activity ID**: `requestAdditionalInfo`
+* **Type**: User Task
+* **Assignee**: `${loanOfficer}` (default: "system")
+* **Description**: Request additional information from the client
+* **Form Properties**:
+  * `informationRequested` (string, required): Information Requested
+  * `deadline` (date, required): Deadline
+
+==== 7. User Task: Provide Additional Information (Rejected Path)
+* **Activity ID**: `provideAdditionalInfo`
+* **Type**: User Task
+* **Assignee**: `${assignee}` (default: "system")
+* **Description**: Client provides additional information
+* **Form Properties**:
+  * `additionalInfoProvided` (string): Additional Information
+  * `infoComplete` (boolean, required): Information Complete
+
+==== 8. User Task: Credit Assessment (Approved Path)
+* **Activity ID**: `creditAssessment`
+* **Type**: User Task
+* **Assignee**: `${assignee}` (default: "system")
+* **Description**: Perform credit assessment and risk analysis
+* **Form Properties**:
+  * `creditScore` (long): Credit Score
+  * `riskLevel` (string, required): Risk Level
+  * `assessmentNotes` (string): Assessment Notes
+
+==== 9. User Task: Loan Approval
+* **Activity ID**: `loanApproval`
+* **Type**: User Task
+* **Assignee**: `${approver}` (default: "system")
+* **Description**: Approve or reject the loan application
+* **Form Properties**:
+  * `approvedOnDate` (date, required): Approved On Date
+  * `rejectedOnDate` (date): Rejected On Date
+  * `approved` (boolean, required): Loan Approved
+  * `approvalNotes` (string): Approval Notes
+  * `approvedAmount` (double): Approved Amount
+  * `approvedTerms` (string): Approved Terms
+
+==== 10. Exclusive Gateway: Approval Decision
+* **Activity ID**: `approvalDecision`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on loan approval
+
+==== 11. Service Task: Approve Loan in Fineract (Approved Path)
+* **Activity ID**: `approveLoanInFineract`
+* **Type**: Service Task
+* **Delegate**: `${loanApprovalDelegate}`
+* **Description**: Approve the loan in Fineract system
+
+==== 12. Service Task: Reject Loan in Fineract (Rejected Path)
+* **Activity ID**: `rejectLoanInFineract`
+* **Type**: Service Task
+* **Delegate**: `${loanRejectionDelegate}`
+* **Description**: Reject the loan in Fineract system
+
+==== 13. User Task: Notify Client - Approval (Approved Path)
+* **Activity ID**: `notifyClientApproval`
+* **Type**: User Task
+* **Assignee**: `${loanOfficer}` (default: "system")
+* **Description**: Notify client of loan approval
+* **Form Properties**:
+  * `notificationMethod` (string, required): Notification Method
+  * `notificationSent` (boolean, required): Notification Sent
+
+==== 14. User Task: Notify Client - Rejection (Rejected Path)
+* **Activity ID**: `notifyClientRejection`
+* **Type**: User Task
+* **Assignee**: `${loanOfficer}` (default: "system")
+* **Description**: Notify client of loan rejection
+* **Form Properties**:
+  * `rejectionReason` (string, required): Rejection Reason
+  * `notificationMethod` (string, required): Notification Method
+  * `notificationSent` (boolean, required): Notification Sent
+
+==== 15. End Event: Loan Approved (Approved Path)
+* **Activity ID**: `loanApproved`
+* **Type**: End Event
+* **Description**: Loan application approved successfully
+
+==== 16. End Event: Loan Rejected (Rejected Path)
+* **Activity ID**: `loanRejected`
+* **Type**: End Event
+* **Description**: Loan application rejected
+
+=== Process Variables
+
+|===
+|Variable |Type |Description |Source
+|`clientId` |Long |Client identifier |Request
+|`groupId` |Long |Group identifier |Request
+|`productId` |Long |Product identifier |Request
+|`principal` |Double |Principal amount |Request
+|`loanTermFrequency` |Long |Loan term frequency |Request
+|`loanTermFrequencyType` |Long |Loan term frequency type |Request
+|`loanType` |String |Loan type |Request
+|`loanPurposeId` |Long |Loan purpose identifier |Request
+|`interestRatePerPeriod` |Double |Interest rate per period |Request
+|`interestRateFrequencyType` |Long |Interest rate frequency type |Request
+|`amortizationType` |Long |Amortization type |Request
+|`interestType` |Long |Interest type |Request
+|`interestCalculationPeriodType` |Long |Interest calculation period type |Request
+|`transactionProcessingStrategyCode` |String |Transaction processing strategy |Request
+|`numberOfRepayments` |Long |Number of repayments |Request
+|`repaymentEvery` |Long |Repayment frequency |Request
+|`repaymentFrequencyType` |Long |Repayment frequency type |Request
+|`expectedDisbursementDate` |String |Expected disbursement date |Request
+|`submittedOnDate` |String |Submission date |Request
+|`externalId` |String |External identifier |Request
+|`dateFormat` |String |Date format |Request
+|`locale` |String |Locale |Request
+|`assignee` |String |Task assignee |System
+|`loanOfficer` |String |Loan officer |System
+|`approver` |String |Approver |System
+|`approved` |Boolean |Approval status |User Task
+|`reviewNotes` |String |Review notes |User Task
+|`informationRequested` |String |Information requested |User Task
+|`deadline` |String |Deadline |User Task
+|`additionalInfoProvided` |String |Additional information |User Task
+|`infoComplete` |Boolean |Information complete |User Task
+|`creditScore` |Long |Credit score |User Task
+|`riskLevel` |String |Risk level |User Task
+|`assessmentNotes` |String |Assessment notes |User Task
+|`approvedOnDate` |String |Approval date |User Task
+|`rejectedOnDate` |String |Rejection date |User Task
+|`approvalNotes` |String |Approval notes |User Task
+|`approvedAmount` |Double |Approved amount |User Task
+|`approvedTerms` |String |Approved terms |User Task
+|`notificationMethod` |String |Notification method |User Task
+|`notificationSent` |Boolean |Notification sent |User Task
+|`rejectionReason` |String |Rejection reason |User Task
+|===
+
+=== API Integration
+
+==== Start Process
+[source,http]
+----
+POST /api/v1/workflow/loan-origination/start
+----
+
+==== Approve Loan
+[source,http]
+----
+POST /api/v1/workflow/loan-origination/approve
+----
+
+==== Reject Loan
+[source,http]
+----
+POST /api/v1/workflow/loan-origination/reject
+----
+
+==== Complete Origination Task
+[source,http]
+----
+POST /api/v1/workflow/loan-origination/tasks/{taskId}/complete
+----
+
+== Loan Disbursement Process
+
+=== Process Overview
+
+The loan disbursement process manages the disbursement of approved loans with comprehensive verification, compliance checks, and client notification. This workflow ensures proper documentation, approval, and execution of loan disbursements.
+
+=== Visual Process Diagram
+
+[.bpmn-diagram]
+image::loandisbursementworkflow.png[Loan Disbursement BPMN Process Flow, width=100%]
+
+*Note: Visual representation of the loan disbursement workflow process*
+
+=== Process Steps
+
+==== 1. Start Event: Disbursement Request Initiated
+* **Activity ID**: `startLoanDisbursement`
+* **Type**: Start Event
+* **Description**: Triggered when a loan disbursement is requested
+
+==== 2. User Task: Initiate Disbursement Request
+* **Activity ID**: `initiateDisbursementRequest`
+* **Type**: User Task
+* **Assignee**: `${disbursementOfficer}` (default: "system")
+* **Description**: Initiate the loan disbursement request with basic information
+* **Form Properties**:
+  * `loanId` (long, required): Loan ID
+  * `disbursementAmount` (double, required): Disbursement Amount
+  * `disbursementDate` (date, required): Disbursement Date
+  * `disbursementMethod` (string, required): Disbursement Method
+  * `accountNumber` (string): Account Number
+  * `requestNotes` (string): Request Notes
+
+==== 3. Service Task: Verify Loan Status
+* **Activity ID**: `verifyLoanStatus`
+* **Type**: Service Task
+* **Delegate**: `${loanStatusVerificationDelegate}`
+* **Description**: Verify that the loan is approved and ready for disbursement
+* **Assignee**: System (automated)
+
+==== 4. Exclusive Gateway: Loan Status Decision
+* **Activity ID**: `loanStatusDecision`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on loan status verification
+
+==== 5. User Task: Handle Loan Not Ready (Not Ready Path)
+* **Activity ID**: `handleLoanNotReady`
+* **Type**: User Task
+* **Assignee**: `${disbursementOfficer}` (default: "system")
+* **Description**: Handle cases where loan is not ready for disbursement
+* **Form Properties**:
+  * `issueIdentified` (string, required): Issue Identified
+  * `resolutionAction` (string, required): Resolution Action
+  * `escalateToManager` (boolean, required): Escalate to Manager
+
+==== 6. User Task: Manager Review (Ready Path)
+* **Activity ID**: `managerReview`
+* **Type**: User Task
+* **Assignee**: `${manager}` (default: "system")
+* **Description**: Manager reviews the disbursement request
+* **Form Properties**:
+  * `managerApproved` (boolean, required): Manager Approved
+  * `managerNotes` (string): Manager Notes
+  * `approvedAmount` (double): Approved Amount
+  * `approvedDate` (date, required): Approved Date
+
+==== 7. Exclusive Gateway: Manager Decision
+* **Activity ID**: `managerDecision`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on manager review
+
+==== 8. User Task: Prepare Disbursement Documents (Approved Path)
+* **Activity ID**: `prepareDisbursementDocuments`
+* **Type**: User Task
+* **Assignee**: `${disbursementOfficer}` (default: "system")
+* **Description**: Prepare all required disbursement documents
+* **Form Properties**:
+  * `documentsPrepared` (boolean, required): Documents Prepared
+  * `documentList` (string): Document List
+  * `preparationNotes` (string): Preparation Notes
+  * `complianceCheck` (boolean, required): Compliance Check
+
+==== 9. Service Task: Execute Disbursement (Approved Path)
+* **Activity ID**: `executeDisbursement`
+* **Type**: Service Task
+* **Delegate**: `${loanDisbursementDelegate}`
+* **Description**: Execute the loan disbursement in Fineract system
+* **Assignee**: System (automated)
+
+==== 10. Exclusive Gateway: Disbursement Execution Decision
+* **Activity ID**: `disbursementExecutionDecision`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on disbursement execution
+
+==== 11. User Task: Verify Disbursement (Successful Path)
+* **Activity ID**: `verifyDisbursement`
+* **Type**: User Task
+* **Assignee**: `${disbursementOfficer}` (default: "system")
+* **Description**: Verify that disbursement was successful
+* **Form Properties**:
+  * `disbursementVerified` (boolean, required): Disbursement Verified
+  * `verificationNotes` (string): Verification Notes
+  * `transactionId` (string): Transaction ID
+  * `actualDisbursementDate` (date, required): Actual Disbursement Date
+
+==== 12. User Task: Notify Client - Disbursement (Successful Path)
+* **Activity ID**: `notifyClientDisbursement`
+* **Type**: User Task
+* **Assignee**: `${disbursementOfficer}` (default: "system")
+* **Description**: Notify client of successful disbursement
+* **Form Properties**:
+  * `notificationMethod` (string, required): Notification Method
+  * `notificationSent` (boolean, required): Notification Sent
+  * `disbursementDetails` (string): Disbursement Details
+  * `clientAcknowledged` (boolean): Client Acknowledged
+
+==== 13. End Event: Disbursement Complete (Successful Path)
+* **Activity ID**: `disbursementComplete`
+* **Type**: End Event
+* **Description**: Loan disbursement successfully completed
+
+==== 14. End Event: Disbursement Failed (Failed Path)
+* **Activity ID**: `disbursementFailed`
+* **Type**: End Event
+* **Description**: Loan disbursement failed
+
+=== Process Variables
+
+|===
+|Variable |Type |Description |Source
+|`loanId` |Long |Loan identifier |Request
+|`externalId` |String |External identifier |Request
+|`actualDisbursementDate` |String |Actual disbursement date |Request
+|`transactionAmount` |Double |Transaction amount |Request
+|`disbursementMethod` |String |Disbursement method |Request
+|`accountNumber` |String |Account number |Request
+|`note` |String |Notes |Request
+|`requestNotes` |String |Request notes |Request
+|`dateFormat` |String |Date format |Request
+|`locale` |String |Locale |Request
+|`disbursementOfficer` |String |Disbursement officer |System
+|`manager` |String |Manager |System
+|`itSupport` |String |IT support |System
+|`complianceCheck` |Boolean |Compliance check |Request
+|`complianceNotes` |String |Compliance notes |Request
+|`requiresManagerApproval` |Boolean |Requires manager approval |Request
+|`requiresComplianceReview` |Boolean |Requires compliance review |Request
+|`clientNotificationMethod` |String |Client notification method |Request
+|`requireClientAcknowledgement` |Boolean |Require client acknowledgement |Request
+|`priority` |String |Priority |Request
+|`riskLevel` |String |Risk level |Request
+|`isUrgent` |Boolean |Is urgent |Request
+|`urgencyReason` |String |Urgency reason |Request
+|`disbursementChannel` |String |Disbursement channel |Request
+|`bankCode` |String |Bank code |Request
+|`branchCode` |String |Branch code |Request
+|`referenceNumber` |String |Reference number |Request
+|`beneficiaryName` |String |Beneficiary name |Request
+|`beneficiaryId` |String |Beneficiary ID |Request
+|`beneficiaryPhone` |String |Beneficiary phone |Request
+|`beneficiaryEmail` |String |Beneficiary email |Request
+|`destinationAccount` |String |Destination account |Request
+|`destinationBank` |String |Destination bank |Request
+|`destinationBranch` |String |Destination branch |Request
+|`currencyCode` |String |Currency code |Request
+|`exchangeRate` |Double |Exchange rate |Request
+|`sourceOfFunds` |String |Source of funds |Request
+|`purpose` |String |Purpose |Request
+|`autoRetryOnFailure` |Boolean |Auto retry on failure |Request
+|`maxRetryAttempts` |Integer |Max retry attempts |Request
+|`escalationLevel` |String |Escalation level |Request
+|`processVersion` |String |Process version |System
+|`correlationId` |String |Correlation ID |Request
+|`expectedCompletionDate` |String |Expected completion date |Request
+|`createdBy` |String |Created by |Request
+|`createdDate` |String |Created date |Request
+|`issueIdentified` |String |Issue identified |User Task
+|`resolutionAction` |String |Resolution action |User Task
+|`escalateToManager` |Boolean |Escalate to manager |User Task
+|`managerApproved` |Boolean |Manager approved |User Task
+|`managerNotes` |String |Manager notes |User Task
+|`approvedAmount` |Double |Approved amount |User Task
+|`approvedDate` |String |Approved date |User Task
+|`documentsPrepared` |Boolean |Documents prepared |User Task
+|`documentList` |String |Document list |User Task
+|`preparationNotes` |String |Preparation notes |User Task
+|`disbursementVerified` |Boolean |Disbursement verified |User Task
+|`verificationNotes` |String |Verification notes |User Task
+|`transactionId` |String |Transaction ID |User Task
+|`actualDisbursementDate` |String |Actual disbursement date |User Task
+|`notificationMethod` |String |Notification method |User Task
+|`notificationSent` |Boolean |Notification sent |User Task
+|`disbursementDetails` |String |Disbursement details |User Task
+|`clientAcknowledged` |Boolean |Client acknowledged |User Task
+|===
+
+=== API Integration
+
+==== Start Process
+[source,http]
+----
+POST /api/v1/workflow/loan-disbursement/start
+----
+
+==== Complete Disbursement Task
+[source,http]
+----
+POST /api/v1/workflow/loan-disbursement/tasks/{taskId}/complete
+----
+
+== Loan Cancellation Process
+
+=== Process Overview
+
+The loan cancellation process manages the cancellation of loans with proper verification, approval workflows, and documentation. This workflow ensures compliance with regulatory requirements and proper record-keeping.
+
+=== Visual Process Diagram
+
+[.bpmn-diagram]
+image::loancancellationworkflow.png[Loan Cancellation BPMN Process Flow, width=100%]
+
+*Note: Visual representation of the loan cancellation workflow process*
+
+=== Process Steps
+
+==== 1. Start Event: Cancellation Request Initiated
+* **Activity ID**: `startLoanCancellation`
+* **Type**: Start Event
+* **Description**: Triggered when a loan cancellation is requested
+
+==== 2. User Task: Submit Cancellation Request
+* **Activity ID**: `submitCancellationRequest`
+* **Type**: User Task
+* **Assignee**: `${loanOfficer}` (default: "system")
+* **Description**: Submit the loan cancellation request
+* **Form Properties**:
+  * `loanId` (long, required): Loan ID
+  * `externalId` (string): External ID
+  * `cancellationReason` (string, required): Cancellation Reason
+  * `cancellationDate` (date, required): Cancellation Date
+  * `cancelledBy` (string, required): Cancelled By
+  * `notes` (string): Notes
+
+==== 3. Service Task: Verify Loan Status
+* **Activity ID**: `verifyLoanStatus`
+* **Type**: Service Task
+* **Delegate**: `${loanStatusVerificationDelegate}`
+* **Description**: Verify that the loan is eligible for cancellation
+* **Assignee**: System (automated)
+
+==== 4. User Task: Review Cancellation Request
+* **Activity ID**: `reviewCancellationRequest`
+* **Type**: User Task
+* **Assignee**: `${assignee}` (default: "system")
+* **Description**: Review the cancellation request for validity and impact
+* **Form Properties**:
+  * `reviewed` (boolean, required): Review Approved
+  * `reviewNotes` (string): Review Notes
+  * `impactAssessment` (string): Impact Assessment
+  * `complianceCheck` (boolean, required): Compliance Check
+
+==== 5. Exclusive Gateway: Cancellation Review Decision
+* **Activity ID**: `cancellationReviewDecision`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on cancellation request review
+
+==== 6. User Task: Request Additional Information (Rejected Path)
+* **Activity ID**: `requestAdditionalInfo`
+* **Type**: User Task
+* **Assignee**: `${loanOfficer}` (default: "system")
+* **Description**: Request additional information for cancellation
+* **Form Properties**:
+  * `informationRequested` (string, required): Information Requested
+  * `deadline` (date, required): Deadline
+
+==== 7. User Task: Provide Additional Information (Rejected Path)
+* **Activity ID**: `provideAdditionalInfo`
+* **Type**: User Task
+* **Assignee**: `${assignee}` (default: "system")
+* **Description**: Provide additional information for cancellation
+* **Form Properties**:
+  * `additionalInfoProvided` (string): Additional Information
+  * `infoComplete` (boolean, required): Information Complete
+
+==== 8. User Task: Cancellation Approval (Approved Path)
+* **Activity ID**: `cancellationApproval`
+* **Type**: User Task
+* **Assignee**: `${approver}` (default: "manager")
+* **Description**: Approve or reject the cancellation request
+* **Form Properties**:
+  * `approved` (boolean, required): Cancellation Approved
+  * `approvalNotes` (string): Approval Notes
+  * `approvalDate` (date, required): Approval Date
+
+==== 9. Exclusive Gateway: Cancellation Approval Decision
+* **Activity ID**: `cancellationApprovalDecision`
+* **Type**: Exclusive Gateway
+* **Description**: Decision point based on cancellation approval
+
+==== 10. Service Task: Execute Cancellation (Approved Path)
+* **Activity ID**: `executeCancellation`
+* **Type**: Service Task
+* **Delegate**: `${loanCancellationDelegate}`
+* **Description**: Execute the loan cancellation in Fineract system
+* **Assignee**: System (automated)
+
+==== 11. User Task: Update Records (Approved Path)
+* **Activity ID**: `updateRecords`
+* **Type**: User Task
+* **Assignee**: `${loanOfficer}` (default: "system")
+* **Description**: Update internal records and documentation
+* **Form Properties**:
+  * `recordsUpdated` (boolean, required): Records Updated
+  * `documentationComplete` (boolean, required): Documentation Complete
+  * `updateNotes` (string): Update Notes
+
+==== 12. User Task: Notify Client - Cancellation (Approved Path)
+* **Activity ID**: `notifyClientCancellation`
+* **Type**: User Task
+* **Assignee**: `${loanOfficer}` (default: "system")
+* **Description**: Notify client of successful cancellation
+* **Form Properties**:
+  * `notificationMethod` (string, required): Notification Method
+  * `notificationSent` (boolean, required): Notification Sent
+  * `cancellationDetails` (string): Cancellation Details
+
+==== 13. End Event: Cancellation Complete (Approved Path)
+* **Activity ID**: `cancellationComplete`
+* **Type**: End Event
+* **Description**: Loan cancellation successfully completed
+
+==== 14. End Event: Cancellation Rejected (Rejected Path)
+* **Activity ID**: `cancellationRejected`
+* **Type**: End Event
+* **Description**: Loan cancellation rejected
+
+=== Process Variables
+
+|===
+|Variable |Type |Description |Source
+|`loanId` |Long |Loan identifier |Request
+|`externalId` |String |External identifier |Request
+|`cancellationReason` |String |Cancellation reason |Request
+|`cancellationDate` |String |Cancellation date |Request
+|`cancelledBy` |String |Cancelled by |Request
+|`notes` |String |Notes |Request
+|`loanOfficer` |String |Loan officer |System
+|`assignee` |String |Task assignee |System
+|`approver` |String |Approver |System
+|`reviewed` |Boolean |Review approved |User Task
+|`reviewNotes` |String |Review notes |User Task
+|`impactAssessment` |String |Impact assessment |User Task
+|`complianceCheck` |Boolean |Compliance check |User Task
+|`informationRequested` |String |Information requested |User Task
+|`deadline` |String |Deadline |User Task
+|`additionalInfoProvided` |String |Additional information |User Task
+|`infoComplete` |Boolean |Information complete |User Task
+|`approved` |Boolean |Cancellation approved |User Task
+|`approvalNotes` |String |Approval notes |User Task
+|`approvalDate` |String |Approval date |User Task
+|`recordsUpdated` |Boolean |Records updated |User Task
+|`documentationComplete` |Boolean |Documentation complete |User Task
+|`updateNotes` |String |Update notes |User Task
+|`notificationMethod` |String |Notification method |User Task
+|`notificationSent` |Boolean |Notification sent |User Task
+|`cancellationDetails` |String |Cancellation details |User Task
+|===
+
+=== API Integration
+
+==== Start Process
+[source,http]
+----
+POST /api/v1/workflows/loan-cancellation/start
+----
+
+==== Complete Cancellation Task
+[source,http]
+----
+POST /api/v1/workflows/loan-cancellation/tasks/{taskId}/complete
+----
+
 == Process Delegates
 
 The workflow processes use Spring delegate expressions to invoke business logic. The following delegates are configured:
@@ -363,6 +975,12 @@ The workflow processes use Spring delegate expressions to invoke business logic.
 |`${clientTransferDelegate}` |`ClientTransferDelegate` |Submit transfer proposal
 |`${transferAcceptanceDelegate}` |`TransferAcceptanceDelegate` |Accept client transfer
 |`${transferRejectionDelegate}` |`TransferRejectionDelegate` |Reject client transfer
+|`${loanCreationDelegate}` |`LoanCreationDelegate` |Create loan in Fineract
+|`${loanApprovalDelegate}` |`LoanApprovalDelegate` |Approve loan in Fineract
+|`${loanRejectionDelegate}` |`LoanRejectionDelegate` |Reject loan in Fineract
+|`${loanStatusVerificationDelegate}` |`LoanStatusVerificationDelegate` |Verify loan status
+|`${loanDisbursementDelegate}` |`LoanDisbursementDelegate` |Execute loan disbursement
+|`${loanCancellationDelegate}` |`LoanCancellationDelegate` |Execute loan cancellation
 |===
 
 == Process Management

@@ -1137,15 +1137,494 @@ All error responses follow a consistent format:
 }
 ----
 
+== Loan Origination API
+
+=== Start Loan Origination Process
+
+Initiates the loan origination workflow for a new loan application.
+
+[source,http]
+----
+POST /workflow/loan-origination/start
+Content-Type: application/json
+
+{
+  "clientId": 123,
+  "productId": 1,
+  "principal": 10000.00,
+  "loanTermFrequency": 12,
+  "loanTermFrequencyType": 2,
+  "loanType": "individual",
+  "loanPurposeId": 1,
+  "interestRatePerPeriod": 15.0,
+  "interestRateFrequencyType": 2,
+  "amortizationType": 1,
+  "interestType": 1,
+  "interestCalculationPeriodType": 1,
+  "transactionProcessingStrategyId": "mifos-standard-strategy",
+  "numberOfRepayments": 12,
+  "repaymentEvery": 1,
+  "repaymentFrequencyType": 2,
+  "expectedDisbursementDate": "2024-01-15",
+  "submittedOnDate": "2024-01-01",
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en"
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`clientId` |Long |Yes |Unique identifier for the client
+|`productId` |Long |Yes |Loan product identifier
+|`principal` |Double |Yes |Principal loan amount
+|`loanTermFrequency` |Long |Yes |Loan term frequency
+|`loanTermFrequencyType` |Long |Yes |Loan term frequency type (1=Days, 2=Weeks, 3=Months, 4=Years)
+|`loanType` |String |Yes |Type of loan (individual, group, jlg)
+|`loanPurposeId` |Long |Yes |Loan purpose identifier
+|`interestRatePerPeriod` |Double |Yes |Interest rate per period
+|`interestRateFrequencyType` |Long |Yes |Interest rate frequency type
+|`amortizationType` |Long |Yes |Amortization type (1=Equal installments, 2=Equal principal)
+|`interestType` |Long |Yes |Interest type (1=Declining balance, 2=Flat)
+|`interestCalculationPeriodType` |Long |Yes |Interest calculation period type
+|`transactionProcessingStrategyId` |String |Yes |Transaction processing strategy
+|`numberOfRepayments` |Long |Yes |Number of repayments
+|`repaymentEvery` |Long |Yes |Repayment frequency
+|`repaymentFrequencyType` |Long |Yes |Repayment frequency type
+|`expectedDisbursementDate` |String |Yes |Expected disbursement date
+|`submittedOnDate` |String |Yes |Application submission date
+|`dateFormat` |String |No |Date format (default: "yyyy-MM-dd")
+|`locale` |String |No |Locale (default: "en")
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "id": "proc-loan-001",
+  "processDefinitionId": "loan-origination",
+  "processDefinitionName": "Loan Origination Process",
+  "businessKey": null,
+  "startTime": "2024-01-01T10:00:00Z",
+  "endTime": null,
+  "duration": null,
+  "startUserId": "system",
+  "startActivityId": "startLoanOrigination",
+  "deleteReason": null,
+  "tenantId": null,
+  "state": "active"
+}
+----
+
+=== Approve Loan
+
+Approves a loan application in the origination process.
+
+[source,http]
+----
+POST /workflow/loan-origination/approve
+Content-Type: application/json
+
+{
+  "loanId": 456,
+  "approvedOnDate": "2024-01-02",
+  "approvedAmount": 10000.00,
+  "approvedTerms": "12 months at 15% interest",
+  "approvalNotes": "Loan approved after credit assessment",
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en"
+}
+----
+
+=== Reject Loan
+
+Rejects a loan application in the origination process.
+
+[source,http]
+----
+POST /workflow/loan-origination/reject
+Content-Type: application/json
+
+{
+  "loanId": 456,
+  "rejectedOnDate": "2024-01-02",
+  "rejectionReason": "Insufficient credit score",
+  "rejectionNotes": "Credit assessment failed",
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en"
+}
+----
+
+=== Get Loan Origination Tasks
+
+Retrieves all pending tasks for loan origination processes.
+
+[source,http]
+----
+GET /workflow/loan-origination/tasks
+----
+
+Response:
+[source,json]
+----
+[
+  {
+    "id": "task-loan-001",
+    "name": "Submit Loan Application",
+    "description": "Loan officer submits the complete loan application",
+    "assignee": "system",
+    "created": "2024-01-01T10:00:00Z",
+    "dueDate": null,
+    "processInstanceId": "proc-loan-001",
+    "processDefinitionId": "loan-origination",
+    "taskDefinitionKey": "submitLoanApplication",
+    "formKey": null,
+    "category": null,
+    "tenantId": null
+  }
+]
+----
+
+=== Complete Loan Origination Task
+
+Completes a task in the loan origination process.
+
+[source,http]
+----
+POST /workflow/loan-origination/tasks/{taskId}/complete
+Content-Type: application/json
+
+{
+  "approved": true,
+  "reviewNotes": "Application reviewed and approved",
+  "creditScore": 750,
+  "riskLevel": "LOW",
+  "assessmentNotes": "Good credit history"
+}
+----
+
+== Loan Disbursement API
+
+=== Start Loan Disbursement Process
+
+Initiates the loan disbursement workflow for an approved loan.
+
+[source,http]
+----
+POST /workflow/loan-disbursement/start
+Content-Type: application/json
+
+{
+  "loanId": 456,
+  "actualDisbursementDate": "2024-01-15",
+  "transactionAmount": 10000.00,
+  "disbursementMethod": "BANK_TRANSFER",
+  "accountNumber": "1234567890",
+  "note": "Initial disbursement",
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en"
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`loanId` |Long |Yes |Unique identifier for the loan
+|`actualDisbursementDate` |String |Yes |Actual disbursement date
+|`transactionAmount` |Double |Yes |Disbursement amount
+|`disbursementMethod` |String |Yes |Disbursement method (BANK_TRANSFER, CASH, CHECK)
+|`accountNumber` |String |No |Account number for bank transfer
+|`note` |String |No |Additional notes
+|`dateFormat` |String |No |Date format (default: "yyyy-MM-dd")
+|`locale` |String |No |Locale (default: "en")
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "id": "proc-disb-001",
+  "processDefinitionId": "loan-disbursement",
+  "processDefinitionName": "Loan Disbursement Process",
+  "businessKey": null,
+  "startTime": "2024-01-15T09:00:00Z",
+  "endTime": null,
+  "duration": null,
+  "startUserId": "system",
+  "startActivityId": "startLoanDisbursement",
+  "deleteReason": null,
+  "tenantId": null,
+  "state": "active"
+}
+----
+
+=== Get Loan Disbursement Tasks
+
+Retrieves all pending tasks for loan disbursement processes.
+
+[source,http]
+----
+GET /workflow/loan-disbursement/tasks
+----
+
+=== Complete Loan Disbursement Task
+
+Completes a task in the loan disbursement process.
+
+[source,http]
+----
+POST /workflow/loan-disbursement/tasks/{taskId}/complete
+Content-Type: application/json
+
+{
+  "managerApproved": true,
+  "managerNotes": "Disbursement approved",
+  "approvedAmount": 10000.00,
+  "approvedDate": "2024-01-15",
+  "documentsPrepared": true,
+  "complianceCheck": true
+}
+----
+
+== Loan Cancellation API
+
+=== Start Loan Cancellation Process
+
+Initiates the loan cancellation workflow for an existing loan.
+
+[source,http]
+----
+POST /workflow/loan-cancellation/start
+Content-Type: application/json
+
+{
+  "loanId": 456,
+  "cancellationReason": "Client request",
+  "cancellationDate": "2024-01-10",
+  "cancelledBy": "loan_officer_001",
+  "notes": "Client requested cancellation due to change in circumstances",
+  "dateFormat": "yyyy-MM-dd",
+  "locale": "en"
+}
+----
+
+==== Request Parameters
+
+|===
+|Parameter |Type |Required |Description
+|`loanId` |Long |Yes |Unique identifier for the loan
+|`cancellationReason` |String |Yes |Reason for cancellation
+|`cancellationDate` |String |Yes |Cancellation date
+|`cancelledBy` |String |Yes |User who initiated the cancellation
+|`notes` |String |No |Additional notes
+|`dateFormat` |String |No |Date format (default: "yyyy-MM-dd")
+|`locale` |String |No |Locale (default: "en")
+|===
+
+==== Response
+
+[source,json]
+----
+{
+  "id": "proc-cancel-001",
+  "processDefinitionId": "loan-cancellation",
+  "processDefinitionName": "Loan Cancellation Process",
+  "businessKey": null,
+  "startTime": "2024-01-10T14:00:00Z",
+  "endTime": null,
+  "duration": null,
+  "startUserId": "system",
+  "startActivityId": "startLoanCancellation",
+  "deleteReason": null,
+  "tenantId": null,
+  "state": "active"
+}
+----
+
+=== Get Loan Cancellation Tasks
+
+Retrieves all pending tasks for loan cancellation processes.
+
+[source,http]
+----
+GET /workflow/loan-cancellation/tasks
+----
+
+=== Complete Loan Cancellation Task
+
+Completes a task in the loan cancellation process.
+
+[source,http]
+----
+POST /workflow/loan-cancellation/tasks/{taskId}/complete
+Content-Type: application/json
+
+{
+  "reviewed": true,
+  "reviewNotes": "Cancellation request reviewed and approved",
+  "impactAssessment": "Low impact on portfolio",
+  "complianceCheck": true,
+  "approved": true,
+  "approvalNotes": "Cancellation approved",
+  "approvalDate": "2024-01-10"
+}
+----
+
 === Common Error Codes
 
 |===
 |Error Code |HTTP Status |Description
 |`400` |Bad Request |Invalid request parameters or missing required fields
 |`401` |Unauthorized |Authentication required
-|`404` |Not Found |Resource not found
+|`403` |Forbidden |Insufficient permissions for the operation
+|`404` |Not Found |Resource not found (loan, client, or process)
+|`409` |Conflict |Loan status does not allow the requested operation
+|`422` |Unprocessable Entity |Business rule validation failed
 |`500` |Internal Server Error |Internal server error
+|`503` |Service Unavailable |Fineract API or database unavailable
 |===
+
+=== Loan-Specific Error Codes
+
+|===
+|Error Code |HTTP Status |Description
+|`LOAN_NOT_FOUND` |404 |Specified loan ID does not exist
+|`LOAN_NOT_APPROVED` |409 |Loan is not in approved status for disbursement
+|`LOAN_ALREADY_DISBURSED` |409 |Loan has already been disbursed
+|`LOAN_CANNOT_BE_CANCELLED` |409 |Loan cannot be cancelled in current status
+|`INSUFFICIENT_CREDIT_SCORE` |422 |Client credit score below minimum threshold
+|`INVALID_LOAN_AMOUNT` |422 |Loan amount outside allowed range
+|`PRODUCT_NOT_FOUND` |404 |Specified loan product does not exist
+|`CLIENT_NOT_FOUND` |404 |Specified client ID does not exist
+|===
+
+=== Error Response Examples
+
+==== Loan Not Found Error
+[source,json]
+----
+{
+  "timestamp": "2024-01-01T10:00:00Z",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Loan with ID 456 not found",
+  "path": "/api/v1/workflow/loan-disbursement/start",
+  "errorCode": "LOAN_NOT_FOUND"
+}
+----
+
+==== Loan Status Conflict Error
+[source,json]
+----
+{
+  "timestamp": "2024-01-01T10:00:00Z",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Loan is not in approved status for disbursement",
+  "path": "/api/v1/workflow/loan-disbursement/start",
+  "errorCode": "LOAN_NOT_APPROVED"
+}
+----
+
+==== Validation Error
+[source,json]
+----
+{
+  "timestamp": "2024-01-01T10:00:00Z",
+  "status": 422,
+  "error": "Unprocessable Entity",
+  "message": "Loan amount exceeds maximum allowed limit",
+  "path": "/api/v1/workflow/loan-origination/start",
+  "errorCode": "INVALID_LOAN_AMOUNT",
+  "details": {
+    "field": "principal",
+    "value": 50000.00,
+    "maxAllowed": 25000.00
+  }
+}
+----
+
+== Loan Workflow Best Practices
+
+=== Process Lifecycle Management
+
+* **Start Processes**: Always validate input data before starting workflows
+* **Monitor Progress**: Use status endpoints to track process execution
+* **Handle Errors**: Implement proper error handling for all workflow operations
+* **Complete Tasks**: Ensure all required task variables are provided
+* **Clean Up**: Terminate processes that are no longer needed
+
+=== Integration Patterns
+
+==== Synchronous Integration
+For immediate responses, use the workflow API directly:
+```java
+// Start loan origination
+ProcessInstance process = workflowService.startProcess("loan-origination", variables);
+
+// Complete tasks as needed
+workflowService.completeTask(taskId, taskVariables);
+```
+
+==== Asynchronous Integration
+For long-running processes, use polling:
+```java
+// Start process
+ProcessInstance process = workflowService.startProcess("loan-origination", variables);
+
+// Poll for completion
+while (process.getState().equals("active")) {
+    ProcessStatus status = workflowService.getProcessStatus(process.getId());
+    if (status.getStatus().equals("completed")) {
+        // Process completed successfully
+        break;
+    }
+    Thread.sleep(5000); // Wait 5 seconds before next poll
+}
+```
+
+==== Event-Driven Integration
+Listen for workflow events:
+```java
+@EventListener
+public void handleProcessCompleted(ProcessCompletedEvent event) {
+    if (event.getProcessDefinitionId().equals("loan-origination")) {
+        // Handle loan origination completion
+        notifyLoanOfficer(event.getProcessInstanceId());
+    }
+}
+```
+
+=== Error Handling Strategies
+
+==== Retry Logic
+Implement exponential backoff for transient failures:
+```java
+@Retryable(value = {WorkflowException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+public ProcessInstance startLoanProcess(LoanRequest request) {
+    return workflowService.startProcess("loan-origination", request.toVariables());
+}
+```
+
+==== Circuit Breaker Pattern
+Protect against cascading failures:
+```java
+@CircuitBreaker(name = "workflowService", fallbackMethod = "fallbackStartProcess")
+public ProcessInstance startProcess(String processId, Map<String, Object> variables) {
+    return workflowService.startProcess(processId, variables);
+}
+```
+
+=== Performance Considerations
+
+* **Batch Operations**: Group related workflow operations when possible
+* **Connection Pooling**: Use connection pools for Fineract API calls
+* **Caching**: Cache frequently accessed data (loan products, client info)
+* **Monitoring**: Track process execution times and failure rates
 
 == API Versioning
 
@@ -1228,4 +1707,139 @@ curl -X POST "http://localhost:8081/api/v1/workflow/client-transfer/start" \
     "dateFormat": "yyyy-MM-dd",
     "locale": "en"
   }'
+----
+
+=== Start Loan Origination
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/loan-origination/start" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "clientId": 123,
+    "productId": 1,
+    "principal": 10000.00,
+    "loanTermFrequency": 12,
+    "loanTermFrequencyType": 2,
+    "loanType": "individual",
+    "loanPurposeId": 1,
+    "interestRatePerPeriod": 15.0,
+    "interestRateFrequencyType": 2,
+    "amortizationType": 1,
+    "interestType": 1,
+    "interestCalculationPeriodType": 1,
+    "transactionProcessingStrategyId": "mifos-standard-strategy",
+    "numberOfRepayments": 12,
+    "repaymentEvery": 1,
+    "repaymentFrequencyType": 2,
+    "expectedDisbursementDate": "2024-01-15",
+    "submittedOnDate": "2024-01-01",
+    "dateFormat": "yyyy-MM-dd",
+    "locale": "en"
+  }'
+----
+
+=== Start Loan Disbursement
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/loan-disbursement/start" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "loanId": 456,
+    "actualDisbursementDate": "2024-01-15",
+    "transactionAmount": 10000.00,
+    "disbursementMethod": "BANK_TRANSFER",
+    "accountNumber": "1234567890",
+    "note": "Initial disbursement",
+    "dateFormat": "yyyy-MM-dd",
+    "locale": "en"
+  }'
+----
+
+=== Start Loan Cancellation
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/loan-cancellation/start" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "loanId": 456,
+    "cancellationReason": "Client request",
+    "cancellationDate": "2024-01-10",
+    "cancelledBy": "loan_officer_001",
+    "notes": "Client requested cancellation due to change in circumstances",
+    "dateFormat": "yyyy-MM-dd",
+    "locale": "en"
+  }'
+----
+
+=== Complete Loan Origination Task
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/loan-origination/tasks/task-loan-001/complete" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "approved": true,
+    "reviewNotes": "Application reviewed and approved",
+    "creditScore": 750,
+    "riskLevel": "LOW",
+    "assessmentNotes": "Good credit history and stable income"
+  }'
+----
+
+=== Complete Loan Disbursement Task
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/loan-disbursement/tasks/task-disb-001/complete" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "managerApproved": true,
+    "managerNotes": "Disbursement approved after compliance review",
+    "approvedAmount": 10000.00,
+    "approvedDate": "2024-01-15",
+    "documentsPrepared": true,
+    "complianceCheck": true
+  }'
+----
+
+=== Complete Loan Cancellation Task
+
+[source,bash]
+----
+curl -X POST "http://localhost:8081/api/v1/workflow/loan-cancellation/tasks/task-cancel-001/complete" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ=" \
+  -d '{
+    "reviewed": true,
+    "reviewNotes": "Cancellation request reviewed and approved",
+    "impactAssessment": "Low impact on portfolio",
+    "complianceCheck": true,
+    "approved": true,
+    "approvalNotes": "Cancellation approved based on client circumstances",
+    "approvalDate": "2024-01-10"
+  }'
+----
+
+=== Get Loan Process Status
+
+[source,bash]
+----
+curl -X GET "http://localhost:8081/api/v1/workflow/loan-origination/processes/proc-loan-001/status" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ="
+----
+
+=== Get Loan Process Variables
+
+[source,bash]
+----
+curl -X GET "http://localhost:8081/api/v1/workflow/loan-origination/processes/proc-loan-001/variables" \
+  -H "Authorization: Basic bWlmb3M6cGFzc3dvcmQ="
 ----

@@ -48,6 +48,8 @@ The API reference documentation includes:
 The workflow documentation covers:
 
 * **BPMN Process Definitions**: Complete XML specifications for all workflows
+* **Client Lifecycle Workflows**: Onboarding, offboarding, and transfer processes
+* **Loan Lifecycle Workflows**: Origination, disbursement, and cancellation processes
 * **Process Variables**: Input/output variable documentation
 * **Task Delegates**: Java delegate implementation details
 * **Process Customization**: How to extend and modify workflows
