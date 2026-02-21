@@ -52,7 +52,7 @@ public class FineractErrorHandler {
         } else {
             String message = resourceId != null ? String.format("Failed to %s for resource %s", operation, resourceId) : String.format("Failed to %s", operation);
 
-            return new FineractApiException(message, error, operation);
+            return new FineractApiException(message, error, operation, resourceId);
         }
     }
 
@@ -65,7 +65,7 @@ public class FineractErrorHandler {
         } else {
             String message = resourceId != null ? String.format("Failed to %s for resource %s", operation, resourceId) : String.format("Failed to %s", operation);
 
-            return new FineractApiException(message, error, operation);
+            return new FineractApiException(message, error, operation, resourceId);
         }
     }
 

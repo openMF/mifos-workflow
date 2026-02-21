@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,7 +71,7 @@ class LoanStatusVerificationDelegateTest {
 
         verify(execution).setVariable("loanStatusVerified", true);
         verify(execution).setVariable("loanReadyForDisbursement", true);
-        verify(execution).setVariable("verificationDate", "2025-08-26");
+        verify(execution).setVariable("verificationDate", LocalDate.now().toString());
         verify(execution).setVariable("loanStatus", "APPROVED");
         verify(execution).setVariable("loanStatusMessage", "Loan is approved and ready for disbursement");
         verify(execution).setVariable("loanAccountNo", "LOAN001");
