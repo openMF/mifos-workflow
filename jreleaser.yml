@@ -1,0 +1,118 @@
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+# distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+project:
+  name: "mifos-commons-java"
+  version: "0.1.0-SNAPSHOT"
+  license: "MPL-2.0"
+  inceptionYear: "2026"
+  vendor: "Mifos Initiative"
+  copyright: "Copyright (c) 2026 Mifos Initiative"
+  authors:
+    - "Hossam Hatem"
+    - "Aleksandar Vidakovic"
+  links:
+    bugTracker: "https://mifosforge.jira.com"
+    contribute: "https://mifos.org"
+    documentation: "https://docs.mifos.org"
+    donation: "https://mifos.org/take-action/donation-options"
+    faq: "https://mifos.org/resources/support"
+    contact: "https://mifos.org/about-us/contact-us"
+
+signing:
+  pgp:
+    active: ALWAYS
+    armored: true
+
+catalog:
+  sbom:
+    syft:
+      active: ALWAYS
+  swid:
+    mifos:
+      active: ALWAYS
+
+release:
+  github:
+    enabled: true
+    # TODO: change this to openMf
+    owner: "monkeysintown"
+    tagName: v{{projectVersion}}
+    overwrite: true
+    commitAuthor:
+      name: "Aleksandar Vidakovic"
+      email: "aleks@mifos.org"
+
+deploy:
+  maven:
+    artifactory:
+      mifos:
+        active: ALWAYS
+        url: "https://mifos.jfrog.io/artifactory/mifosx-gradle-local"
+        authorization: BEARER
+        snapshotSupported: true
+        applyMavenCentralRules: false
+        stagingRepositories:
+          - "modules/infrastructure/core/build/staging-deploy"
+          - "modules/infrastructure/support/cadence/core/build/staging-deploy"
+          - "modules/infrastructure/support/cadence/implementation/build/staging-deploy"
+          - "modules/infrastructure/support/cadence/starter/build/staging-deploy"
+          - "modules/infrastructure/support/camunda/core/build/staging-deploy"
+          - "modules/infrastructure/support/camunda/implementation/build/staging-deploy"
+          - "modules/infrastructure/support/camunda/starter/build/staging-deploy"
+          - "modules/infrastructure/support/cibseven/core/build/staging-deploy"
+          - "modules/infrastructure/support/cibseven/implementation/build/staging-deploy"
+          - "modules/infrastructure/support/cibseven/starter/build/staging-deploy"
+          - "modules/infrastructure/support/conductor/core/build/staging-deploy"
+          - "modules/infrastructure/support/conductor/implementation/build/staging-deploy"
+          - "modules/infrastructure/support/conductor/starter/build/staging-deploy"
+          - "modules/infrastructure/support/eximee/core/build/staging-deploy"
+          - "modules/infrastructure/support/eximee/implementation/build/staging-deploy"
+          - "modules/infrastructure/support/eximee/starter/build/staging-deploy"
+          - "modules/infrastructure/support/flowable/core/build/staging-deploy"
+          - "modules/infrastructure/support/flowable/implementation/build/staging-deploy"
+          - "modules/infrastructure/support/flowable/starter/build/staging-deploy"
+          - "modules/infrastructure/support/operaton/core/build/staging-deploy"
+          - "modules/infrastructure/support/operaton/implementation/build/staging-deploy"
+          - "modules/infrastructure/support/operaton/starter/build/staging-deploy"
+          - "modules/infrastructure/usecase/cadence/core/build/staging-deploy"
+          - "modules/infrastructure/usecase/cadence/implementation/build/staging-deploy"
+          - "modules/infrastructure/usecase/cadence/mapping/build/staging-deploy"
+          - "modules/infrastructure/usecase/cadence/starter/build/staging-deploy"
+          - "modules/infrastructure/usecase/camunda/core/build/staging-deploy"
+          - "modules/infrastructure/usecase/camunda/implementation/build/staging-deploy"
+          - "modules/infrastructure/usecase/camunda/mapping/build/staging-deploy"
+          - "modules/infrastructure/usecase/camunda/starter/build/staging-deploy"
+          - "modules/infrastructure/usecase/cibseven/core/build/staging-deploy"
+          - "modules/infrastructure/usecase/cibseven/implementation/build/staging-deploy"
+          - "modules/infrastructure/usecase/cibseven/mapping/build/staging-deploy"
+          - "modules/infrastructure/usecase/cibseven/starter/build/staging-deploy"
+          - "modules/infrastructure/usecase/conductor/core/build/staging-deploy"
+          - "modules/infrastructure/usecase/conductor/implementation/build/staging-deploy"
+          - "modules/infrastructure/usecase/conductor/mapping/build/staging-deploy"
+          - "modules/infrastructure/usecase/conductor/starter/build/staging-deploy"
+          - "modules/infrastructure/usecase/eximee/core/build/staging-deploy"
+          - "modules/infrastructure/usecase/eximee/implementation/build/staging-deploy"
+          - "modules/infrastructure/usecase/eximee/mapping/build/staging-deploy"
+          - "modules/infrastructure/usecase/eximee/starter/build/staging-deploy"
+          - "modules/infrastructure/usecase/flowable/core/build/staging-deploy"
+          - "modules/infrastructure/usecase/flowable/implementation/build/staging-deploy"
+          - "modules/infrastructure/usecase/flowable/mapping/build/staging-deploy"
+          - "modules/infrastructure/usecase/flowable/starter/build/staging-deploy"
+          - "modules/infrastructure/usecase/operaton/core/build/staging-deploy"
+          - "modules/infrastructure/usecase/operaton/implementation/build/staging-deploy"
+          - "modules/infrastructure/usecase/operaton/mapping/build/staging-deploy"
+          - "modules/infrastructure/usecase/operaton/starter/build/staging-deploy"
+          - "modules/infrastructure/transport/rest/build/staging-deploy"
+          # TODO: enable when documentation available
+          # - "modules/infrastructure/doc/build/staging-deploy"
+          - "modules/fineract/core/build/staging-deploy"
+          - "modules/fineract/sdk/rest/build/staging-deploy"
+          - "modules/fineract/usecase/client/core/build/staging-deploy"
+          - "modules/fineract/usecase/client/implementation/build/staging-deploy"
+          - "modules/fineract/usecase/client/mapping/build/staging-deploy"
+          - "modules/fineract/usecase/client/starter/build/staging-deploy"
+          # TODO: enable when documentation available
+          # - "modules/fineract/doc/build/staging-deploy"

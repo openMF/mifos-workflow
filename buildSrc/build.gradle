@@ -1,0 +1,15 @@
+plugins {
+    id "java"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.openapitools:openapi-generator:7.22.0"
+}
+
+processResources {
+    from("src/main/resources/META-INF/services")
+}

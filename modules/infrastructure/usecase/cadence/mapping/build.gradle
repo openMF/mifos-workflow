@@ -1,0 +1,3 @@
+dependencies {
+    api "com.uber.cadence:cadence-client"
+}
