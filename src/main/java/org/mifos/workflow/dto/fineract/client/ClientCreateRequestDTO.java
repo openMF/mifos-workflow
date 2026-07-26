@@ -1,5 +1,6 @@
 package org.mifos.workflow.dto.fineract.client;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 import org.mifos.workflow.dto.fineract.address.AddressDTO;
@@ -20,15 +21,15 @@ import java.util.stream.Collectors;
 @Builder
 public class ClientCreateRequestDTO {
     private static final String DEFAULT_DATE_FORMAT = "dd MMMM yyyy";
-    @NotNull
+    @NotBlank(message = "First name is required and cannot be blank")
     private String firstName;
-    @NotNull
+    @NotBlank(message = "Last name is required and cannot be blank")
     private String lastName;
     @NotNull
     private Long officeId;
-    @NotNull
+    @NotBlank
     private String dateFormat;
-    @NotNull
+    @NotBlank
     private String locale;
     @NotNull
     private Boolean active;
