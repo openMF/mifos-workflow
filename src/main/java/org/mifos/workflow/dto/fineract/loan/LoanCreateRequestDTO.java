@@ -1,5 +1,6 @@
 package org.mifos.workflow.dto.fineract.loan;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -63,7 +64,7 @@ public class LoanCreateRequestDTO {
     @NotNull(message = "Loan term frequency type is required")
     private Integer loanTermFrequencyType;
 
-    @NotNull(message = "Loan type is required")
+    @NotBlank(message = "Loan type is required")
     private String loanType;
 
     @NotNull(message = "Loan purpose ID is required")
