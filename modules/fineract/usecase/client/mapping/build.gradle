@@ -1,3 +1,3 @@
 dependencies {
-    api "org.mifos.commons.oas:mifos-commons-oas-imperative-sdk-fineract-implementation:0.1.0-SNAPSHOT"
+    api "org.mifos.commons.oas:mifos-commons-oas-imperative-rest-sdk-fineract-starter:0.1.0-SNAPSHOT"
 }
