@@ -1,0 +1,14 @@
+[preface]
+== Preface
+(C) {years}
+
+:hardbreaks:
+
+*{organization}*
+Email: mailto:{email}[]
+Phone: {phone}
+
+:hardbreaks!:
+
+WARNING: The information contained in this document is confidential and proprietary to {organization}(R) and is to be used for the sole purpose of evaluating {organization}(R) offerings.  It cannot be disclosed to any third party without the express written permission of {organization}(R)
+

@@ -1,0 +1,3 @@
+dependencies {
+    implementation "org.eximeebpms.bpm:eximeebpms-engine-spring"
+}

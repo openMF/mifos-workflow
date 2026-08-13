@@ -1,0 +1,56 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral().content {
+            excludeModule("javax.media", "jai_core")
+        }
+        gradlePluginPortal()
+        maven {
+            url = uri("https://central.sonatype.com/repository/maven-snapshots")
+        }
+        maven {
+            url = uri("https://mifos.jfrog.io/artifactory/mifosx-gradle-local")
+        }
+    }
+
+    dependencies {
+        classpath "org.mifos.conventions:mifos-conventions-gradle-boot-layout:0.1.0-SNAPSHOT"
+    }
+}
+
+apply plugin: "org.mifos.conventions.gradle.boot.layout"
+
+rootProject.name = "mifos-workflow"
+
+mifos {
+    project {
+        groupId = "org.mifos.workflow"
+        description = "Mifos Workflow"
+        basePackage = "org.mifos.workflow"
+        basePath = "org/mifos/workflow"
+        inceptionYear = "2026"
+    }
+    developers {
+        "001Albin" {
+            firstname = "Albin"
+            lastname = "Sunny"
+            email = "psalbin2005@gmail.com"
+            timezone = "UTC+2"
+        }
+
+        "7ossam7atem1" {
+            firstname = "Hossam"
+            lastname = "Hatem"
+            email = "7ossam7atem1@gmail.com"
+            timezone = "UTC+3"
+        }
+
+        "vidakovic" {
+            firstname = "Aleksandar"
+            lastname = "Vidakovic"
+            email = "aleks@mifos.org"
+            timezone = "UTC+2"
+            roles = ["developer", "architect"]
+        }
+    }
+}

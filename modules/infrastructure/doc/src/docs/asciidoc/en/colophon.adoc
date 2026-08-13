@@ -1,0 +1,18 @@
+[colophon]
+= History
+
+*Version*: {revnumber}
+
+*Date*: {revdate}
+
+include::authors.adoc[]
+
+.History
+[cols="<.^2a,<.^4a,^.^2a,^.^1a"]
+|===
+^| Authors ^| Description ^| Date ^| Version
+
+| Aleksandar Vidakovic | Initial version | 2026-05-01 | 1.0.0
+|===
+
+toc::[]

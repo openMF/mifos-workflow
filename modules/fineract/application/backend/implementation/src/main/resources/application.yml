@@ -1,0 +1,12 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  modulith:
+    events:
+      republish-outstanding-events-on-restart: true
+      completion-mode: delete        # remove completed events (vs. keeping them for audit)
+      staleness:
+        processing: 10m              # mark events stuck in STARTED for >10m as FAILED
+    moments:
+      zone-id: UTC        # timezone for event timing (default: UTC)
+      granularity: hours  # finest granularity to emit (default: hours)

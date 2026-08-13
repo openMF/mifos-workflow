@@ -1,0 +1,8 @@
+[faq]
+= Frequently Asked Questions
+
+TBD
+
+What is the answer?:: This is the answer.
+Are cameras allowed?:: Yes.
+Are backpacks allowed?:: No.

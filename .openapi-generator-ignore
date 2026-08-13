@@ -1,0 +1,10 @@
+**/README.md
+**/pom.xml
+**/build.sbt
+**/*.gradle
+**/.gitignore
+**/git_push.sh
+**/api/*
+**/gradle*
+**/gradle
+**/src/main/AndroidManifest.xml

@@ -1,0 +1,28 @@
+{
+  "projectName": "mifos-workflow",
+  "projectOwner": "openMF",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "CONTRIBUTORS.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "none",
+  "contributors": [
+    {
+      "login": "vidakovic",
+      "name": "Aleksandar Vidakovic",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13969?v=4",
+      "profile": "https://github.com/vidakovic",
+      "contributions": [
+        "ideas",
+        "code",
+        "talk"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "commitType": "docs"
+}

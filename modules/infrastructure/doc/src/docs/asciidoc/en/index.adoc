@@ -1,0 +1,21 @@
+= Mifos Workflow
+
+include::prefaces.adoc[leveloffset=+1]
+
+include::colophon.adoc[leveloffset=+2]
+
+include::introduction.adoc[leveloffset=+1]
+
+include::chapters/configuration/index.adoc[leveloffset=+1]
+
+include::chapters/deployment/index.adoc[leveloffset=+1]
+
+include::chapters/workflow/index.adoc[leveloffset=+1]
+
+include::chapters/api/index.adoc[leveloffset=+1]
+
+include::faq.adoc[leveloffset=+1]
+
+<<<
+
+include::chapters/appendix/index.adoc[leveloffset=+1]

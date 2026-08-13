@@ -1,0 +1,19 @@
+:title-page-background-image: images/draft.svg[position=top]
+:rootdir: {asciidoctorconfigdir}/../../..
+:imagesdir: {asciidoctorconfigdir}/src/docs/asciidoc/en/images
+:diagramsdir: {asciidoctorconfigdir}/src/docs/asciidoc/en/diagrams
+// NOTE: depending how you nest your project modules you might need to adjust
+:commondir: {rootdir}/.mifos/config/asciidoc/pages
+:years:  2026
+:organization: Mifos Initiative
+:email: info@mifos.org
+:phone: +381-677xxxxxx
+:plantuml-config: {rootdir}/.mifos/config/plantuml/themes/mifos-default-config.cfg
+:revnumber: 1.0.0
+:revremark: Draft
+:branch: main
+:revdate: 2026-05-03
+:toc: left
+:toclevels: 3
+:sectanchors:
+:sectnums:
