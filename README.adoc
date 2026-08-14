@@ -1,0 +1,63 @@
+= Mifos Project
+
+== Download a Project Template
+
+NOTE: With the below instructions you download the most simple Java template. The manual download and unpacking will be soon covered by a command line tool.
+
+[source,bash]
+----
+LATEST_VERSION=$(curl -s "https://mifos.jfrog.io/artifactory/mifosx-gradle-local/org/mifos/mifos-conventions-gradle-project-java/maven-metadata.xml" | grep -oP '(?<=<latest>)[^<]+')
+
+curl -H "Cache-Control: no-cache, no-store, must-revalidate" -H "Pragma: no-cache" -H "Expires: 0" -O "https://mifos.jfrog.io/artifactory/mifosx-gradle-local/org/mifos/mifos-conventions-gradle-project-boot-imperative/${LATEST_VERSION}/mifos-conventions-gradle-project-boot-imperative-${LATEST_VERSION}-template.tgz"
+
+mkdir mifos-dummy-boot
+
+tar -xvzf mifos-conventions-gradle-project-boot-imperative-${LATEST_VERSION}-template.tgz --strip-components=2 -C mifos-dummy-boot
+
+rm mifos-conventions-gradle-project-boot-imperative-${LATEST_VERSION}-template.tgz
+
+cd mifos-dummy-boot
+----
+
+== Initialize Git
+
+[source,bash]
+----
+git init
+git config user.email "aleks@mifos.org"
+git config user.username "Aleksandar Vidakovic"
+git add .
+git commit -m "Initial commit"
+----
+
+== Build the Project
+
+[source,bash]
+----
+./gradlew clean build publish
+----
+
+== Install SDKMan
+
+Open a terminal and execute:
+
+[source,bash]
+----
+curl -s "https://get.sdkman.io" | bash
+----
+
+Open a new terminal to apply the changes from the installation and install the JReleaser tool:
+
+[source,bash]
+----
+sdk install jreleaser
+----
+
+== Publish to Mifos Artifactory/Maven Repository
+
+WARNING: This requires more configuration. Will be explained in upcoming developer documentation.
+
+[source,bash]
+----
+jreleaser deploy --config-file jreleaser.yml
+----

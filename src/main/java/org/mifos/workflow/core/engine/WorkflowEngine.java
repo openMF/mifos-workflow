@@ -31,14 +31,14 @@ public interface WorkflowEngine {
 
     List<ProcessDefinition> getProcessDefinitions();
 
-    DeploymentResult deployProcess(InputStream processDefinition, String filename);
+    // DeploymentResult deployProcess(InputStream processDefinition, String filename);
 
-    void deleteDeployment(String deploymentId);
+    // void deleteDeployment(String deploymentId);
 
     List<DeploymentInfo> getDeployments();
 
     // Process Instance Operations
-    ProcessInstance startProcess(String processDefinitionKey, ProcessVariables variables);
+    // ProcessInstance startProcess(String processDefinitionKey, ProcessVariables variables);
 
     List<ProcessInstance> getProcessInstances();
 
@@ -47,34 +47,34 @@ public interface WorkflowEngine {
     void setProcessVariables(String processInstanceId, Map<String, Object> variables);
 
     // Task Operations
-    void completeTask(String taskId, ProcessVariables variables);
+    // void completeTask(String taskId, ProcessVariables variables);
 
-    List<TaskInfo> getPendingTasks(String userId);
+    // List<TaskInfo> getPendingTasks(String userId);
 
-    List<TaskInfo> getPendingTasksForProcess(String processInstanceId);
+    // List<TaskInfo> getPendingTasksForProcess(String processInstanceId);
 
-    ProcessVariables getTaskVariables(String taskId);
+    // ProcessVariables getTaskVariables(String taskId);
 
     // History Operations
-    List<HistoricProcessInstance> getHistoricProcesses();
+    // List<HistoricProcessInstance> getHistoricProcesses();
 
-    ProcessVariables getHistoricProcessVariables(String processInstanceId);
+    // ProcessVariables getHistoricProcessVariables(String processInstanceId);
 
-    HistoricProcessInstance getHistoricProcessInstance(String processInstanceId);
+    // HistoricProcessInstance getHistoricProcessInstance(String processInstanceId);
 
-    ProcessHistory getProcessHistory(String processInstanceId);
+    // ProcessHistory getProcessHistory(String processInstanceId);
 
     // Engine Operations
-    EngineType getEngineType();
+    // EngineType getEngineType();
 
-    boolean isEngineActive();
+    // boolean isEngineActive();
 
     boolean isProcessActive(String processInstanceId);
 
     // Replay Operation (for Task Execution Replay feature)
-    ProcessInstance replayProcess(String processInstanceId, ProcessVariables variables);
+    // ProcessInstance replayProcess(String processInstanceId, ProcessVariables variables);
 
-    void terminateProcess(String processInstanceId, String reason);
+    // void terminateProcess(String processInstanceId, String reason);
     
     ProcessStatus getProcessStatus(String processInstanceId);
     

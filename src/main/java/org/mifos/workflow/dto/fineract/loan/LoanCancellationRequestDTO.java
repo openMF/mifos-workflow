@@ -1,5 +1,6 @@
 package org.mifos.workflow.dto.fineract.loan;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,7 @@ public class LoanCancellationRequestDTO {
 
     private String externalId;
 
-    @NotNull(message = "Cancellation reason is required")
+    @NotBlank(message = "Cancellation reason is required")
     private String cancellationReason;
 
     @NotNull(message = "Cancellation date is required")

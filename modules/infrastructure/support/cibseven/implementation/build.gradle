@@ -1,0 +1,3 @@
+dependencies {
+    api "org.cibseven.bpm.springboot:cibseven-bpm-spring-boot-starter-4"
+}

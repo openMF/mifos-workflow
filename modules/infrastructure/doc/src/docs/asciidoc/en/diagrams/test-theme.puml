@@ -1,0 +1,63 @@
+@startuml
+' !include https://raw.githubusercontent.com/monkeysintown/mifos-conventions-gradle/refs/heads/main/conventions/src/main/resources/config/plantuml/themes/mifos-default-theme.puml
+
+allowmixing
+
+title Dramatic Palette — Every Element Type
+
+package "Dramatic Demo" {
+
+    class RegularClass {
+        + attribute: String
+        + method(): void
+    }
+
+    interface NavyInterface <<interface>> {
+        + process(): Result
+    }
+
+    enum RedEnum {
+        VALUE_ONE
+        VALUE_TWO
+        VALUE_THREE
+    }
+
+    abstract class RedAbstract {
+        + abstractMethod(): void
+    }
+
+    note right of RegularClass
+        Red-tinted note for
+        annotations and extra
+        context on elements.
+    end note
+
+    boundary RedBoundary
+    control NavyControl
+    entity RedEntity
+    collections NavyCollections
+    queue RedQueue
+    stack NavyStack
+    storage NavyStorage
+    agent NavyAgent
+    artifact RedArtifact
+    circle NavyCircle
+    hexagon NavyHexagon
+
+    RegularClass ..|> NavyInterface
+    RedAbstract <|-- RegularClass
+    RegularClass --> RedEnum : uses
+
+    RedBoundary --> NavyControl : triggers
+    NavyControl --> RedEntity : manages
+    RedEntity --> NavyCollections : stores
+    NavyCollections --> RedQueue : enqueues
+    RedQueue --> NavyStack : pushes
+    NavyStack --> NavyStorage : persists
+    NavyStorage --> NavyAgent : notifies
+    NavyAgent --> RedArtifact : creates
+    RedArtifact --> NavyCircle : validates
+    NavyCircle --> NavyHexagon : transforms
+}
+
+@enduml

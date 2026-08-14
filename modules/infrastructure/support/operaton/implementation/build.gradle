@@ -1,0 +1,4 @@
+dependencies {
+    // api project(":mifos-workflow-infrastructure-support-operaton-core")
+    api "org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter"
+}

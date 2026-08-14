@@ -1,36 +1,70 @@
-HELP.md
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+# distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+build/
+.gradletasknamecache
+.gradle
+out
+node_modules
+src/main/frontend/generated/
+*.swp
+### Maven template
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# Exclude maven wrapper
+!/.mvn/wrapper/maven-wrapper.jar
+### JetBrains template
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
-### IntelliJ IDEA ###
+# User-specific stuff:
 .idea
+
+## File-based project format:
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+## OS Specific files
+.DS_Store
+/.gtm/
+/logs/
 
-### VS Code ###
-.vscode/
+.camel-jbang
 
-### Documentation ###
-docs/generated/
+.vscode
+
+common/testing/src/main/resources/secrets.yml
+out.txt
+
+pom.xml
+support/iso20022/**/schemas/*
+.project
+.settings
+.classpath
+bin
+profile-out*
+gradle-user-home
+!modules/config/src/main/resources/jqassistant
+modules/*/jqassistant
+modules/**/asciidoc/**/*.pdf
+index.pdf
+.mifos
+out
+# The following files are generated/updated by vaadin-gradle-plugin
+node_modules/
+webpack.generated.js
+target
+pnpmfile.js
+.npmrc
+src/main/frontend/generated
