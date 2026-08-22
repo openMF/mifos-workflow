@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 /**
  * Delegate for disbursing loans in the Fineract system during workflow execution.
@@ -40,7 +41,7 @@ public class LoanDisbursementDelegate implements JavaDelegate {
 
             Map<String, Object> disbursementRequest = buildDisbursementRequest(execution);
 
-            Long loanId = (Long) execution.getVariable("loanId");
+            Long loanId = ProcessVariableUtil.getLong(execution.getVariable("loanId"), null);
             if (loanId == null) {
                 throw new IllegalArgumentException("Loan ID is required for disbursement");
             }

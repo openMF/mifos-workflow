@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 /**
  * Delegate for transferring a client in the Fineract system.
@@ -30,8 +31,8 @@ public class ClientTransferDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
-        Long clientId = (Long) execution.getVariable("clientId");
-        Long destinationOfficeId = (Long) execution.getVariable("destinationOfficeId");
+        Long clientId = ProcessVariableUtil.getLong(execution.getVariable("clientId"), null);
+        Long destinationOfficeId = ProcessVariableUtil.getLong(execution.getVariable("destinationOfficeId"), null);
         LocalDate effectiveDate = (LocalDate) execution.getVariable("effectiveDate");
         String dateFormat = (String) execution.getVariable("dateFormat");
         String locale = (String) execution.getVariable("locale");

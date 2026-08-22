@@ -37,7 +37,7 @@ public class ClientRejectionDelegate implements JavaDelegate {
     @Override
     public void execute(DelegateExecution execution) {
         logger.info("ClientRejectionDelegate.execute() called for process instance: {}", execution.getProcessInstanceId());
-        Long clientId = (Long) execution.getVariable("clientId");
+        Long clientId = ProcessVariableUtil.getLong(execution.getVariable("clientId"), null);
         if (clientId == null) {
             throw new IllegalArgumentException("clientId is missing from process variables");
         }

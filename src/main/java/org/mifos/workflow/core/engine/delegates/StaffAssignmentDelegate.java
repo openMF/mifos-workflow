@@ -35,7 +35,7 @@ public class StaffAssignmentDelegate implements JavaDelegate {
     public void execute(DelegateExecution execution) {
         logger.info("StaffAssignmentDelegate.execute() called for process instance: {}", execution.getProcessInstanceId());
         try {
-            Long clientId = (Long) execution.getVariable("clientId");
+            Long clientId = ProcessVariableUtil.getLong(execution.getVariable("clientId"), null);
             if (clientId == null) {
                 throw new IllegalArgumentException("clientId is missing from process variables");
             }
