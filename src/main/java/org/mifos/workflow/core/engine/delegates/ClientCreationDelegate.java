@@ -46,8 +46,8 @@ public class ClientCreationDelegate implements JavaDelegate {
             String firstName = (String) execution.getVariable("firstName");
             String lastName = (String) execution.getVariable("lastName");
             String mobileNo = (String) execution.getVariable("mobileNo");
-            Long officeId = (Long) execution.getVariable("officeId");
-            Long legalFormId = (Long) execution.getVariable("legalFormId");
+            Long officeId = ProcessVariableUtil.getLong(execution.getVariable("officeId"), null);
+            Long legalFormId = ProcessVariableUtil.getLong(execution.getVariable("legalFormId"), null);
             String externalId = (String) execution.getVariable("externalId");
             Object dateOfBirthObj = execution.getVariable("dateOfBirth");
             LocalDate dateOfBirth = ProcessVariableUtil.getLocalDate(dateOfBirthObj);

@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 /**
  * Delegate for approving loans in the Fineract system during workflow execution.
@@ -39,7 +40,7 @@ public class LoanApprovalDelegate implements JavaDelegate {
         try {
             Map<String, Object> approvalRequest = buildApprovalRequest(execution);
 
-            Long loanId = (Long) execution.getVariable("loanId");
+            Long loanId = ProcessVariableUtil.getLong(execution.getVariable("loanId"), null);
 
             PostLoansLoanIdResponse response = fineractLoanService.performStateTransition(loanId, approvalRequest, "approve");
 

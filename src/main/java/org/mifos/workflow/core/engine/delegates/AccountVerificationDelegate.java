@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.mifos.fineract.client.models.GetClientsClientIdAccountsResponse;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 
 /**
@@ -27,7 +28,7 @@ public class AccountVerificationDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
-        Long clientId = (Long) execution.getVariable("clientId");
+        Long clientId = ProcessVariableUtil.getLong(execution.getVariable("clientId"), null);
         try {
             if (clientId == null) {
                 throw new IllegalArgumentException("clientId is missing from process variables");

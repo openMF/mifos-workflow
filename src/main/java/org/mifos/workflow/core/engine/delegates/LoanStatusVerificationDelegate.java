@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.mifos.workflow.util.ProcessVariableUtil;
 
 
 /**
@@ -36,7 +37,7 @@ public class LoanStatusVerificationDelegate implements JavaDelegate {
         log.info("Executing LoanStatusVerificationDelegate for process instance: {}", execution.getProcessInstanceId());
 
         try {
-            Long loanId = (Long) execution.getVariable("loanId");
+            Long loanId = ProcessVariableUtil.getLong(execution.getVariable("loanId"), null);
 
             if (loanId == null) {
                 throw new IllegalArgumentException("Loan ID is required for status verification");
