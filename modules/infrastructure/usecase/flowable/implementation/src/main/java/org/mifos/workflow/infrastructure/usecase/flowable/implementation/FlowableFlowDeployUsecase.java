@@ -8,12 +8,15 @@ import static org.mifos.workflow.infrastructure.usecase.flowable.core.FlowableFl
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.util.UUID;
 import org.flowable.engine.RepositoryService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowDeployRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowDeployResponse;
 import org.mifos.workflow.infrastructure.core.usecase.MifosFlowDeployUsecase;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,14 +27,17 @@ class FlowableFlowDeployUsecase implements MifosFlowDeployUsecase {
 
     @Override
     public MifosFlowDeployResponse execute(MifosFlowDeployRequest request) {
-        // var deployment =
-        repositoryService
+        var deployment = repositoryService
                 .createDeployment()
-                .addInputStream(request.getName(), request.getProcessDefinition())
+                .addInputStream(request.getName(),
+                        new ByteArrayInputStream(request.getProcessDefinition().getBytes(StandardCharsets.UTF_8)))
                 .name(request.getName())
                 .deploy();
 
-        // TODO: return some sensible data
-        return MifosFlowDeployResponse.builder().build();
+        log.debug("deployed process definition {} with id {}", request.getName(), deployment.getId());
+
+        return MifosFlowDeployResponse.builder()
+                .id(UUID.fromString(deployment.getId()))
+                .build();
     }
 }

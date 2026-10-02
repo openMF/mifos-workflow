@@ -15,6 +15,8 @@ import org.mifos.workflow.infrastructure.core.usecase.MifosFlowTerminateUsecase;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -26,7 +28,10 @@ class FlowableFlowTerminateUsecase implements MifosFlowTerminateUsecase {
     public MifosFlowTerminateResponse execute(MifosFlowTerminateRequest request) {
         runtimeService.deleteProcessInstance(request.getProcessId(), request.getReason());
 
-        // TODO: return some sensible data
-        return MifosFlowTerminateResponse.builder().build();
+        log.debug("terminated process {} reason {}", request.getProcessId(), request.getReason());
+
+        return MifosFlowTerminateResponse.builder()
+                .id(UUID.fromString(request.getProcessId()))
+                .build();
     }
 }

@@ -8,6 +8,7 @@ import static org.mifos.workflow.infrastructure.usecase.eximee.core.EximeeFlowUs
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eximeebpms.bpm.engine.RepositoryService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowDeleteRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowDeleteResponse;
 import org.mifos.workflow.infrastructure.core.usecase.MifosFlowDeleteUsecase;
@@ -19,9 +20,13 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnBooleanProperty(EXIMEE_WORKFLOW_PROPERTIES_ENABLED)
 class EximeeFlowDeleteUsecase implements MifosFlowDeleteUsecase {
+    private final RepositoryService repositoryService;
     @Override
     public MifosFlowDeleteResponse execute(MifosFlowDeleteRequest request) {
-        // TODO: return some sensible data
-        return MifosFlowDeleteResponse.builder().build();
+        repositoryService.deleteDeployment(request.getDeploymentId().toString(), true);
+
+        log.debug("deleted deployment {}", request.getDeploymentId());
+
+        return MifosFlowDeleteResponse.builder().id(EximeeIds.toUuid(request.getDeploymentId())).build();
     }
 }

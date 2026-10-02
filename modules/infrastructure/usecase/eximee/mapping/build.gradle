@@ -1,1 +1,4 @@
 
+dependencies {
+    api "org.eximeebpms.bpm.springboot:eximeebpms-bpm-spring-boot-starter"
+}

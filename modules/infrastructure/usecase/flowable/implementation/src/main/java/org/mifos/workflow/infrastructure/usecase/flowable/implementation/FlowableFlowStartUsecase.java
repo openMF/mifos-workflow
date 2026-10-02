@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.util.UUID;
 import org.flowable.engine.RuntimeService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowStartRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowStartResponse;
@@ -26,11 +27,13 @@ class FlowableFlowStartUsecase implements MifosFlowStartUsecase {
 
     @Override
     public MifosFlowStartResponse execute(MifosFlowStartRequest request) {
-        // var flowableInstance =
-        runtimeService.startProcessInstanceByKey(
+        var flowableInstance = runtimeService.startProcessInstanceByKey(
                 request.getKey(), Objects.requireNonNullElseGet(request.getVariables(), Map::of));
 
-        // TODO: return some sensible data
-        return MifosFlowStartResponse.builder().build();
+        log.debug("started process {} with instance id {}", request.getKey(), flowableInstance.getId());
+
+        return MifosFlowStartResponse.builder()
+                .id(UUID.fromString(flowableInstance.getId()))
+                .build();
     }
 }

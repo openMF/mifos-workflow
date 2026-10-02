@@ -19,6 +19,10 @@ import org.mifos.workflow.infrastructure.core.usecase.MifosFlowReplayUsecase;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -32,9 +36,31 @@ class FlowableFlowReplayUsecase implements MifosFlowReplayUsecase {
 
     @Override
     public MifosFlowReplayResponse execute(MifosFlowReplayRequest request) {
-        // TODO: implement this
+        var sourceId = request.getSourceProcessId().toString();
 
-        // TODO: return some sensible data
-        return MifosFlowReplayResponse.builder().build();
+        var source = historyService
+                .createHistoricProcessInstanceQuery()
+                .processInstanceId(sourceId)
+                .singleResult();
+
+        Map<String, Object> variables = new HashMap<>();
+        historyService
+                .createHistoricVariableInstanceQuery()
+                .processInstanceId(sourceId)
+                .list()
+                .forEach(v -> variables.put(v.getVariableName(), v.getValue()));
+
+        if (request.getVariables() != null) {
+            variables.putAll(request.getVariables());
+        }
+
+        var replayed = runtimeService
+                .startProcessInstanceByKey(source.getProcessDefinitionKey(), variables);
+
+        log.debug("replayed process {} as {}", sourceId, replayed.getId());
+
+        return MifosFlowReplayResponse.builder()
+                .id(UUID.fromString(replayed.getId()))
+                .build();
     }
 }

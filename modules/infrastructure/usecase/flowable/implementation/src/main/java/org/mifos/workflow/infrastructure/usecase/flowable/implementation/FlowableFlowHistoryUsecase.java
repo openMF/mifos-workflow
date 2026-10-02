@@ -12,6 +12,7 @@ import org.flowable.engine.HistoryService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowHistoryRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowHistoryResponse;
 import org.mifos.workflow.infrastructure.core.usecase.MifosFlowHistoryUsecase;
+import org.mifos.workflow.infrastructure.usecase.flowable.mapping.FlowableHistoryMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
 
@@ -21,18 +22,22 @@ import org.springframework.stereotype.Component;
 @ConditionalOnBooleanProperty(FLOWABLE_WORKFLOW_PROPERTIES_ENABLED)
 class FlowableFlowHistoryUsecase implements MifosFlowHistoryUsecase {
     private final HistoryService historyService;
+    private final FlowableHistoryMapper mapper;
 
     @Override
     public MifosFlowHistoryResponse execute(MifosFlowHistoryRequest request) {
-        // var history =
-        historyService
-                .createHistoricProcessInstanceQuery()
-                .finished()
-                .orderByProcessInstanceEndTime()
-                .desc()
-                .list();
+        var query = historyService.createHistoricProcessInstanceQuery().finished();
 
-        // TODO: return some sensible data
-        return MifosFlowHistoryResponse.builder().build();
+        if (request.getId() != null) {
+            query = query.processInstanceId(request.getId().toString());
+        }
+
+        var history = query.orderByProcessInstanceEndTime().desc().list();
+
+        log.debug("found {} historic process instances", history.size());
+
+        return MifosFlowHistoryResponse.builder()
+                .entries(mapper.map(history))
+                .build();
     }
 }

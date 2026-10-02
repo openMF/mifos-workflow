@@ -8,11 +8,16 @@ import org.flowable.task.api.Task;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mifos.boot.commons.mapping.MifosMapperConfiguration;
+import org.mifos.workflow.infrastructure.core.model.MifosFlowTask;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowTaskPendingResponse;
+
+import java.util.List;
 
 @Mapper(config = MifosMapperConfiguration.class)
 public interface FlowableTaskPendingMapper {
     @Mapping(source = "id", target = "taskId")
     @Mapping(source = "processInstanceId", target = "processId")
-    MifosFlowTaskPendingResponse map(Task task);
+    MifosFlowTask map(Task task);
+
+    List<MifosFlowTask> map(List<Task> tasks);
 }

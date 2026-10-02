@@ -5,6 +5,7 @@
 package org.mifos.workflow.infrastructure.core.model;
 
 import java.io.Serial;
+import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,4 +24,6 @@ public class MifosFlowSignalRequest implements MifosRequest {
     private static final long serialVersionUID = 1L;
 
     private UUID id;
+    private String signalName;
+    private Map<String, Object> variables;
 }

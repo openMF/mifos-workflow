@@ -26,10 +26,13 @@ class FlowableFlowTaskPendingUsecase implements MifosFlowTaskPendingUsecase {
 
     @Override
     public MifosFlowTaskPendingResponse execute(MifosFlowTaskPendingRequest request) {
-        // var tasks =
+        var tasks =
         taskService.createTaskQuery().taskAssignee(request.getUserId()).list();
 
-        // TODO: return some sensible data
-        return MifosFlowTaskPendingResponse.builder().build();
+        log.debug("found {} pending tasks for user {}", tasks.size(), request.getUserId());
+
+        return MifosFlowTaskPendingResponse.builder()
+                .tasks(mapper.map(tasks))
+                .build();
     }
 }

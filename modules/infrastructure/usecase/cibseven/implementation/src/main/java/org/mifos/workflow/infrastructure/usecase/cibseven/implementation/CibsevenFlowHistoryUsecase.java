@@ -8,9 +8,11 @@ import static org.mifos.workflow.infrastructure.usecase.cibseven.core.CibsevenFl
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.cibseven.bpm.engine.HistoryService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowHistoryRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowHistoryResponse;
 import org.mifos.workflow.infrastructure.core.usecase.MifosFlowHistoryUsecase;
+import org.mifos.workflow.infrastructure.usecase.cibseven.mapping.CibsevenHistoryMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +21,22 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnBooleanProperty(CIBSEVEN_WORKFLOW_PROPERTIES_ENABLED)
 class CibsevenFlowHistoryUsecase implements MifosFlowHistoryUsecase {
+    private final HistoryService historyService;
+    private final CibsevenHistoryMapper mapper;
     @Override
     public MifosFlowHistoryResponse execute(MifosFlowHistoryRequest request) {
-        // TODO: return some sensible data
-        return MifosFlowHistoryResponse.builder().build();
+        var query = historyService.createHistoricProcessInstanceQuery().finished();
+
+        if (request.getId() != null) {
+            query = query.processInstanceId(request.getId().toString());
+        }
+
+        var instances = query.list();
+
+        log.debug("found {} history entries", instances.size());
+
+        return MifosFlowHistoryResponse.builder()
+                .entries(mapper.map(instances))
+                .build();
     }
 }

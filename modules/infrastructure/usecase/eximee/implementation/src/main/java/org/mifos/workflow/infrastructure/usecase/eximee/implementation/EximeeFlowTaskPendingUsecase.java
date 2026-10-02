@@ -8,9 +8,11 @@ import static org.mifos.workflow.infrastructure.usecase.eximee.core.EximeeFlowUs
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eximeebpms.bpm.engine.TaskService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowTaskPendingRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowTaskPendingResponse;
 import org.mifos.workflow.infrastructure.core.usecase.MifosFlowTaskPendingUsecase;
+import org.mifos.workflow.infrastructure.usecase.eximee.mapping.EximeeTaskPendingMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +21,18 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnBooleanProperty(EXIMEE_WORKFLOW_PROPERTIES_ENABLED)
 class EximeeFlowTaskPendingUsecase implements MifosFlowTaskPendingUsecase {
+    private final TaskService taskService;
+    private final EximeeTaskPendingMapper mapper;
     @Override
     public MifosFlowTaskPendingResponse execute(MifosFlowTaskPendingRequest request) {
-        // TODO: return some sensible data
-        return MifosFlowTaskPendingResponse.builder().build();
+        var tasks = taskService.createTaskQuery()
+                .taskAssignee(request.getUserId())
+                .list();
+
+        log.debug("found {} pending tasks for {}", tasks.size(), request.getUserId());
+
+        return MifosFlowTaskPendingResponse.builder()
+                .tasks(mapper.map(tasks))
+                .build();
     }
 }

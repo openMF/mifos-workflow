@@ -8,6 +8,7 @@ import static org.mifos.workflow.infrastructure.usecase.cibseven.core.CibsevenFl
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.cibseven.bpm.engine.RepositoryService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowDeleteRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowDeleteResponse;
 import org.mifos.workflow.infrastructure.core.usecase.MifosFlowDeleteUsecase;
@@ -19,9 +20,13 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnBooleanProperty(CIBSEVEN_WORKFLOW_PROPERTIES_ENABLED)
 class CibsevenFlowDeleteUsecase implements MifosFlowDeleteUsecase {
+    private final RepositoryService repositoryService;
     @Override
     public MifosFlowDeleteResponse execute(MifosFlowDeleteRequest request) {
-        // TODO: return some sensible data
-        return MifosFlowDeleteResponse.builder().build();
+        repositoryService.deleteDeployment(request.getDeploymentId().toString(), true);
+
+        log.debug("deleted deployment {}", request.getDeploymentId());
+
+        return MifosFlowDeleteResponse.builder().id(CibsevenIds.toUuid(request.getDeploymentId())).build();
     }
 }

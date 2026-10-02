@@ -4,7 +4,6 @@
  */
 package org.mifos.workflow.infrastructure.core.model;
 
-import java.io.InputStream;
 import java.io.Serial;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,5 +22,5 @@ public class MifosFlowDeployRequest implements MifosRequest {
     private static final long serialVersionUID = 1L;
 
     private String name;
-    private InputStream processDefinition;
+    private String  processDefinition;
 }

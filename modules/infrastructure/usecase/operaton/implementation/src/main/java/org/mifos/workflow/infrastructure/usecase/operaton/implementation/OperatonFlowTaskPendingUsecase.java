@@ -8,9 +8,11 @@ import static org.mifos.workflow.infrastructure.usecase.operaton.core.OperatonFl
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.operaton.bpm.engine.TaskService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowTaskPendingRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowTaskPendingResponse;
 import org.mifos.workflow.infrastructure.core.usecase.MifosFlowTaskPendingUsecase;
+import org.mifos.workflow.infrastructure.usecase.operaton.mapping.OperatonTaskPendingMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +21,18 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnBooleanProperty(OPERATON_WORKFLOW_PROPERTIES_ENABLED)
 class OperatonFlowTaskPendingUsecase implements MifosFlowTaskPendingUsecase {
+    private final TaskService taskService;
+    private final OperatonTaskPendingMapper mapper;
     @Override
     public MifosFlowTaskPendingResponse execute(MifosFlowTaskPendingRequest request) {
-        // TODO: return some sensible data
-        return MifosFlowTaskPendingResponse.builder().build();
+        var tasks = taskService.createTaskQuery()
+                .taskAssignee(request.getUserId())
+                .list();
+
+        log.debug("found {} pending tasks for {}", tasks.size(), request.getUserId());
+
+        return MifosFlowTaskPendingResponse.builder()
+                .tasks(mapper.map(tasks))
+                .build();
     }
 }

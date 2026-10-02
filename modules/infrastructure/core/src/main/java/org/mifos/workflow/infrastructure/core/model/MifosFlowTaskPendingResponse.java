@@ -6,6 +6,8 @@ package org.mifos.workflow.infrastructure.core.model;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,13 +24,5 @@ public class MifosFlowTaskPendingResponse implements MifosResponse {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private String taskId;
-    private String name;
-    private String processId;
-    private String processDefinitionId;
-    private String assignee;
-    private LocalDateTime createTime;
-    private LocalDateTime dueDate;
-    private String description;
-    private Integer priority;
+    private List<MifosFlowTask> tasks;
 }

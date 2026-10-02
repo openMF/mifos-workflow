@@ -6,8 +6,11 @@ package org.mifos.workflow.infrastructure.usecase.cibseven.implementation;
 
 import static org.mifos.workflow.infrastructure.usecase.cibseven.core.CibsevenFlowUsecaseConstants.CIBSEVEN_WORKFLOW_PROPERTIES_ENABLED;
 
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.cibseven.bpm.engine.RuntimeService;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowStartRequest;
 import org.mifos.workflow.infrastructure.core.model.MifosFlowStartResponse;
 import org.mifos.workflow.infrastructure.core.usecase.MifosFlowStartUsecase;
@@ -19,9 +22,17 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnBooleanProperty(CIBSEVEN_WORKFLOW_PROPERTIES_ENABLED)
 class CibsevenFlowStartUsecase implements MifosFlowStartUsecase {
+    private final RuntimeService runtimeService;
+
     @Override
     public MifosFlowStartResponse execute(MifosFlowStartRequest request) {
-        // TODO: return some sensible data
-        return MifosFlowStartResponse.builder().build();
+        var instance = runtimeService.startProcessInstanceByKey(
+                request.getKey(), Objects.requireNonNullElseGet(request.getVariables(), Map::of));
+
+        log.debug("started process {} with instance id {}", request.getKey(), instance.getId());
+
+        return MifosFlowStartResponse.builder()
+                .id(CibsevenIds.toUuid(instance.getId()))
+                .build();
     }
 }

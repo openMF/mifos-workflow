@@ -1,1 +1,3 @@
-
+dependencies {
+    api "org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter"
+}

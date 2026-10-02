@@ -8,6 +8,8 @@ import static org.mifos.workflow.infrastructure.usecase.flowable.core.FlowableFl
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.TaskService;
@@ -29,7 +31,10 @@ class FlowableFlowCompleteUsecase implements MifosFlowCompleteUsecase {
         taskService.complete(
                 request.getTaskId(), Objects.requireNonNullElseGet(request.getVariables(), Map::of));
 
-        // TODO: return some sensible data
-        return MifosFlowCompleteResponse.builder().build();
+        log.debug("completed task {}", request.getTaskId());
+
+        return MifosFlowCompleteResponse.builder()
+                .id(UUID.fromString(request.getTaskId()))
+                .build();
     }
 }

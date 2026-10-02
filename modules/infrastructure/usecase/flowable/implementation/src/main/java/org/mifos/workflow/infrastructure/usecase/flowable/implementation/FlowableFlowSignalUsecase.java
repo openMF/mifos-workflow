@@ -19,6 +19,9 @@ import org.mifos.workflow.infrastructure.core.usecase.MifosFlowSignalUsecase;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+import java.util.Objects;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -32,9 +35,23 @@ class FlowableFlowSignalUsecase implements MifosFlowSignalUsecase {
 
     @Override
     public MifosFlowSignalResponse execute(MifosFlowSignalRequest request) {
-        // TODO: implement this
+        Map<String, Object> variables =
+                Objects.requireNonNullElseGet(request.getVariables(), Map::of);
 
-        // TODO: return some sensible data
-        return MifosFlowSignalResponse.builder().build();
+        if (request.getId() == null) {
+            runtimeService.signalEventReceived(request.getSignalName(), variables);
+            log.debug("broadcast signal {}", request.getSignalName());
+        } else {
+            var execution = runtimeService
+                    .createExecutionQuery()
+                    .processInstanceId(request.getId().toString())
+                    .signalEventSubscriptionName(request.getSignalName())
+                    .singleResult();
+
+            runtimeService.signalEventReceived(request.getSignalName(), execution.getId(), variables);
+            log.debug("signalled {} on process {}", request.getSignalName(), request.getId());
+        }
+
+        return MifosFlowSignalResponse.builder().id(request.getId()).build();
     }
 }

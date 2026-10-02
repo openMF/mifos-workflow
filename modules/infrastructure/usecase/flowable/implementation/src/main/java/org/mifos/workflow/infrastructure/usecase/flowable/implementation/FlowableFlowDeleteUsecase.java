@@ -15,6 +15,8 @@ import org.mifos.workflow.infrastructure.core.usecase.MifosFlowDeleteUsecase;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -26,7 +28,10 @@ class FlowableFlowDeleteUsecase implements MifosFlowDeleteUsecase {
     public MifosFlowDeleteResponse execute(MifosFlowDeleteRequest request) {
         repositoryService.deleteDeployment(request.getDeploymentId(), true);
 
-        // TODO: return some sensible data
-        return MifosFlowDeleteResponse.builder().build();
+        log.debug("deleted deployment {}", request.getDeploymentId());
+
+        return MifosFlowDeleteResponse.builder()
+                .id(UUID.fromString(request.getDeploymentId()))
+                .build();
     }
 }
