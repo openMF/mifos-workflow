@@ -14,7 +14,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.mifos.conventions:mifos-conventions-gradle-boot-layout:0.1.0-SNAPSHOT"
+        classpath "org.mifos.conventions.gradle:mifos-conventions-gradle-boot-imperative:0.1.0-SNAPSHOT"
     }
 }
 
@@ -31,20 +31,18 @@ mifos {
         inceptionYear = "2026"
     }
     developers {
-        "001Albin" {
-            firstname = "Albin"
-            lastname = "Sunny"
-            email = "psalbin2005@gmail.com"
-            timezone = "UTC+2"
-        }
-
         "7ossam7atem1" {
             firstname = "Hossam"
             lastname = "Hatem"
             email = "7ossam7atem1@gmail.com"
             timezone = "UTC+3"
         }
-
+        "001Albin" {
+            firstname = "Albin"
+            lastname = "Sunny"
+            email = "psalbin2005@gmail.com"
+            timezone = "UTC+2"
+        }
         "vidakovic" {
             firstname = "Aleksandar"
             lastname = "Vidakovic"

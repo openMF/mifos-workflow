@@ -1,3 +1,8 @@
+///
+/// This Source Code Form is subject to the terms of the Mozilla Public
+/// License, v. 2.0. If a copy of the MPL was not distributed with this
+/// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+///
 package org.mifos.workflow.fineract.application.backend.implementation;
 
 import static org.springframework.modulith.core.DependencyDepth.IMMEDIATE;
@@ -23,12 +28,11 @@ class FineractApplicationTest {
     @Test
     @SuppressWarnings("java:S2699")
     void document() {
-        new Documenter(modules).writeModulesAsPlantUml(
-                    Documenter.DiagramOptions.defaults()
-                            .withStyle(C4)
-                            .withDependencyDepth(IMMEDIATE)
-                            .withColorSelector(_ -> Optional.of("#E8F4F8"))
-                )
+        new Documenter(modules)
+                .writeModulesAsPlantUml(Documenter.DiagramOptions.defaults()
+                        .withStyle(C4)
+                        .withDependencyDepth(IMMEDIATE)
+                        .withColorSelector(_ -> Optional.of("#E8F4F8")))
                 .writeIndividualModulesAsPlantUml()
                 .writeModuleCanvases()
                 .writeAggregatingDocument();
