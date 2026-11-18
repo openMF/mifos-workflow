@@ -1,0 +1,5 @@
+dependencies {
+    api "io.camunda:camunda-spring-boot-starter"
+
+    testImplementation "io.camunda:camunda-process-test-spring"
+}

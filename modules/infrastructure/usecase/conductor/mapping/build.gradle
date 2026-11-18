@@ -1,3 +1,0 @@
-dependencies {
-    api "io.orkes.conductor:orkes-conductor-client-spring"
-}

@@ -1,0 +1,28 @@
+[#explanation-limitations]
+= Current limitations
+
+* *One input and one output variable.*
+The adapter reads one input variable and writes one output variable.
+If a process has more than one service task, set the input variable before each task.
+The next task replaces the output variable.
+* *No messages.*
+The usecases cannot send a BPMN message.
+On Camunda 8, a signal to one process instance is not possible.
+* *IDs.*
+Some IDs are not UUIDs. Refer to <<explanation-identifiers>>.
+* *Error codes.*
+`MifosProcessException` defines error codes, but the usecases do not use them yet.
+The REST API returns the errors of the engine client.
+* *History on Camunda 8.*
+Without an `id`, the history usecase returns one page of the search API, not all process instances.
+* *Delete on Camunda 8.*
+The usecase finds running process instances with the search API.
+It does not find a process instance that started a very short time before the delete.
+* *Remote CIB seven.*
+The terminate usecase cannot send a reason, because the REST API has no parameter for it.
+The usecases and the adapter have separate connection properties.
+* *Remote Flowable.*
+The adapter asks for jobs at a fixed interval (`poll-interval`), because the external job REST API has no long polling.
+The service task needs an execution listener that sets the input type as the local variable `type`.
+* *Durable execution engines.*
+The modules for Cadence, Dapr, DBOS, Restate and Temporal are empty.

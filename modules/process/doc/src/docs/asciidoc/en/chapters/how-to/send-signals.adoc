@@ -1,0 +1,43 @@
+[#how-to-send-signals]
+= Send a signal to a process
+
+. Add a signal catch event to the BPMN:
++
+[source,xml]
+----
+<signal id="paymentReceived" name="payment-received"/>
+<process id="loan" isExecutable="true">
+  <!-- ... -->
+  <intermediateCatchEvent id="waitForPayment">
+    <signalEventDefinition signalRef="paymentReceived"/>
+  </intermediateCatchEvent>
+  <!-- ... -->
+</process>
+----
+. Send the signal with the signal usecase or with the REST API.
+
+== Send the signal to all waiting process instances
+
+[source,java]
+----
+signalUsecase.execute(MifosProcessSignalUsecase.Request.builder()
+        .signalName("payment-received")
+        .variables(Map.of("amount", 1000))
+        .build());
+----
+
+== Send the signal to one process instance
+
+. Set the `id` of the process instance:
++
+[source,java]
+----
+signalUsecase.execute(MifosProcessSignalUsecase.Request.builder()
+        .id(processId)
+        .signalName("payment-received")
+        .build());
+----
+
+The process instance must wait for the signal when you send it.
+Camunda 8 does not accept this request.
+Refer to <<explanation-signals-and-events>>.

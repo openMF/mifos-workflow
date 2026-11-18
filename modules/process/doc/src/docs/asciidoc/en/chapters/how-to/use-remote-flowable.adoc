@@ -1,0 +1,66 @@
+[#how-to-use-remote-flowable]
+= Use a remote Flowable engine
+
+Use this procedure if Flowable runs in its own process, for example as the Flowable REST application.
+The application does not include the engine and does not need a database for it.
+
+. Add the remote starters.
+Do not add the starters of the embedded Flowable engine:
++
+[source,groovy]
+----
+dependencies {
+    implementation "org.mifos.workflow:mifos-workflow-process-usecase-flowable-remote-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-support-flowable-remote-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-service-dispatch-starter:0.1.0-SNAPSHOT"
+}
+----
+. Select the engine and set the root URL of the Flowable REST application.
+The usecases and the adapter use the same URL.
+The usecases add the path of the process REST API (`/service`).
+The adapter adds the path of the external job REST API (`/external-job-api`):
++
+[source,yaml]
+----
+mifos:
+  workflow:
+    process:
+      engine: FLOWABLE_REMOTE
+      support:
+        flowable-remote:
+          enabled: true                                # the adapter
+          base-url: http://flowable:8080/flowable-rest # without /service or /external-job-api
+          username: rest-admin
+          password: ${FLOWABLE_PASSWORD}
+----
+. Model each automated step as an external worker task with the topic `mifosAdapter`.
+Add an execution listener that sets the input type as the local variable `type`.
+The job gets the variables of the step, also the input variable:
++
+[source,xml]
+----
+<serviceTask id="createLoan" flowable:type="external-worker" flowable:topic="mifosAdapter">
+  <extensionElements>
+    <flowable:executionListener event="start"
+        expression="${execution.setVariableLocal('type', 'com.acme.LoanCreateUsecase.Request')}"/>
+  </extensionElements>
+</serviceTask>
+----
+. Set `lock-duration` to a value that is longer than the slowest usecase.
+If the usecase takes longer, the engine can give the job to a different worker.
+. Start the application.
+The log shows the message `acquiring external worker jobs of topic mifosAdapter from <url>`.
+
+== Differences from the embedded engine
+
+* An error in a step does not cancel a transaction.
+When no retries remain, the engine moves the job to the dead letter jobs.
+The process instance stays active.
+Monitor the dead letter jobs, for example in the Flowable admin application.
+* The adapter asks for jobs at an interval (`poll-interval`, default 1 second).
+A step can start up to this time after the process reaches it.
+* A service task expression (`${mifosAdapter.execute(...)}`) does not work.
+Change these steps to external worker tasks.
+
+<<reference-configuration-flowable-remote>> gives all properties.
+<<reference-engines-flowable-remote>> gives all differences.

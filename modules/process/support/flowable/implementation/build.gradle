@@ -1,0 +1,5 @@
+dependencies {
+    api "org.flowable:flowable-spring-boot-starter"
+
+    testImplementation project(":mifos-workflow-process-service-dispatch-starter")
+}

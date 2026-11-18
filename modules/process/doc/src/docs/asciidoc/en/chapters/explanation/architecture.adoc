@@ -1,0 +1,76 @@
+[#explanation-architecture]
+= Architecture
+
+== One application, one engine
+
+A financial institution selects a workflow engine for its own reasons: costs, operations, licenses or skills.
+This selection must not change the Mifos code.
+Thus the Mifos code uses contracts that do not know the engine.
+One engine module gives the implementation.
+An application uses one engine at a time.
+
+The diagram shows the layers and the two directions of calls.
+
+[#figure-architecture]
+.Architecture of Mifos Workflow
+image::architecture.svg[Architecture of Mifos Workflow,width=100%,align=center]
+
+== Two directions
+
+Each connection between Mifos and a workflow engine is a call in one of two directions.
+
+[cols="1,2,2"]
+|===
+| Direction | Example | Modules
+
+| The application calls the engine.
+| "Deploy this definition. Start this process. Complete this task."
+| `process/usecase/<engine>`
+
+| The engine calls the application.
+| "The process is at an automated step. Run this business logic."
+| `process/support/<engine>`
+|===
+
+The first direction uses nine usecases.
+The second direction uses one dispatcher.
+The contracts for both directions are in `process/core`.
+They do not contain a type of an engine.
+
+== Usecases for the engine
+
+The nine usecases are the operations that all examined engines have in some form.
+An application injects the interface, for example `MifosProcessStartUsecase`.
+The engine module registers the implementation.
+The REST API calls the same interfaces.
+Thus the REST API is the same for all engines.
+
+== A dispatcher for the business logic
+
+All engines have an automated step.
+The names are different, but the step always has the same three parts:
+
+[cols="2,2,2,2,2"]
+|===
+| Engine | Automated step | Type | Input | Output
+
+| CIB seven, Operaton, Eximee, Flowable | Service task expression | Argument of the expression | Process variable | Process variable
+| Camunda 8 | Job worker | Job type and task header | Job variables | Variables of the completed job
+|===
+
+The dispatcher contract has only these three parts: a type, an input and an output.
+Each adapter changes the step of its engine into one call to the dispatcher.
+<<explanation-dispatch>> gives more information.
+
+== Modules
+
+Each feature has three modules: `core`, `implementation` and `starter`.
+
+* `core` contains the contracts, constants and properties. Other modules can use it without the implementation.
+* `implementation` contains the beans. The beans are package-private when possible.
+* `starter` contains the Spring Boot auto-configuration.
+
+An application adds starters only.
+Each usecase bean has the condition `@ConditionalOnProperty` on the property `mifos.workflow.process.engine`.
+Each adapter has the condition `@ConditionalOnBooleanProperty` on the `enabled` property of its engine.
+Thus an application can have the libraries of more than one engine, but it uses one engine only.

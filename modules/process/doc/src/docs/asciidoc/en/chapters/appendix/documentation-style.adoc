@@ -1,0 +1,89 @@
+[appendix]
+[#documentation-style]
+= Documentation Style
+
+This appendix is for persons who write this documentation.
+
+== Structure (Diátaxis)
+
+Put each page in one of the four parts.
+Do not mix the parts on one page.
+
+[cols="1,1,3"]
+|===
+| Part | Folder | Rules
+
+| Tutorial
+| `chapters/tutorials`
+| Teach one lesson. Give all steps. The reader must get a result that works. Do not explain options.
+
+| How-to guide
+| `chapters/how-to`
+| Solve one task. Start with the goal. Give numbered steps. Do not teach the basics.
+
+| Reference
+| `chapters/reference`
+| Give facts in tables. Describe all items. Do not give procedures or opinions.
+
+| Explanation
+| `chapters/explanation`
+| Give the reasons and the alternatives. Do not give procedures.
+|===
+
+Each folder has an `index.adoc` that includes the pages.
+Give each page an ID with the part as prefix, for example `[#how-to-enable-engine]`.
+Use the ID in links: `<<how-to-enable-engine>>`.
+
+== Language (ASD-STE100)
+
+Use Simplified Technical English.
+The full rules are in the https://www.asd-ste100.org/[ASD-STE100 specification].
+The most important rules are:
+
+. Write procedural sentences with a maximum of 20 words.
+Write descriptive sentences with a maximum of 25 words.
+. Write one instruction in each sentence.
+. Use the imperative in instructions: "Add the dependency", not "You should add the dependency".
+. Use the active voice: "The adapter reads the variable", not "The variable is read by the adapter".
+. Use one word for one meaning.
+. Use the simple tenses: present, past and future.
+. Do not use phrasal verbs: write "start", not "fire up".
+. Do not use "-ing" forms as nouns or adjectives.
+. Use articles ("a", "an", "the") before nouns.
+. Use tables and lists for facts.
+. Write names of classes, methods, properties and files in `monospace`.
+Do not change these names.
+They are technical names and agree with the rules.
+
+== Terms
+
+Use these terms. Do not use other words for the same thing.
+
+[cols="1,3"]
+|===
+| Term | Meaning
+
+| engine | The workflow engine, for example CIB seven or Camunda 8.
+| process definition | The deployed BPMN of a process.
+| process instance | One run of a process definition.
+| usecase | A `MifosUsecase`: one unit of business logic with a request and a response.
+| flow | A `MifosFlow`: a sequence of steps that the {organization} Commons flow engine runs.
+| adapter | The bean that lets an automated step of an engine call a usecase or a flow.
+| dispatcher | `MifosProcessDispatcher`: it finds and runs a usecase or a flow by input type.
+| input type | The class name of a usecase request or of a flow context.
+|===
+
+== Code examples
+
+* Make sure that each example compiles.
+* Give the full imports in tutorials.
+* Show only the necessary part in how-to guides.
+
+== AI Attribution
+
+Use the https://aiattribution.github.io/[AI Attribution Toolkit] format for the AI statement in <<ai-attribution>>.
+
+* Update the statement when you use an AI tool for a change.
+* Write one statement for each AI application.
+* Show the icon of each code. The icons are in `images/ai-attribution`.
+* Make sure that a person reviews all AI content before you publish it.

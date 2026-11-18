@@ -1,0 +1,171 @@
+[#reference-adapters]
+= Dispatcher and adapters
+
+[#reference-adapters-dispatcher]
+== `MifosProcessDispatcher`
+
+The interface is in the package `org.mifos.workflow.process.core.dispatch`.
+`DefaultProcessDispatcher` is the implementation.
+
+[cols="2,5"]
+|===
+| Method | Description
+
+| `@Nullable Object dispatch(String type, @Nullable Object input)`
+| Runs the usecase or the flow that has the input type `type`. Returns the response of the usecase or the context of the flow.
+
+| `String toJson(Object value)`
+| Changes a value into JSON text.
+|===
+
+The parameters of `dispatch`:
+
+[cols="1,5"]
+|===
+| Parameter | Description
+
+| `type`
+| The full class name of the input type: the `Request` of a `MifosUsecase` or the context of a `MifosFlow`. The canonical name (`com.acme.LoanCreateUsecase.Request`) and the binary name (`com.acme.LoanCreateUsecase$Request`) are both correct.
+
+| `input`
+| The input as JSON text, as a map of the fields, or as an object of the input type. If `input` is `null`, the dispatcher makes an empty input.
+|===
+
+The dispatcher registers all `MifosUsecase` and `MifosFlow` beans when the application starts.
+
+* If two beans have the same input type, the application does not start.
+* If the dispatcher cannot find the input type of a bean, it logs a warning and ignores the bean.
+* If no bean has the input type `type`, `dispatch` throws an `IllegalArgumentException`.
+
+[#reference-adapters-expression]
+== Adapters for CIB seven, Operaton, Eximee and Flowable
+
+The adapter is a bean with the name `mifosAdapter`.
+A service task calls it with an expression:
+
+[source,xml]
+----
+<serviceTask id="createLoan"
+             camunda:expression="${mifosAdapter.execute(execution, 'com.acme.LoanCreateUsecase.Request')}"/>
+----
+
+[cols="1,2,2"]
+|===
+| Engine | Adapter class | Attribute
+
+| CIB seven | `CibsevenAdapter` | `camunda:expression`
+| Operaton | `OperatonAdapter` | `operaton:expression`
+| Eximee | `EximeeAdapter` | `camunda:expression`
+| Flowable | `FlowableAdapter` | `flowable:expression`
+|===
+
+The method `execute(execution, type)` does these steps:
+
+. It reads the input variable.
+If the variable is not set and `fail-on-null-input` is `true`, it throws an `IllegalArgumentException`.
+. It calls `MifosProcessDispatcher.dispatch(type, input)`.
+. It writes the output to the output variable.
+If `serialize-result` is `true`, the output is JSON text.
+
+An exception in the adapter stops the service task.
+The engine cancels the transaction of the step.
+
+[#reference-adapters-camunda]
+== Adapter for Camunda 8
+
+`CamundaAdapter` is a job worker for the job type `mifosAdapter`.
+The task header `type` gives the input type:
+
+[source,xml]
+----
+<serviceTask id="createLoan">
+  <extensionElements>
+    <zeebe:taskDefinition type="mifosAdapter"/>
+    <zeebe:taskHeaders>
+      <zeebe:header key="type" value="com.acme.LoanCreateUsecase.Request"/>
+    </zeebe:taskHeaders>
+  </extensionElements>
+</serviceTask>
+----
+
+The adapter reads the input variable, calls the dispatcher and completes the job with the output variable.
+If the step fails, the adapter fails the job:
+
+[cols="2,3"]
+|===
+| Cause | Result
+
+| The header `type` is not set, the input variable is not set, or no bean has the input type.
+| The job fails with no retries. Camunda makes an incident.
+
+| A different exception.
+| The job fails. Camunda tries the job again until no retries remain. Then it makes an incident.
+|===
+
+[#reference-adapters-cibseven-remote]
+== Adapter for a remote CIB seven engine
+
+`CibsevenRemoteAdapter` gets external tasks of the topic `mifosAdapter` from the REST API of the engine.
+It starts with the application and stops with the application.
+The extension property `type` gives the input type:
+
+[source,xml]
+----
+<serviceTask id="createLoan" camunda:type="external" camunda:topic="mifosAdapter">
+  <extensionElements>
+    <camunda:properties>
+      <camunda:property name="type" value="com.acme.LoanCreateUsecase.Request"/>
+    </camunda:properties>
+  </extensionElements>
+</serviceTask>
+----
+
+The adapter reads the input variable, calls the dispatcher and completes the task with the output variable.
+If the step fails, the adapter reports a failure:
+
+[cols="2,3"]
+|===
+| Cause | Result
+
+| The property `type` is not set, the input variable is not set, or no bean has the input type.
+| The task fails with no retries. The engine makes an incident.
+
+| A different exception.
+| The task fails. The engine gives the task again after `retry-timeout`, until no retries remain. Then it makes an incident.
+|===
+
+This adapter also works with a CIB seven engine in a different application, if that engine publishes its REST API.
+
+[#reference-adapters-flowable-remote]
+== Adapter for a remote Flowable engine
+
+`FlowableRemoteAdapter` gets external worker jobs of the topic `mifosAdapter` from the external job REST API of the engine.
+It starts with the application and stops with the application.
+If no job is available, it waits for `poll-interval`.
+
+An execution listener on the service task sets the input type as the local variable `type`.
+The job gets the variables of the step, also the input variable:
+
+[source,xml]
+----
+<serviceTask id="createLoan" flowable:type="external-worker" flowable:topic="mifosAdapter">
+  <extensionElements>
+    <flowable:executionListener event="start"
+        expression="${execution.setVariableLocal('type', 'com.acme.LoanCreateUsecase.Request')}"/>
+  </extensionElements>
+</serviceTask>
+----
+
+The adapter reads the input variable, calls the dispatcher and completes the job with the output variable.
+If the step fails, the adapter reports a failure:
+
+[cols="2,3"]
+|===
+| Cause | Result
+
+| The variable `type` is not set, the input variable is not set, or no bean has the input type.
+| The job fails with no retries. The engine moves it to the dead letter jobs.
+
+| A different exception.
+| The job fails. The engine gives the job again after `retry-timeout`, until no retries remain. Then it moves the job to the dead letter jobs.
+|===

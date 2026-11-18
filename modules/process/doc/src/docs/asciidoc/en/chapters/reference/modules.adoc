@@ -1,0 +1,101 @@
+[#reference-modules]
+= Modules
+
+The group of all modules is `org.mifos.workflow`.
+The version is `0.1.0-SNAPSHOT`.
+Most features have three modules:
+
+* `core`: constants, configuration properties and contracts.
+* `implementation`: the beans.
+* `starter`: the Spring Boot auto-configuration. Add the starter to an application. The starter includes the other two modules.
+
+The column "Status" shows if a module is ready for use.
+
+[cols="4,4,1"]
+|===
+| Module | Contents | Status
+
+3+h| Base
+
+| `mifos-workflow-process-core`
+| The nine usecase interfaces, `MifosProcessDispatcher`, `MifosProcessException`, the `mifos.workflow.process` properties and the message bundles.
+| Ready
+
+| `mifos-workflow-process-starter`
+| The auto-configuration for the `mifos.workflow.process` properties.
+| Ready
+
+| `mifos-workflow-process-service-dispatch-starter`
+| `DefaultProcessDispatcher`: the dispatcher that runs usecases and flows by input type. The adapters need it.
+| Ready
+
+| `mifos-workflow-process-transport-rest-starter`
+| The REST API for the nine usecases.
+| Ready
+
+3+h| Usecases (the application controls the engine)
+
+| `mifos-workflow-process-usecase-cibseven-starter`
+| The nine usecases for CIB seven. Includes the CIB seven Spring Boot starter.
+| Ready
+
+| `mifos-workflow-process-usecase-cibseven-remote-starter`
+| The nine usecases for a remote CIB seven engine. Uses the REST API of the engine. Does not include the engine.
+| Ready
+
+| `mifos-workflow-process-usecase-operaton-starter`
+| The nine usecases for Operaton. Includes the Operaton Spring Boot starter.
+| Ready
+
+| `mifos-workflow-process-usecase-eximee-starter`
+| The nine usecases for Eximee. Includes the Eximee Spring Boot starter.
+| Ready
+
+| `mifos-workflow-process-usecase-flowable-starter`
+| The nine usecases for Flowable. Includes the Flowable Spring Boot starter.
+| Ready
+
+| `mifos-workflow-process-usecase-flowable-remote-starter`
+| The nine usecases for a remote Flowable engine. Uses the REST API of the engine. Does not include the engine.
+| Ready
+
+| `mifos-workflow-process-usecase-camunda-starter`
+| The nine usecases for Camunda 8. Includes the Camunda Spring Boot starter (the client).
+| Ready
+
+3+h| Adapters (the engine calls the application)
+
+| `mifos-workflow-process-support-cibseven-starter`
+| `CibsevenAdapter`: the `mifosAdapter` bean for service task expressions.
+| Ready
+
+| `mifos-workflow-process-support-cibseven-remote-starter`
+| `CibsevenRemoteAdapter`: gets external tasks of the topic `mifosAdapter` from a remote CIB seven engine.
+| Ready
+
+| `mifos-workflow-process-support-operaton-starter`
+| `OperatonAdapter`: the `mifosAdapter` bean for service task expressions.
+| Ready
+
+| `mifos-workflow-process-support-eximee-starter`
+| `EximeeAdapter`: the `mifosAdapter` bean for service task expressions.
+| Ready
+
+| `mifos-workflow-process-support-flowable-starter`
+| `FlowableAdapter`: the `mifosAdapter` bean for service task expressions.
+| Ready
+
+| `mifos-workflow-process-support-flowable-remote-starter`
+| `FlowableRemoteAdapter`: gets external worker jobs of the topic `mifosAdapter` from a remote Flowable engine.
+| Ready
+
+| `mifos-workflow-process-support-camunda-starter`
+| `CamundaAdapter`: a job worker for the job type `mifosAdapter`.
+| Ready
+
+3+h| Durable execution
+
+| `mifos-workflow-durable-*`
+| Modules for Cadence, Dapr, DBOS, Restate and Temporal.
+| Empty
+|===

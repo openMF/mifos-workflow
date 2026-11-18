@@ -1,0 +1,20 @@
+[#reference]
+= Reference
+
+The reference gives facts about the modules, the configuration, the usecases, the REST API, the adapters and the errors.
+It does not give procedures.
+For procedures, refer to the <<how-to,how-to guides>>.
+
+include::modules.adoc[leveloffset=+1]
+
+include::configuration.adoc[leveloffset=+1]
+
+include::usecases.adoc[leveloffset=+1]
+
+include::rest-api.adoc[leveloffset=+1]
+
+include::adapters.adoc[leveloffset=+1]
+
+include::engines.adoc[leveloffset=+1]
+
+include::errors.adoc[leveloffset=+1]

@@ -1,0 +1,33 @@
+[appendix]
+[#appendix-config]
+= Configuration Files
+
+This `application.yml` shows all properties of the libraries with their default values.
+The example enables CIB seven.
+For a different engine, replace `cibseven` with `operaton`, `eximee`, `flowable` or `camunda` in both places.
+Remove the properties that you do not change.
+<<reference-configuration>> gives a description of each property.
+
+[source,yaml]
+----
+mifos:
+  workflow:
+    process:
+      enabled: true                    # reserved
+      engine: CIBSEVEN                 # workflow engine configuration
+      transport:
+        rest:
+          enabled: true                # reserved
+      support:
+        cibseven:
+          input-variable: input
+          output-variable: output
+          fail-on-null-input: true
+          serialize-result: true
+
+spring:
+  datasource:                          # not for Camunda 8
+    url: jdbc:postgresql://localhost:5432/workflow
+    username: workflow
+    password: workflow
+----

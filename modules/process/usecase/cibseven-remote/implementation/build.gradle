@@ -1,0 +1,6 @@
+dependencies {
+    api project(":mifos-workflow-process-support-cibseven-remote-core")
+
+    // the CibsevenRemoteClient bean is created by the support starter
+    testImplementation project(":mifos-workflow-process-support-cibseven-remote-starter")
+}

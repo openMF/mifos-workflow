@@ -1,0 +1,37 @@
+[#explanation-signals-and-events]
+= Signals and events
+
+A process must often receive information from a different system or send information to it.
+The libraries do not have a separate event system for this.
+They use the usecases and the adapters.
+
+== Information into a process
+
+The signal usecase sends a signal to the engine.
+A process waits for the signal with a signal catch event.
+
+* With an `id`, the signal goes to one process instance.
+* Without an `id`, the signal goes to all process instances that wait for this signal name.
+
+Camunda 8 can only send a signal to all waiting process instances.
+To send information to one process instance on Camunda 8, use a message with a correlation key.
+The current version does not have a usecase for messages.
+
+== Information out of a process
+
+A process sends information with a service task that calls a usecase.
+The usecase sends the information, for example as a Spring application event, a Kafka message or an HTTP request.
+<<how-to-publish-events>> shows an example.
+
+This method has these advantages:
+
+* It works the same on all engines.
+* The usecase is a normal Spring bean. It is easy to test.
+* On CIB seven, Operaton, Eximee and Flowable, the usecase runs in the transaction of the step.
+If the usecase fails, the step fails.
+
+== Signal events in the BPMN
+
+A BPMN signal throw event sends a signal to other process instances in the same engine.
+The signal does not go out of the engine.
+Use it to connect processes, not to send information to a different system.

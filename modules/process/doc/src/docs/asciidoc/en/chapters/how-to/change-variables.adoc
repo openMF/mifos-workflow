@@ -1,0 +1,32 @@
+[#how-to-change-variables]
+= Change the input and output variables
+
+. Add the properties of the adapter to `application.yml`.
+Replace `cibseven` with the name of your engine:
++
+[source,yaml]
+----
+mifos:
+  workflow:
+    process:
+      support:
+        cibseven:
+          input-variable: request
+          output-variable: response
+----
+. Use the new names in your processes.
+
+== Accept an empty input
+
+. Set `fail-on-null-input` to `false`.
+
+If the input variable is not set, the adapter sends an empty input.
+For a request record, all fields are `null`.
+
+== Store the output as an object
+
+. Make sure that the engine can store the type of the output.
+Most engines do not accept serialized Java objects by default.
+. Set `serialize-result` to `false`.
+
+The adapter stores the response object, not JSON text.

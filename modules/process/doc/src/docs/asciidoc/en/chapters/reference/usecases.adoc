@@ -1,0 +1,160 @@
+[#reference-usecases]
+= Usecases
+
+The usecase interfaces are in the package `org.mifos.workflow.process.core.usecase`.
+Each interface has the method `Response execute(Request request)`.
+`Request` and `Response` are nested classes of the interface.
+An engine module gives the implementation.
+<<reference-engines>> gives the differences between the engines.
+
+[#reference-usecases-deploy]
+== `MifosProcessDeployUsecase`
+
+Deploys a process definition.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+.2+| Request
+| `name` | String | The name of the resource. If the name does not end with `.bpmn` or `.bpmn20.xml`, the usecase adds `.bpmn`.
+| `processDefinition` | String | The BPMN XML.
+
+| Response
+| `id` | UUID | The ID of the deployment. On Camunda 8: the key of the process definition.
+|===
+
+[#reference-usecases-delete]
+== `MifosProcessDeleteUsecase`
+
+Deletes a deployment and stops its running process instances.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+| Request
+| `deploymentId` | String | The ID from the response of the deploy usecase.
+
+| Response
+| `id` | UUID | The ID of the deployment.
+|===
+
+[#reference-usecases-start]
+== `MifosProcessStartUsecase`
+
+Starts a process instance of the latest version of a process definition.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+.2+| Request
+| `key` | String | The ID of the process in the BPMN (`<process id="...">`).
+| `variables` | Map | The start variables. Optional.
+
+| Response
+| `id` | UUID | The ID of the process instance.
+|===
+
+[#reference-usecases-signal]
+== `MifosProcessSignalUsecase`
+
+Sends a signal.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+.3+| Request
+| `id` | UUID | The ID of one process instance. Optional. If not set, the engine sends the signal to all waiting process instances.
+| `signalName` | String | The name of the signal in the BPMN (`<signal name="...">`).
+| `variables` | Map | The variables that the signal gives to the process instances. Optional.
+
+| Response
+| `id` | UUID | The `id` of the request.
+|===
+
+[#reference-usecases-terminate]
+== `MifosProcessTerminateUsecase`
+
+Stops a running process instance.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+.2+| Request
+| `processId` | String | The ID of the process instance.
+| `reason` | String | The reason. Optional.
+
+| Response
+| `id` | UUID | The ID of the process instance.
+|===
+
+[#reference-usecases-task-pending]
+== `MifosProcessTaskPendingUsecase`
+
+Lists the open user tasks of a user.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+| Request
+| `userId` | String | The assignee of the tasks.
+
+| Response
+| `tasks` | List | The tasks. Each task has `taskId`, `name`, `processId`, `processDefinitionId`, `assignee`, `createTime`, `dueDate`, `description` and `priority`.
+|===
+
+[#reference-usecases-complete]
+== `MifosProcessCompleteUsecase`
+
+Completes a user task.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+.2+| Request
+| `taskId` | String | The ID of the task.
+| `variables` | Map | The variables that the task gives to the process instance. Optional.
+
+| Response
+| `id` | UUID | The ID of the task.
+|===
+
+[#reference-usecases-history]
+== `MifosProcessHistoryUsecase`
+
+Lists finished process instances.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+| Request
+| `id` | UUID | The ID of one process instance. Optional. If not set, the usecase lists all finished process instances.
+
+| Response
+| `entries` | List | The process instances. Each entry has `processId`, `processDefinitionId`, `processDefinitionKey`, `startTime`, `endTime`, `durationInMillis`, `startUserId` and `deleteReason`.
+|===
+
+[#reference-usecases-replay]
+== `MifosProcessReplayUsecase`
+
+Starts a new process instance with the variables of a finished or running process instance.
+
+[cols="1,2,1,4"]
+|===
+| | Field | Type | Description
+
+.3+| Request
+| `id` | UUID | Not used.
+| `sourceProcessId` | UUID | The ID of the source process instance.
+| `variables` | Map | Variables that replace the variables of the source. Optional.
+
+| Response
+| `id` | UUID | The ID of the new process instance.
+|===

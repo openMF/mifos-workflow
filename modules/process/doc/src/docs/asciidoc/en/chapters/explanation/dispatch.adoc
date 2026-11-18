@@ -1,0 +1,53 @@
+[#explanation-dispatch]
+= Dispatch by input type
+
+== The input type identifies the logic
+
+The dispatcher must find the logic for an automated step.
+It uses the class name of the input for this.
+
+A usecase has a request class.
+A flow has a context class.
+Each input class belongs to one usecase or one flow.
+Thus the class name alone identifies the logic.
+A process does not need a bean name, a method name or a delegate class.
+
+The BPMN model shows the class name.
+Thus a reader of the model knows which logic the step runs.
+
+== Safety
+
+A process can only use registered input types.
+It cannot make an object of a different class.
+
+If two beans have the same input type, the dispatcher cannot select one.
+Thus the application does not start.
+This error occurs when the application starts, not when a process runs in production.
+Give each flow its own context type.
+Do not use a general type, for example `String` or `Map`.
+
+== Usecases and flows
+
+The dispatcher runs two types of beans:
+
+[cols="1,3"]
+|===
+| Type | Use it for
+
+| `MifosUsecase<Req, Res>`
+| Business operations that other parts of the application also use, for example a REST controller. All usecases of the application are available. This includes the nine process usecases. Thus a service task can start or signal a different process.
+
+| `MifosFlow<C>`
+| A sequence of steps that the {organization} Commons flow engine runs. The flow receives a context and returns a new context. The dispatcher returns the context.
+|===
+
+== JSON as the common format
+
+Each engine can store text in a process variable.
+Not all engines can store Java objects.
+Most engines do not accept serialized Java objects by default, because of security.
+
+Thus the adapter stores the output as JSON text by default.
+The dispatcher also accepts JSON text as input.
+It also accepts a map, because some engines give variables as maps.
+For example, Camunda 8 gives a JSON object as a map.

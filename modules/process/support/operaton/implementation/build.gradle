@@ -1,0 +1,5 @@
+dependencies {
+    api "org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter"
+
+    testImplementation project(":mifos-workflow-process-service-dispatch-starter")
+}

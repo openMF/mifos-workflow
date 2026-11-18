@@ -1,0 +1,53 @@
+[#reference-errors]
+= Errors
+
+`MifosProcessException` in `org.mifos.workflow.process.core.exception` defines these error codes.
+The messages are in `org/mifos/workflow/process/messages.properties`.
+Translations are available in German, Spanish, French and Indonesian.
+
+NOTE: The current version defines the codes but does not use them.
+The usecases throw the exceptions of the engine client.
+
+[cols="3,3,4"]
+|===
+| Code | Message key | Message
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_UNKNOWN`
+| `org.mifos.workflow.process.error.unknown`
+| An unexpected workflow error occurred.
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_NOT_FOUND`
+| `org.mifos.workflow.process.error.not-found`
+| The requested workflow resource was not found.
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_DEPLOYMENT_FAILED`
+| `org.mifos.workflow.process.error.deployment-failed`
+| The workflow definition could not be deployed.
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_DEPLOYMENT_NOT_FOUND`
+| `org.mifos.workflow.process.error.deployment-not-found`
+| No deployment was found with the given identifier.
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_PROCESS_DEFINITION_NOT_FOUND`
+| `org.mifos.workflow.process.error.process-definition-not-found`
+| No workflow definition was found with the given key.
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_PROCESS_NOT_FOUND`
+| `org.mifos.workflow.process.error.process-not-found`
+| No running workflow instance was found with the given identifier.
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_PROCESS_START_FAILED`
+| `org.mifos.workflow.process.error.process-start-failed`
+| The workflow instance could not be started.
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_TASK_NOT_FOUND`
+| `org.mifos.workflow.process.error.task-not-found`
+| No task was found with the given identifier.
+
+| `MIFOS_WORKFLOW_PROCESS_ERROR_ENGINE_UNAVAILABLE`
+| `org.mifos.workflow.process.error.engine-unavailable`
+| The workflow engine is not available.
+|===
+
+The numbers of the codes start at the external error code start of {organization} Commons Boot plus 10000.
+The difference between two codes is the error code increment of {organization} Commons Boot.

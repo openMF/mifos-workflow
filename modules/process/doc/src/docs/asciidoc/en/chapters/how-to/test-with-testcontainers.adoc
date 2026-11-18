@@ -1,0 +1,117 @@
+[#how-to-test-with-testcontainers]
+= Test a process with Testcontainers
+
+== CIB seven, Operaton, Eximee and Flowable
+
+. Add the test dependencies:
++
+[source,groovy]
+----
+dependencies {
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-testcontainers"
+    testImplementation "org.testcontainers:testcontainers-postgresql"
+    testImplementation "org.springframework.boot:spring-boot-starter-jdbc"
+    testRuntimeOnly "org.postgresql:postgresql"
+}
+----
+. Make a test application with a PostgreSQL container:
++
+[source,java]
+----
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan
+class TestApplication {
+    @Bean
+    @ServiceConnection
+    PostgreSQLContainer postgres() {
+        return new PostgreSQLContainer("postgres:17-alpine");
+    }
+}
+----
+. Enable the engine in the test:
++
+[source,java]
+----
+@SpringBootTest(
+        classes = TestApplication.class,
+        properties = {
+            "mifos.workflow.process.engine=cibseven",
+            "mifos.workflow.process.support.cibseven.enabled=true"
+        })
+class LoanProcessTest {
+    // inject RuntimeService, HistoryService or the usecases
+}
+----
+. Give each test a unique process ID.
+All test classes with the same configuration use one Spring context and one database.
+
+== Camunda 8
+
+. Add Camunda Process Test:
++
+[source,groovy]
+----
+testImplementation "io.camunda:camunda-process-test-spring"
+----
+. Add `@CamundaSpringProcessTest` to the test class.
+Camunda Process Test starts Camunda in a container and connects the client to it.
+. If JDBC is on the test classpath, exclude the `DataSource` auto-configuration.
+Camunda 8 does not need a database in the application:
++
+[source,java]
+----
+@EnableAutoConfiguration(excludeName = "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
+----
+. Use `CamundaAssert` to wait for a result.
+The search API shows a change after a short delay.
+
+The tests of the modules `process/support/<engine>/implementation` and `process/usecase/<engine>/implementation` are complete examples.
+
+== Remote CIB seven
+
+Start the engine in a container and give its URL to the application.
+The application needs no database:
+
+[source,java]
+----
+@Bean
+GenericContainer<?> cibseven() {
+    return new GenericContainer<>("cibseven/cibseven:latest") // pin a version in your project
+            .withExposedPorts(8080)
+            .waitingFor(Wait.forHttp("/engine-rest/engine").forPort(8080));
+}
+
+@Bean
+DynamicPropertyRegistrar cibsevenProperties(GenericContainer<?> cibseven) {
+    return registry -> registry.add("mifos.workflow.process.support.cibseven-remote.base-url",
+            () -> "http://" + cibseven.getHost() + ":" + cibseven.getMappedPort(8080) + "/engine-rest");
+}
+----
+
+Errors in a step make an incident and do not cancel a transaction.
+Thus the tests must wait for the result, for example with Awaitility.
+Read the result with the REST API of the engine, for example `GET /history/variable-instance` or `GET /incident`.
+
+== Remote Flowable
+
+Start the Flowable REST application in a container.
+Its default user is `rest-admin` with the password `test`:
+
+[source,java]
+----
+@Bean
+GenericContainer<?> flowable() {
+    return new GenericContainer<>("flowable/flowable-rest:latest") // pin a version in your project
+            .withExposedPorts(8080)
+            .waitingFor(Wait.forHttp("/flowable-rest/service/management/engine")
+                    .forPort(8080)
+                    .withBasicCredentials("rest-admin", "test"));
+}
+----
+
+Set `mifos.workflow.process.support.flowable-remote.base-url` to `http://<host>:<mapped port>/flowable-rest`.
+Also set `username` and `password` in the same place.
+A failed step makes a dead letter job. Read it with `GET /service/management/deadletter-jobs`.
+

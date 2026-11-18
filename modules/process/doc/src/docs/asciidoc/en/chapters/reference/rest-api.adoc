@@ -1,0 +1,51 @@
+[#reference-rest-api]
+= REST API
+
+The module `mifos-workflow-process-transport-rest-starter` gives one endpoint for each usecase.
+
+* All endpoints use the method `POST`.
+* The request body is the `Request` of the usecase as JSON.
+* The response body is the `Response` of the usecase as JSON.
+* The OpenAPI tag is `workflows`.
+
+[cols="2,3"]
+|===
+| Header | Value
+
+| `Content-Type`
+| `application/vnd.mifos.workflow+json;charset=UTF-8;version=1.0`
+
+| `Accept`
+| `application/json`. An error has the type `application/problem+json`.
+|===
+
+[cols="2,3,2"]
+|===
+| Path | Usecase | Request fields
+
+| `/workflows/deploy` | <<reference-usecases-deploy,`MifosProcessDeployUsecase`>> | `name`, `processDefinition`
+| `/workflows/delete` | <<reference-usecases-delete,`MifosProcessDeleteUsecase`>> | `deploymentId`
+| `/workflows/start` | <<reference-usecases-start,`MifosProcessStartUsecase`>> | `key`, `variables`
+| `/workflows/signal` | <<reference-usecases-signal,`MifosProcessSignalUsecase`>> | `id`, `signalName`, `variables`
+| `/workflows/terminate` | <<reference-usecases-terminate,`MifosProcessTerminateUsecase`>> | `processId`, `reason`
+| `/workflows/tasks/pending` | <<reference-usecases-task-pending,`MifosProcessTaskPendingUsecase`>> | `userId`
+| `/workflows/complete` | <<reference-usecases-complete,`MifosProcessCompleteUsecase`>> | `taskId`, `variables`
+| `/workflows/history` | <<reference-usecases-history,`MifosProcessHistoryUsecase`>> | `id`
+| `/workflows/replay` | <<reference-usecases-replay,`MifosProcessReplayUsecase`>> | `sourceProcessId`, `variables`
+|===
+
+The paths are relative to the context path of the application.
+
+.Example: start a process instance
+[source,bash]
+----
+curl -X POST http://localhost:8080/workflows/start \
+  -H 'Content-Type: application/vnd.mifos.workflow+json;charset=UTF-8;version=1.0' \
+  -d '{"key": "greeting", "variables": {"input": "{\"name\": \"Ada\"}"}}'
+----
+
+.Response
+[source,json]
+----
+{"id": "5b9c7d55-3c1e-11f1-9a7b-0242ac120002"}
+----

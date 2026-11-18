@@ -1,0 +1,33 @@
+[#how-to-enable-engine]
+= Enable an engine
+
+The beans of an engine are only registered if these properties are set.
+
+. Add the properties to `application.yml`.
+Replace `cibseven` with the name of your engine:
++
+[source,yaml]
+----
+mifos:
+  workflow:
+    process:
+      engine: CIBSEVEN     # the nine usecases
+----
+. Configure the engine with its own properties.
+For example, configure the database for CIB seven:
++
+[source,yaml]
+----
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/workflow
+    username: workflow
+    password: workflow
+----
+. For Camunda 8, configure the client instead of a database.
+Refer to the Camunda documentation for the `camunda.client` properties.
+
+The property `engine` selects one engine for the usecases.
+Enable the adapter of the same engine only.
+
+<<reference-configuration>> gives all properties.

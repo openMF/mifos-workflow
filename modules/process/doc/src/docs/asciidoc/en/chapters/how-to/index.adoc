@@ -1,0 +1,32 @@
+[#how-to]
+= How-to guides
+
+A how-to guide is a procedure for one task.
+It does not teach the basics.
+If you are new to the libraries, do the <<tutorials,tutorials>> first.
+
+include::add-libraries.adoc[leveloffset=+1]
+
+include::enable-engine.adoc[leveloffset=+1]
+
+include::use-remote-cibseven.adoc[leveloffset=+1]
+
+include::use-remote-flowable.adoc[leveloffset=+1]
+
+include::call-usecase-from-bpmn.adoc[leveloffset=+1]
+
+include::call-usecase-from-camunda.adoc[leveloffset=+1]
+
+include::call-flow-from-bpmn.adoc[leveloffset=+1]
+
+include::change-variables.adoc[leveloffset=+1]
+
+include::use-rest-api.adoc[leveloffset=+1]
+
+include::send-signals.adoc[leveloffset=+1]
+
+include::publish-events.adoc[leveloffset=+1]
+
+include::test-with-testcontainers.adoc[leveloffset=+1]
+
+include::add-engine.adoc[leveloffset=+1]

@@ -1,0 +1,8 @@
+dependencies {
+    // the external task client only: no engine, DataSource or schema on the classpath
+    api "org.cibseven.bpm:cibseven-external-task-client"
+
+    testImplementation project(":mifos-workflow-process-service-dispatch-starter")
+    testImplementation "org.springframework.boot:spring-boot-starter-restclient"
+    testImplementation "org.awaitility:awaitility"
+}

@@ -1,0 +1,60 @@
+[#how-to-use-rest-api]
+= Control processes with the REST API
+
+All requests use `POST` and the content type `application/vnd.mifos.workflow+json;charset=UTF-8;version=1.0`.
+The examples use this shell variable:
+
+[source,bash]
+----
+CT='Content-Type: application/vnd.mifos.workflow+json;charset=UTF-8;version=1.0'
+----
+
+== Deploy a process definition
+
+. Put the BPMN XML in a JSON string. Use `jq` for this:
++
+[source,bash]
+----
+jq -n --rawfile bpmn loan.bpmn '{name: "loan.bpmn", processDefinition: $bpmn}' \
+  | curl -X POST http://localhost:8080/workflows/deploy -H "$CT" -d @-
+----
+. Keep the `id` from the response. You need it to delete the deployment.
+
+== Start a process instance
+
+. Send the ID of the process in the BPMN and the variables:
++
+[source,bash]
+----
+curl -X POST http://localhost:8080/workflows/start -H "$CT" \
+  -d '{"key": "loan", "variables": {"input": "{\"clientId\": \"42\"}"}}'
+----
+. Keep the `id` from the response.
+
+== Complete a user task
+
+. List the tasks of the user:
++
+[source,bash]
+----
+curl -X POST http://localhost:8080/workflows/tasks/pending -H "$CT" -d '{"userId": "demo"}'
+----
+. Complete the task with the `taskId` from the list:
++
+[source,bash]
+----
+curl -X POST http://localhost:8080/workflows/complete -H "$CT" \
+  -d '{"taskId": "<taskId>", "variables": {"approved": true}}'
+----
+
+== Stop a process instance
+
+. Send the ID of the process instance:
++
+[source,bash]
+----
+curl -X POST http://localhost:8080/workflows/terminate -H "$CT" \
+  -d '{"processId": "<id>", "reason": "cancelled by the client"}'
+----
+
+<<reference-rest-api>> gives all endpoints.

@@ -1,0 +1,70 @@
+[#explanation-engine-models]
+= Two engine models
+
+The supported engines use two different models.
+The usecases hide most of the differences, but not all.
+<<reference-engines>> gives a list of the differences.
+
+== Engine in the application
+
+CIB seven, Operaton and Eximee are forks of Camunda 7.
+Flowable has the same origin.
+These engines run in the application.
+They store their data in the database of the application.
+
+Thus:
+
+* A command and a query use the same database.
+A query shows the result of a command immediately.
+* A service task runs in the transaction of the step.
+If the business logic fails, the engine cancels the transaction.
+The process instance stays at the previous wait state.
+* The expression of a service task can call a Spring bean directly.
+
+== CIB seven or Flowable in a different process
+
+CIB seven and Flowable can also run in their own process, for example as CIB seven Run or as the Flowable REST application.
+The modules `cibseven-remote` and `flowable-remote` connect to these engines with their REST APIs.
+The engine is the same, but the connection has the properties of the cluster model:
+
+* A service task cannot call a Spring bean.
+The service task is an external task (CIB seven) or an external worker task (Flowable).
+The adapter gets the task, runs the logic and completes the task.
+CIB seven waits for new tasks with long polling. For Flowable, the adapter asks again after a short time.
+* A failed task does not cancel a transaction.
+When no retries remain, CIB seven makes an incident and Flowable moves the job to the dead letter jobs.
+* Commands and queries use the same database of the engine.
+A query shows the result of a command immediately.
+
+The application does not include the engine, the engine database or its schema.
+
+== Engine in a cluster
+
+Camunda 8 runs in a cluster, not in the application.
+The application sends commands to the cluster with a client.
+
+Thus:
+
+* A service task cannot call a Spring bean.
+The cluster makes a job.
+A job worker in the application gets the job, runs the logic and completes the job.
+* A failed job does not cancel a transaction.
+Camunda tries the job again.
+When no retries remain, Camunda makes an incident.
+The process instance stays active until a person solves the incident.
+* Queries use the search API.
+The search API gets its data from the cluster after a short delay.
+A task or a finished process instance is visible some time after the command.
+* Camunda 8 identifies all objects with a key of the type `long`.
+
+== Consequences for the usecases
+
+The usecases keep the same contract on all engines.
+On Camunda 8, some usecases must do more work:
+
+* Delete must cancel the running process instances, because Camunda 8 does not cancel them.
+It finds them with the search API.
+* Pending tasks, history and replay read the search API.
+* A signal cannot go to one process instance, because Camunda 8 does not have this function.
+The usecase refuses this request.
+It does not send the signal to all process instances, because this can change process instances that the caller did not select.

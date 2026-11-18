@@ -1,0 +1,225 @@
+[#reference-configuration]
+= Configuration properties
+
+Spring Boot reads these properties from `application.yml`, `application.properties`, environment variables and the command line.
+<<appendix-config>> gives a full example.
+
+IMPORTANT: The usecase beans and the adapter beans are only registered if their properties are set.
+The default values in the properties classes do not register them.
+Thus the column "Default" shows "not set: off" for these properties.
+
+[#reference-configuration-base]
+== Base (`mifos.workflow.process`)
+
+[cols="3,1,2,4"]
+|===
+| Property | Type | Default | Description
+
+| `mifos.workflow.process.enabled`
+| Boolean
+| `true`
+| Reserved. The current version does not use this property.
+
+| `mifos.workflow.process.engine`
+| Enum
+| not set: off
+| The engine of the application: `CIBSEVEN`, `CIBSEVEN_REMOTE`, `EXIMEE`, `OPERATON`, `FLOWABLE`, `FLOWABLE_REMOTE`, `CAMUNDA` or `CONDUCTOR`. Registers the nine usecase beans of this engine. Lowercase values are also correct. `MifosProcessProperties` has the default value `CIBSEVEN`, but this value does not register the usecase beans.
+
+| `mifos.workflow.process.transport.rest.enabled`
+| Boolean
+| `true`
+| Reserved. The current version does not use this property. The REST API is always available if its starter is present.
+|===
+
+[#reference-configuration-adapters]
+== Adapters (`mifos.workflow.process.support.<engine>`)
+
+`<engine>` is one of `cibseven`, `cibseven-remote`, `operaton`, `eximee`, `flowable`, `flowable-remote` or `camunda`.
+<<reference-configuration-cibseven-remote>> and <<reference-configuration-flowable-remote>> give the additional properties of the remote engines.
+
+[cols="3,1,2,4"]
+|===
+| Property | Type | Default | Description
+
+| `mifos.workflow.process.support.<engine>.enabled`
+| Boolean
+| not set: off
+| Registers the adapter of the engine. Set it to `true` for one engine only.
+
+| `mifos.workflow.process.support.<engine>.input-variable`
+| String
+| `input`
+| The process variable that contains the input of the usecase or the flow.
+
+| `mifos.workflow.process.support.<engine>.output-variable`
+| String
+| `output`
+| The process variable that receives the output of the usecase or the flow.
+
+| `mifos.workflow.process.support.<engine>.fail-on-null-input`
+| Boolean
+| `true`
+| If `true`, the step fails when the input variable is not set. If `false`, the adapter sends an empty input.
+
+| `mifos.workflow.process.support.<engine>.serialize-result`
+| Boolean
+| `true`
+| If `true`, the adapter stores the output as JSON text. If `false`, it stores the output object.
+|===
+
+[#reference-configuration-cibseven-remote]
+== Remote CIB seven
+
+The usecases and the adapter connect to the REST API of the engine with the same properties.
+
+[cols="3,1,2,4"]
+|===
+| Property | Type | Default | Description
+
+| `mifos.workflow.process.support.cibseven-remote.base-url`
+| String
+| `http://localhost:8080/engine-rest`
+| The REST API of the engine. Include the path `/engine-rest`.
+
+| `mifos.workflow.process.support.cibseven-remote.username`
+| String
+| not set
+| The user for HTTP basic authentication. If not set, the usecases and the adapter do not authenticate.
+
+| `mifos.workflow.process.support.cibseven-remote.password`
+| String
+| not set
+| The password for HTTP basic authentication.
+
+| `mifos.workflow.process.support.cibseven-remote.topic`
+| String
+| `mifosAdapter`
+| The topic of the external tasks that the adapter gets.
+
+| `mifos.workflow.process.support.cibseven-remote.worker-id`
+| String
+| `mifos-workflow`
+| The name of the application in the engine. The engine shows it on locked tasks.
+
+| `mifos.workflow.process.support.cibseven-remote.max-tasks`
+| Integer
+| `10`
+| The maximum number of tasks in one fetch.
+
+| `mifos.workflow.process.support.cibseven-remote.lock-duration`
+| Duration
+| `30s`
+| The time that a task stays locked for the application. Set it longer than the slowest usecase.
+
+| `mifos.workflow.process.support.cibseven-remote.async-response-timeout`
+| Duration
+| `20s`
+| The time that a fetch waits for new tasks (long polling).
+
+| `mifos.workflow.process.support.cibseven-remote.retries`
+| Integer
+| `3`
+| The retries of a task that fails for the first time.
+
+| `mifos.workflow.process.support.cibseven-remote.retry-timeout`
+| Duration
+| `10s`
+| The time before the engine gives a failed task again.
+|===
+
+[#reference-configuration-flowable-remote]
+== Remote Flowable
+
+The usecases and the adapter use the same properties.
+The base URL is the root of the Flowable REST application.
+The usecases use the process REST API below it (`/service`).
+The adapter uses the external job REST API below it (`/external-job-api`).
+
+[cols="3,1,2,4"]
+|===
+| Property | Type | Default | Description
+
+| `mifos.workflow.process.support.flowable-remote.base-url`
+| String
+| `http://localhost:8080/flowable-rest`
+| The root of the Flowable REST application. Do not include `/service` or `/external-job-api`.
+
+| `mifos.workflow.process.support.flowable-remote.username`
+| String
+| not set
+| The user for HTTP basic authentication. If not set, the usecases and the adapter do not authenticate.
+
+| `mifos.workflow.process.support.flowable-remote.password`
+| String
+| not set
+| The password for HTTP basic authentication.
+
+| `mifos.workflow.process.support.flowable-remote.topic`
+| String
+| `mifosAdapter`
+| The topic of the external worker tasks that the adapter gets.
+
+| `mifos.workflow.process.support.flowable-remote.worker-id`
+| String
+| `mifos-workflow`
+| The name of the application in the engine.
+
+| `mifos.workflow.process.support.flowable-remote.max-jobs`
+| Integer
+| `10`
+| The maximum number of jobs in one request.
+
+| `mifos.workflow.process.support.flowable-remote.lock-duration`
+| Duration
+| `30s`
+| The time that a job stays locked for the application. Set it longer than the slowest usecase.
+
+| `mifos.workflow.process.support.flowable-remote.poll-interval`
+| Duration
+| `1s`
+| The time before the next request when no job is available.
+
+| `mifos.workflow.process.support.flowable-remote.retry-timeout`
+| Duration
+| `10s`
+| The time before the engine gives a failed job again.
+|===
+
+[#reference-configuration-engines]
+== Engine properties
+
+The engines have their own properties.
+These libraries do not change them.
+
+[cols="1,2,3"]
+|===
+| Engine | Prefix | Note
+
+| CIB seven
+| `camunda.bpm`
+| The engine also needs a `DataSource` (`spring.datasource`).
+
+| CIB seven, remote
+| `mifos.workflow.process.support.cibseven-remote`
+| The application connects to the REST API of the engine. It does not need a `DataSource`.
+
+| Flowable, remote
+| `mifos.workflow.process.support.flowable-remote`
+| The application connects to the REST API of the Flowable REST application. It does not need a `DataSource`.
+
+| Operaton
+| `operaton.bpm`
+| The engine also needs a `DataSource` (`spring.datasource`).
+
+| Eximee
+| Refer to the Eximee documentation.
+| The engine also needs a `DataSource` (`spring.datasource`).
+
+| Flowable
+| `flowable`
+| The engine also needs a `DataSource` (`spring.datasource`).
+
+| Camunda 8
+| `camunda.client`
+| The client connects to a Camunda 8 cluster. It does not need a `DataSource`.
+|===

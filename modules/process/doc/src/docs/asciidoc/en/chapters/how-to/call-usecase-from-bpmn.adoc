@@ -1,0 +1,42 @@
+[#how-to-call-usecase-from-bpmn]
+= Call a usecase from a service task
+
+This guide is for CIB seven, Operaton, Eximee and Flowable.
+For Camunda 8, refer to <<how-to-call-usecase-from-camunda>>.
+
+. Make sure that the adapter is enabled. Refer to <<how-to-enable-engine>>.
+. Make sure that the usecase is a Spring bean.
+. Add a service task with an expression to the BPMN.
+The second argument is the full class name of the request:
++
+[source,xml]
+----
+<serviceTask id="createLoan"
+             camunda:expression="${mifosAdapter.execute(execution, 'com.acme.LoanCreateUsecase.Request')}"/>
+----
++
+Use the prefix of your engine for the attribute:
++
+[cols="1,2"]
+|===
+| Engine | Attribute
+
+| CIB seven, Eximee | `camunda:expression`
+| Operaton | `operaton:expression`
+| Flowable | `flowable:expression`
+|===
+. Set the variable `input` before the task runs.
+Use JSON text with the fields of the request:
++
+[source,json]
+----
+{"clientId": "42", "amount": 1000}
+----
++
+For example, give `input` as a start variable.
+. Read the response from the variable `output` after the task.
+The value is JSON text.
+
+If the input variable is not set, the task fails.
+If no bean has the type, the task fails.
+The engine cancels the transaction of the step.
