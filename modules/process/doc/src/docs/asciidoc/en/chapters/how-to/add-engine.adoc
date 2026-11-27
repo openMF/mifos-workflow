@@ -1,0 +1,25 @@
+[#how-to-add-engine]
+= Add an engine
+
+. Make the modules `process/usecase/<engine>/core`, `implementation` and `starter`.
+Copy the structure of an existing engine.
+. Add the engine to the enum `MifosProcessProperties.Engine`.
+. In `core`, add the constants.
+. In `implementation`, implement the nine usecase interfaces.
+Add this condition to each bean, with the name of the engine in the enum:
++
+[source,java]
+----
+@ConditionalOnProperty(name = MIFOS_WORKFLOW_PROCESS_PROPERTIES_ENGINE, havingValue = "CIBSEVEN")
+----
+If the engine does not have an operation, make it from other operations.
+. Make the modules `process/support/<engine>/core`, `implementation` and `starter`.
+. In `implementation`, make the adapter:
+.. Get the type and the input from the automated step of the engine.
+.. Call `MifosProcessDispatcher.dispatch(type, input)`.
+.. Give the result back to the engine in the output variable.
+. For an engine with workers, use one fixed task type, for example `mifosAdapter`.
+Get the input type from the task, for example from a header.
+Thus one worker serves all usecases and flows.
+. Write tests that run against the engine. Refer to <<how-to-test-with-testcontainers>>.
+. Add the engine to <<reference-modules>> and <<reference-engines>>.

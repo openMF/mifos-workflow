@@ -1,0 +1,3 @@
+dependencies {
+    api project(":mifos-workflow-process-support-flowable-remote-starter")
+}

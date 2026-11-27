@@ -1,0 +1,35 @@
+= {organization} Workflow
+
+include::prefaces.adoc[leveloffset=+1]
+
+include::colophon.adoc[leveloffset=+2]
+
+include::introduction.adoc[leveloffset=+1]
+
+// The documentation follows the Diátaxis framework (https://diataxis.fr):
+// tutorials teach, how-to guides solve tasks, reference describes, explanation gives understanding.
+
+include::chapters/tutorials/index.adoc[leveloffset=+1]
+
+include::chapters/how-to/index.adoc[leveloffset=+1]
+
+include::chapters/reference/index.adoc[leveloffset=+1]
+
+include::chapters/explanation/index.adoc[leveloffset=+1]
+
+include::faq.adoc[leveloffset=+1]
+
+<<<
+
+include::{commondir}/glossary.adoc[leveloffset=+1]
+
+ifdef::backend-pdf[]
+<<<
+include::{commondir}/indices.adoc[leveloffset=+1]
+endif::[]
+
+<<<
+
+include::chapters/appendix/index.adoc[leveloffset=+1]
+
+include::{commondir}/appendix.adoc[leveloffset=+1]

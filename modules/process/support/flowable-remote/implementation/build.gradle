@@ -1,0 +1,7 @@
+dependencies {
+    // HTTP only: the adapter polls the external job REST API; no engine, DataSource or schema on the classpath
+    api "org.springframework.boot:spring-boot-starter-restclient"
+
+    testImplementation project(":mifos-workflow-process-service-dispatch-starter")
+    testImplementation "org.awaitility:awaitility"
+}

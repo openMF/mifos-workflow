@@ -1,0 +1,237 @@
+[#tutorial-first-process]
+= Your first process
+
+In this tutorial, you make a greeting process.
+The process has two steps:
+
+. A service task calls a usecase. The usecase makes a greeting.
+. A user task waits until a person approves the greeting.
+
+You use CIB seven as the engine and PostgreSQL as the database.
+You control the process with the REST API.
+
+== Before you start
+
+You must have:
+
+* Java 25.
+* A Spring Boot 4 application that you can start.
+* Gradle. If you use Maven, use the same coordinates.
+* Docker, for PostgreSQL.
+* `curl` and `jq`.
+
+== Step 1: Start PostgreSQL
+
+Start a database in a container:
+
+[source,bash]
+----
+docker run -d --name workflow-db -p 5432:5432 \
+  -e POSTGRES_DB=workflow -e POSTGRES_USER=workflow -e POSTGRES_PASSWORD=workflow \
+  postgres:17-alpine
+----
+
+== Step 2: Add the libraries
+
+Add these dependencies to `build.gradle`:
+
+[source,groovy]
+----
+dependencies {
+    implementation "org.mifos.workflow:mifos-workflow-process-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-usecase-cibseven-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-support-cibseven-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-service-dispatch-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-transport-rest-starter:0.1.0-SNAPSHOT"
+
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
+    implementation "org.springframework.boot:spring-boot-starter-jdbc"
+    runtimeOnly "org.postgresql:postgresql"
+}
+----
+
+The usecase starter gives the nine usecases and the CIB seven engine.
+The support starter and the dispatch starter let a service task call your usecase.
+The REST starter gives the REST API.
+
+== Step 3: Configure the application
+
+Add this configuration to `src/main/resources/application.yml`:
+
+[source,yaml]
+----
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/workflow
+    username: workflow
+    password: workflow
+
+mifos:
+  workflow:
+    process:
+      engine: cibseven
+      support:
+        cibseven:
+          enabled: true
+----
+
+The properties `engine` and `enabled` are necessary.
+Without them, the application does not register the usecases and the adapter.
+
+When the application starts, CIB seven makes its tables in the database.
+
+== Step 4: Make the usecase
+
+A usecase is one unit of business logic.
+It receives a request and returns a response.
+
+[source,java]
+----
+package com.example.greeting;
+
+import org.mifos.commons.boot.operation.core.usecase.MifosUsecase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+@Component
+class GreetUsecase implements MifosUsecase<GreetUsecase.Request, GreetUsecase.Response> {
+    private static final Logger log = LoggerFactory.getLogger(GreetUsecase.class);
+
+    @Override
+    public Response execute(Request request) {
+        var greeting = "Hello " + request.name();
+        log.info("greeting: {}", greeting);
+        return new Response(greeting);
+    }
+
+    record Request(String name) implements MifosUsecase.MifosRequest {}
+
+    record Response(String greeting) implements MifosUsecase.MifosResponse {}
+}
+----
+
+The full name of the request class is `com.example.greeting.GreetUsecase.Request`.
+The process uses this name to find the usecase.
+
+== Step 5: Make the process
+
+Save this BPMN as `greeting.bpmn`:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+             targetNamespace="http://example.com/greeting">
+  <process id="greeting" isExecutable="true" camunda:historyTimeToLive="P30D">
+    <startEvent id="start"/>
+    <sequenceFlow id="toGreet" sourceRef="start" targetRef="greet"/>
+    <serviceTask id="greet" name="Greet"
+        camunda:expression="${mifosAdapter.execute(execution, 'com.example.greeting.GreetUsecase.Request')}"/>
+    <sequenceFlow id="toApprove" sourceRef="greet" targetRef="approve"/>
+    <userTask id="approve" name="Approve greeting" camunda:assignee="demo"/>
+    <sequenceFlow id="toEnd" sourceRef="approve" targetRef="end"/>
+    <endEvent id="end"/>
+  </process>
+</definitions>
+----
+
+The service task calls the bean `mifosAdapter`.
+The adapter reads the variable `input`, calls your usecase and writes the response to the variable `output`.
+
+== Step 6: Start the application
+
+Start the application.
+In the examples, the application uses the port 8080.
+
+Set a shell variable for the content type of the REST API:
+
+[source,bash]
+----
+CT='Content-Type: application/vnd.mifos.workflow+json;charset=UTF-8;version=1.0'
+----
+
+== Step 7: Deploy the process
+
+The REST API receives the BPMN as a JSON string.
+Use `jq` to make the JSON:
+
+[source,bash]
+----
+jq -n --rawfile bpmn greeting.bpmn '{name: "greeting.bpmn", processDefinition: $bpmn}' \
+  | curl -s -X POST http://localhost:8080/workflows/deploy -H "$CT" -d @-
+----
+
+The response contains the ID of the deployment:
+
+[source,json]
+----
+{"id": "..."}
+----
+
+== Step 8: Start a process instance
+
+Start the process with the variable `input`:
+
+[source,bash]
+----
+curl -s -X POST http://localhost:8080/workflows/start -H "$CT" \
+  -d '{"key": "greeting", "variables": {"input": "{\"name\": \"Ada\"}"}}'
+----
+
+The value of `input` is JSON text in a string.
+The REST API gives a JSON object to the engine as a Java map.
+CIB seven does not store a Java map by default, but it stores text.
+
+The response contains the ID of the process instance.
+The log of the application shows the greeting:
+
+----
+greeting: Hello Ada
+----
+
+The process instance now waits at the user task.
+
+== Step 9: Complete the user task
+
+List the tasks of the user `demo`:
+
+[source,bash]
+----
+curl -s -X POST http://localhost:8080/workflows/tasks/pending -H "$CT" -d '{"userId": "demo"}'
+----
+
+The response contains the task "Approve greeting".
+Complete the task with its `taskId`:
+
+[source,bash]
+----
+curl -s -X POST http://localhost:8080/workflows/complete -H "$CT" \
+  -d '{"taskId": "<taskId>", "variables": {"approved": true}}'
+----
+
+== Step 10: Examine the history
+
+Get the history of the process instance with the ID from step 8:
+
+[source,bash]
+----
+curl -s -X POST http://localhost:8080/workflows/history -H "$CT" -d '{"id": "<id>"}'
+----
+
+The response contains one entry with a `startTime` and an `endTime`.
+The process instance is finished.
+
+== What you did
+
+* You made a usecase.
+* You called the usecase from a service task with the adapter.
+* You deployed, started and completed a process with the REST API.
+
+== Next steps
+
+* Use a different engine. Refer to <<how-to-enable-engine>>.
+* Call a flow instead of a usecase. Refer to <<how-to-call-flow-from-bpmn>>.
+* Send a signal to a process. Refer to <<how-to-send-signals>>.
+* Learn how the adapter finds the usecase. Refer to <<explanation-dispatch>>.

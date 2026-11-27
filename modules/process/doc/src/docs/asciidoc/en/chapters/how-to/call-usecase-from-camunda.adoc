@@ -1,0 +1,28 @@
+[#how-to-call-usecase-from-camunda]
+= Call a usecase from a Camunda 8 service task
+
+. Make sure that the adapter is enabled. Refer to <<how-to-enable-engine>>.
+. Make sure that the usecase is a Spring bean.
+. Add a service task with the job type `mifosAdapter` to the BPMN.
+. Add the task header `type`.
+The value is the full class name of the request:
++
+[source,xml]
+----
+<serviceTask id="createLoan">
+  <extensionElements>
+    <zeebe:taskDefinition type="mifosAdapter"/>
+    <zeebe:taskHeaders>
+      <zeebe:header key="type" value="com.acme.LoanCreateUsecase.Request"/>
+    </zeebe:taskHeaders>
+  </extensionElements>
+</serviceTask>
+----
+. Set the variable `input` before the task runs.
+Use JSON text or a JSON object with the fields of the request.
+. Read the response from the variable `output` after the task.
+The value is JSON text.
+
+If the header, the input or the type is not correct, Camunda makes an incident immediately.
+Solve the cause, then resolve the incident.
+For other errors, Camunda tries the job again.

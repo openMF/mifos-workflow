@@ -1,0 +1,6 @@
+dependencies {
+    api "io.camunda:camunda-spring-boot-starter"
+
+    testImplementation project(":mifos-workflow-process-service-dispatch-starter")
+    testImplementation "io.camunda:camunda-process-test-spring"
+}

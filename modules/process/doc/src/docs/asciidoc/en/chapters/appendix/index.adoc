@@ -1,0 +1,3 @@
+include::config.adoc[]
+
+include::documentation-style.adoc[]

@@ -1,0 +1,44 @@
+[#how-to-add-libraries]
+= Add the libraries
+
+. Select one engine: `cibseven`, `cibseven-remote`, `operaton`, `eximee`, `flowable`, `flowable-remote` or `camunda`.
+. Add the starters to `build.gradle`.
+Replace `<engine>` with the name of the engine:
++
+[source,groovy]
+----
+dependencies {
+    implementation "org.mifos.workflow:mifos-workflow-process-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-usecase-<engine>-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-support-<engine>-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-service-dispatch-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-transport-rest-starter:0.1.0-SNAPSHOT"
+}
+----
+. For CIB seven, Operaton, Eximee and Flowable, add a database:
++
+[source,groovy]
+----
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-jdbc"
+    runtimeOnly "org.postgresql:postgresql"
+}
+----
+Spring Boot 4 has the `DataSource` auto-configuration in `spring-boot-jdbc`.
+The engine starters do not include it.
+. Enable the engine. Refer to <<how-to-enable-engine>>.
+
+You can remove starters that you do not use:
+
+[cols="2,3"]
+|===
+| Starter | Remove it if
+
+| `...-support-<engine>-starter` and `...-service-dispatch-starter`
+| Your processes do not call usecases or flows.
+
+| `...-transport-rest-starter`
+| Clients do not use the REST API.
+|===
+
+<<reference-modules>> gives a description of each module.

@@ -1,0 +1,60 @@
+= Introduction
+
+{organization} Workflow connects Mifos applications to workflow engines.
+A Mifos application uses one set of operations for all engines.
+The engine is a configuration choice. It does not change the code of the application.
+
+Use these libraries when a Spring Boot application must run business processes in BPMN.
+You get:
+
+* Nine usecases that control an engine: deploy, delete, start, signal, terminate, list tasks, complete a task, history and replay.
+* A REST API for the nine usecases.
+* An adapter that lets a BPMN service task run a Mifos usecase or flow.
+* Support for CIB seven and Flowable (in the application or remote), Operaton, Eximee and Camunda 8.
+
+== Requirements
+
+* Java 25 or later.
+* Spring Boot 4.
+* Gradle or Maven.
+* For CIB seven, Operaton, Eximee and Flowable: a relational database, for example PostgreSQL.
+* For Camunda 8: a Camunda 8 cluster.
+
+== How this document is organized
+
+This document follows the https://diataxis.fr[Diátaxis] framework.
+Each part has a different purpose.
+Select the part that agrees with your need.
+
+[cols="1,3,2"]
+|===
+| Part | Purpose | Read it when
+
+| <<tutorials,Tutorials>>
+| Lessons that teach you step by step.
+| You are new to the libraries.
+
+| <<how-to,How-to guides>>
+| Procedures that solve one specific task.
+| You know what you must do.
+
+| <<reference,Reference>>
+| Precise descriptions of modules, properties, usecases, endpoints and errors.
+| You must find a fact.
+
+| <<explanation,Explanation>>
+| Discussions of the design and the decisions.
+| You want to know why the libraries work as they do.
+|===
+
+== Language
+
+This document uses Simplified Technical English (https://www.asd-ste100.org/[ASD-STE100]).
+The sentences are short and each word has one meaning.
+Names of classes, methods, properties and files are not changed.
+<<documentation-style>> gives the rules for writers.
+
+== AI Attribution
+
+AI tools helped to write this document.
+<<ai-attribution>> gives the full statement.

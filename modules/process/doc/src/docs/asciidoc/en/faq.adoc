@@ -1,0 +1,39 @@
+[faq]
+= Frequently Asked Questions
+
+Can I use more than one engine in one application?::
+No. The property `engine` selects one engine for the usecases.
+Enable the adapter of the same engine only.
+
+Why does the application start, but the usecase beans are missing?::
+The property `mifos.workflow.process.engine` is not set.
+The usecase beans are only registered if this property is set.
+Refer to <<how-to-enable-engine>>.
+
+Why does my service task fail with "No flow or usecase registered for input type"?::
+The type in the service task does not agree with the input type of a bean.
+Use the full class name of the request or of the flow context.
+Make sure that the bean is in the application context.
+
+Why does the application not start after I added a usecase?::
+Two beans have the same input type.
+Each input type must have one flow or one usecase only.
+Read the message: it gives the names of the two beans.
+
+Can a process send data to a system outside the application?::
+Yes. Write a usecase that sends the data and call it from a service task.
+Refer to <<how-to-publish-events>>.
+
+Can I send a signal to one process instance on Camunda 8?::
+No. Camunda 8 can only send a signal to all waiting process instances.
+Refer to <<explanation-signals-and-events>>.
+
+Why does the pending task list not show a task that I just made on Camunda 8?::
+The search API of Camunda 8 shows a change after a short delay.
+Try the request again.
+Refer to <<explanation-engine-models>>.
+
+Why does the REST API return the status 415?::
+The request does not have the correct content type.
+Use `application/vnd.mifos.workflow+json;charset=UTF-8;version=1.0`.
+Refer to <<reference-rest-api>>.

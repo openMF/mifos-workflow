@@ -1,0 +1,4 @@
+dependencies {
+    // HTTP only: no engine, DataSource or schema on the classpath
+    api "org.springframework.boot:spring-boot-starter-restclient"
+}

@@ -1,0 +1,34 @@
+[#explanation-identifiers]
+= Identifiers
+
+The usecases return IDs as UUIDs.
+The engines use different types of IDs:
+
+* CIB seven, Operaton, Eximee and Flowable use text IDs. With the default configuration, these IDs are UUIDs.
+* Camunda 8 uses keys of the type `long`.
+
+== Engines with text IDs
+
+If an ID is a UUID, the usecase returns it without a change.
+If an ID is not a UUID, CIB seven, Operaton and Eximee make a name-based UUID from the ID.
+This change cannot be reversed.
+Thus a request with this UUID does not find the object.
+Use the default ID generator of the engine to prevent this problem.
+
+== Camunda 8
+
+The usecases put the key in the low 64 bits of a UUID.
+The high 64 bits are zero.
+For example, the key `2251799813685249` becomes `00000000-0000-0000-0008-000000000001`.
+
+This change can be reversed.
+Thus a client can send a UUID from a response back in a different request.
+Requests also accept the key as a number in text, for example `"2251799813685249"`.
+
+== Why the contracts do not use one type
+
+Some fields use the type `UUID`, and some fields use the type `String`.
+For example, the start usecase returns a `UUID`, and the terminate usecase receives a `String`.
+One type for all IDs would remove the conversions.
+This is a change that is not compatible with existing clients.
+Thus the current version does not make this change.

@@ -1,0 +1,18 @@
+[#explanation]
+= Explanation
+
+The explanation gives the reasons for the design.
+It does not give procedures.
+Read it when you want to know why the libraries work as they do.
+
+include::architecture.adoc[leveloffset=+1]
+
+include::dispatch.adoc[leveloffset=+1]
+
+include::engine-models.adoc[leveloffset=+1]
+
+include::identifiers.adoc[leveloffset=+1]
+
+include::signals-and-events.adoc[leveloffset=+1]
+
+include::limitations.adoc[leveloffset=+1]

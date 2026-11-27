@@ -1,0 +1,30 @@
+[#how-to-call-flow-from-bpmn]
+= Call a flow from a service task
+
+A flow is a sequence of steps that the {organization} Commons flow engine runs.
+The adapter calls a flow in the same way as a usecase.
+
+. Make a context record that implements `MifosFlow.MifosFlowContext`:
++
+[source,java]
+----
+record CheckLimit(String clientId, BigDecimal amount, Boolean approved)
+        implements MifosFlow.MifosFlowContext {}
+----
+. Make the flow a Spring bean of the type `MifosFlow<CheckLimit>`.
+Use one context type for one flow only.
+. Use the full class name of the context in the service task:
++
+[source,xml]
+----
+<serviceTask id="checkLimit"
+             camunda:expression="${mifosAdapter.execute(execution, 'com.acme.CheckLimit')}"/>
+----
+. Set the variable `input` to the context as JSON text:
++
+[source,json]
+----
+{"clientId": "42", "amount": 1000}
+----
+. Read the result from the variable `output`.
+The value is the context that the flow returned, as JSON text.

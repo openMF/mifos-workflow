@@ -1,0 +1,6 @@
+dependencies {
+    api project(":mifos-workflow-process-support-flowable-remote-core")
+
+    // the FlowableRemoteClient bean is created by the support starter
+    testImplementation project(":mifos-workflow-process-support-flowable-remote-starter")
+}

@@ -1,0 +1,62 @@
+[#how-to-use-remote-cibseven]
+= Use a remote CIB seven engine
+
+Use this procedure if CIB seven runs in its own process, for example as CIB seven Run.
+The application does not include the engine and does not need a database for it.
+
+. Add the remote starters.
+Do not add the starters of the embedded CIB seven engine:
++
+[source,groovy]
+----
+dependencies {
+    implementation "org.mifos.workflow:mifos-workflow-process-usecase-cibseven-remote-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-support-cibseven-remote-starter:0.1.0-SNAPSHOT"
+    implementation "org.mifos.workflow:mifos-workflow-process-service-dispatch-starter:0.1.0-SNAPSHOT"
+}
+----
+. Select the engine and set the URL of its REST API.
+The usecases and the adapter use the same properties:
++
+[source,yaml]
+----
+mifos:
+  workflow:
+    process:
+      engine: CIBSEVEN_REMOTE
+      support:
+        cibseven-remote:
+          enabled: true                                # the adapter
+          base-url: http://cibseven:8080/engine-rest   # include the path /engine-rest
+----
+. If the REST API of the engine uses HTTP basic authentication, also set `username` and `password` there.
+. Model each automated step as an external task with the topic `mifosAdapter`.
+Put the input type in the extension property `type`:
++
+[source,xml]
+----
+<serviceTask id="createLoan" camunda:type="external" camunda:topic="mifosAdapter">
+  <extensionElements>
+    <camunda:properties>
+      <camunda:property name="type" value="com.acme.LoanCreateUsecase.Request"/>
+    </camunda:properties>
+  </extensionElements>
+</serviceTask>
+----
+. Set `lock-duration` to a value that is longer than the slowest usecase.
+If the usecase takes longer, the engine can give the task to a different worker.
+. Start the application.
+The log shows the message `fetching external tasks of topic mifosAdapter from <url>`.
+
+== Differences from the embedded engine
+
+* An error in a step does not cancel a transaction.
+The engine makes an incident and the process instance stays active.
+Monitor the incidents, for example in the CIB seven cockpit.
+* The terminate usecase cannot send a reason to the engine.
+The usecase only writes the reason to the log.
+* A service task expression (`${mifosAdapter.execute(...)}`) does not work.
+Change these steps to external tasks.
+
+<<reference-configuration-cibseven-remote>> gives all properties.
+<<reference-engines-cibseven-remote>> gives all differences.

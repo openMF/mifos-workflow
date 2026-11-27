@@ -1,0 +1,6 @@
+dependencies {
+    implementation "org.eximeebpms.bpm:eximeebpms-engine-spring-6"
+
+    testImplementation project(":mifos-workflow-process-service-dispatch-starter")
+    testImplementation "org.eximeebpms.bpm.springboot:eximeebpms-bpm-spring-boot-starter"
+}

@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="t d">
+<title id="t">Mifos Workflow architecture</title>
+<desc id="d">An application calls the workflow engine through nine engine-neutral usecases. The engine calls the application through one adapter and the process dispatcher.</desc>
+<rect width="1200" height="900" fill="#F8FAFC"/>
+<text x="40" y="48" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#0F172A" text-anchor="start">Mifos Workflow</text>
+<text x="40" y="72" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#64748B" text-anchor="start">One application  ·  one engine  ·  two directions</text>
+<line x1="790" y1="44" x2="824" y2="44" stroke="#4F46E5" stroke-width="2.5" stroke-linecap="round"/>
+<polygon points="822,38 822,50 832,44" fill="#4F46E5"/>
+<text x="842" y="48" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F172A" text-anchor="start">The application calls the engine</text>
+<line x1="790" y1="68" x2="824" y2="68" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/>
+<polygon points="822,62 822,74 832,68" fill="#059669"/>
+<text x="842" y="72" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F172A" text-anchor="start">The engine calls the application</text>
+<rect x="40" y="96" width="1120" height="132" rx="16" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.2"/>
+<rect x="58" y="112" width="4" height="16" rx="2" fill="#0F172A"/>
+<text x="70" y="125" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#0F172A" text-anchor="start" letter-spacing="0.8">YOUR SPRING BOOT APPLICATION</text>
+<text x="1140" y="125" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11" font-weight="400" fill="#64748B" text-anchor="end">adds the starters only</text>
+<rect x="60" y="143" width="300" height="72" rx="12" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="60" y="140" width="300" height="72" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="60" y="154" width="3" height="44" rx="1.5" fill="#4F46E5"/>
+<text x="80" y="168" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#0F172A" text-anchor="start">Services and clients</text>
+<text x="80" y="188" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">@Autowired MifosProcess…Usecase</text>
+<rect x="400" y="143" width="300" height="72" rx="12" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="400" y="140" width="300" height="72" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="400" y="154" width="3" height="44" rx="1.5" fill="#4F46E5"/>
+<text x="420" y="168" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#0F172A" text-anchor="start">REST API</text>
+<text x="420" y="188" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">process/transport/rest</text>
+<rect x="800" y="143" width="340" height="72" rx="12" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="800" y="140" width="340" height="72" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="800" y="154" width="3" height="44" rx="1.5" fill="#059669"/>
+<text x="820" y="168" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#0F172A" text-anchor="start">Business logic</text>
+<text x="820" y="188" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">MifosUsecase  ·  MifosFlow beans</text>
+<rect x="40" y="268" width="1120" height="150" rx="16" fill="#FFFBEB" stroke="#D97706" stroke-width="1.2"/>
+<rect x="58" y="284" width="4" height="16" rx="2" fill="#D97706"/>
+<text x="70" y="297" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#D97706" text-anchor="start" letter-spacing="0.8">PROCESS / CORE</text>
+<text x="1140" y="297" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11" font-weight="400" fill="#64748B" text-anchor="end">engine-neutral contracts  ·  MifosProcessProperties.engine</text>
+<rect x="60" y="315" width="640" height="88" rx="12" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="60" y="312" width="640" height="88" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<text x="80" y="337" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#0F172A" text-anchor="start">Nine usecase interfaces</text>
+<rect x="80" y="356" width="52" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="106.0" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">Deploy</text>
+<rect x="137" y="356" width="45" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="159.5" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">Start</text>
+<rect x="187" y="356" width="52" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="213.0" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">Signal</text>
+<rect x="244" y="356" width="65" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="276.5" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">Complete</text>
+<rect x="314" y="356" width="84" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="356.0" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">TaskPending</text>
+<rect x="403" y="356" width="71" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="438.5" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">Terminate</text>
+<rect x="479" y="356" width="52" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="505.0" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">Delete</text>
+<rect x="536" y="356" width="58" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="565.0" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">History</text>
+<rect x="599" y="356" width="52" height="22" rx="11.0" fill="#EEF2FF"/>
+<text x="625.0" y="370.96" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="middle">Replay</text>
+<rect x="800" y="315" width="340" height="88" rx="12" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="800" y="312" width="340" height="88" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="800" y="326" width="3" height="60" rx="1.5" fill="#059669"/>
+<text x="820" y="340" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#0F172A" text-anchor="start">MifosProcessDispatcher</text>
+<text x="820" y="360" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">dispatch(type, input) → output</text>
+<text x="820" y="378" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#64748B" text-anchor="start">Contract only — no engine types</text>
+<rect x="40" y="458" width="680" height="182" rx="16" fill="#EEF2FF" stroke="#4F46E5" stroke-width="1.2"/>
+<rect x="58" y="474" width="4" height="16" rx="2" fill="#4F46E5"/>
+<text x="70" y="487" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#4F46E5" text-anchor="start" letter-spacing="0.8">PROCESS / USECASE / &lt;ENGINE&gt;</text>
+<text x="62" y="516" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#0F172A" text-anchor="start">One implementation per engine. Only the selected engine registers beans:</text>
+<text x="62" y="538" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11" font-weight="400" fill="#64748B" text-anchor="start">@ConditionalOnProperty(name = "mifos.workflow.process.engine", havingValue = …)</text>
+<rect x="62" y="562" width="68" height="28" rx="14.0" fill="#4F46E5"/>
+<text x="96.0" y="579.78" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">CIBSEVEN</text>
+<rect x="138" y="562" width="113" height="28" rx="14.0" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+<text x="194.5" y="579.78" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10.5" font-weight="500" fill="#4F46E5" text-anchor="middle">CIBSEVEN_REMOTE</text>
+<rect x="259" y="562" width="68" height="28" rx="14.0" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+<text x="293.0" y="579.78" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10.5" font-weight="500" fill="#4F46E5" text-anchor="middle">OPERATON</text>
+<rect x="335" y="562" width="55" height="28" rx="14.0" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+<text x="362.5" y="579.78" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10.5" font-weight="500" fill="#4F46E5" text-anchor="middle">EXIMEE</text>
+<rect x="398" y="562" width="68" height="28" rx="14.0" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+<text x="432.0" y="579.78" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10.5" font-weight="500" fill="#4F46E5" text-anchor="middle">FLOWABLE</text>
+<rect x="474" y="562" width="113" height="28" rx="14.0" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+<text x="530.5" y="579.78" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10.5" font-weight="500" fill="#4F46E5" text-anchor="middle">FLOWABLE_REMOTE</text>
+<rect x="595" y="562" width="61" height="28" rx="14.0" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+<text x="625.5" y="579.78" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10.5" font-weight="500" fill="#4F46E5" text-anchor="middle">CAMUNDA</text>
+<text x="64" y="610" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#64748B" text-anchor="start">↑ selected</text>
+<rect x="760" y="458" width="400" height="182" rx="16" fill="#ECFDF5" stroke="#059669" stroke-width="1.2"/>
+<rect x="778" y="474" width="4" height="16" rx="2" fill="#059669"/>
+<text x="790" y="487" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#059669" text-anchor="start" letter-spacing="0.8">DISPATCH</text>
+<rect x="800" y="505" width="340" height="54" rx="12" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="800" y="502" width="340" height="54" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="800" y="516" width="3" height="26" rx="1.5" fill="#0F172A"/>
+<text x="820" y="530" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#0F172A" text-anchor="start">DefaultProcessDispatcher</text>
+<text x="820" y="550" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">service/dispatch · routes by input class</text>
+<rect x="800" y="577" width="340" height="54" rx="12" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="800" y="574" width="340" height="54" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="800" y="588" width="3" height="26" rx="1.5" fill="#0F172A"/>
+<text x="820" y="602" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#0F172A" text-anchor="start">mifosAdapter</text>
+<text x="820" y="622" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">support/&lt;engine&gt; · delegate or worker</text>
+<rect x="40" y="670" width="1120" height="190" rx="16" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.2"/>
+<rect x="58" y="686" width="4" height="16" rx="2" fill="#1E293B"/>
+<text x="70" y="699" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#1E293B" text-anchor="start" letter-spacing="0.8">WORKFLOW ENGINES</text>
+<text x="1140" y="699" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="11" font-weight="400" fill="#64748B" text-anchor="end">one engine per application</text>
+<text x="62" y="726" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="start">Embedded  ·  in-process</text>
+<rect x="62" y="747" width="112" height="56" rx="10" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="62" y="744" width="112" height="56" rx="10" fill="#1E293B" stroke="#1E293B" stroke-width="1"/>
+<text x="118" y="777" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">CIB seven</text>
+<rect x="186" y="747" width="112" height="56" rx="10" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="186" y="744" width="112" height="56" rx="10" fill="#1E293B" stroke="#1E293B" stroke-width="1"/>
+<text x="242" y="777" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">Operaton</text>
+<rect x="310" y="747" width="112" height="56" rx="10" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="310" y="744" width="112" height="56" rx="10" fill="#1E293B" stroke="#1E293B" stroke-width="1"/>
+<text x="366" y="777" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">Eximee</text>
+<rect x="434" y="747" width="112" height="56" rx="10" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="434" y="744" width="112" height="56" rx="10" fill="#1E293B" stroke="#1E293B" stroke-width="1"/>
+<text x="490" y="777" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">Flowable</text>
+<line x1="554" y1="772" x2="604" y2="772" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 4"/>
+<text x="579" y="764" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10" font-weight="400" fill="#64748B" text-anchor="middle">JDBC</text>
+<path d="M608.0,742 L608.0,802 A60.0,9 0 0 0 728.0,802 L728.0,742 Z" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2"/>
+<ellipse cx="668" cy="742" rx="60.0" ry="9" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.2"/>
+<text x="668" y="780.0" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0F172A" text-anchor="middle">PostgreSQL</text>
+<text x="668" y="797.0" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10.5" font-weight="400" fill="#64748B" text-anchor="middle">process data</text>
+<text x="800" y="726" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0F172A" text-anchor="start">Remote  ·  own process</text>
+<rect x="800.0" y="747" width="105.33333333333333" height="56" rx="10" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="800.0" y="744" width="105.33333333333333" height="56" rx="10" fill="#1E293B" stroke="#1E293B" stroke-width="1"/>
+<text x="812.0" y="770" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="start">Camunda 8</text>
+<text x="812.0" y="788" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10" font-weight="400" fill="#94A3B8" text-anchor="start">job workers</text>
+<rect x="917.3333333333334" y="747" width="105.33333333333333" height="56" rx="10" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="917.3333333333334" y="744" width="105.33333333333333" height="56" rx="10" fill="#1E293B" stroke="#1E293B" stroke-width="1"/>
+<text x="929.3333333333334" y="770" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="start">CIB seven</text>
+<text x="929.3333333333334" y="788" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10" font-weight="400" fill="#94A3B8" text-anchor="start">external tasks</text>
+<rect x="1034.6666666666667" y="747" width="105.33333333333333" height="56" rx="10" fill="#0F172A" fill-opacity="0.06"/>
+<rect x="1034.6666666666667" y="744" width="105.33333333333333" height="56" rx="10" fill="#1E293B" stroke="#1E293B" stroke-width="1"/>
+<text x="1046.6666666666667" y="770" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#FFFFFF" text-anchor="start">Flowable</text>
+<text x="1046.6666666666667" y="788" font-family="'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="10" font-weight="400" fill="#94A3B8" text-anchor="start">ext. workers</text>
+<text x="62" y="836" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">Embedded: a service task expression calls the mifosAdapter bean. Remote: a job worker, external task or external worker job of type or topic mifosAdapter.</text>
+<line x1="300" y1="212" x2="300" y2="303" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/>
+<polygon points="294,302 306,302 300,312" fill="#4F46E5"/>
+<circle cx="300" cy="212" r="3.5" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+<text x="312" y="266.0" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="start">inject</text>
+<line x1="550" y1="212" x2="550" y2="303" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/>
+<polygon points="544,302 556,302 550,312" fill="#4F46E5"/>
+<circle cx="550" cy="212" r="3.5" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+<text x="562" y="266.0" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="start">calls</text>
+<line x1="380.0" y1="400" x2="380.0" y2="449" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/>
+<polygon points="374.0,448 386.0,448 380.0,458" fill="#4F46E5"/>
+<circle cx="380.0" cy="400" r="3.5" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+<text x="392.0" y="434" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="start">implemented by</text>
+<line x1="380.0" y1="640" x2="380.0" y2="661" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/>
+<polygon points="374.0,660 386.0,660 380.0,670" fill="#4F46E5"/>
+<circle cx="380.0" cy="640" r="3.5" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+<text x="392.0" y="659.0" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#4F46E5" text-anchor="start">commands and queries</text>
+<line x1="970.0" y1="670" x2="970.0" y2="637" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+<polygon points="964.0,638 976.0,638 970.0,628" fill="#059669"/>
+<circle cx="970.0" cy="670" r="3.5" fill="#FFFFFF" stroke="#059669" stroke-width="2"/>
+<text x="982.0" y="653.0" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#059669" text-anchor="start">automated step</text>
+<line x1="970.0" y1="574" x2="970.0" y2="565" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+<polygon points="964.0,566 976.0,566 970.0,556" fill="#059669"/>
+<circle cx="970.0" cy="574" r="3.5" fill="#FFFFFF" stroke="#059669" stroke-width="2"/>
+<line x1="970.0" y1="502" x2="970.0" y2="409" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 5"/>
+<polygon points="964.0,410 976.0,410 970.0,400" fill="#059669"/>
+<circle cx="970.0" cy="502" r="3.5" fill="#FFFFFF" stroke="#059669" stroke-width="2"/>
+<text x="982.0" y="434" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#059669" text-anchor="start">implements</text>
+<line x1="970.0" y1="312" x2="970.0" y2="221" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+<polygon points="964.0,222 976.0,222 970.0,212" fill="#059669"/>
+<circle cx="970.0" cy="312" r="3.5" fill="#FFFFFF" stroke="#059669" stroke-width="2"/>
+<text x="982.0" y="266.0" font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="11" font-weight="500" fill="#059669" text-anchor="start">type → bean</text>
+</svg>

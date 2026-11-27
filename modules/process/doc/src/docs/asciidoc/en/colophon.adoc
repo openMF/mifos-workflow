@@ -1,0 +1,60 @@
+[colophon]
+= History
+
+*Version*: {revnumber}
+
+*Date*: {revdate}
+
+include::authors.adoc[]
+
+.History
+[cols="<.^2a,<.^4a,^.^2a,^.^1a"]
+|===
+^| Authors ^| Description ^| Date ^| Version
+
+| Aleksandar Vidakovic | Initial version | 2026-05-01 | 1.0.0
+| Aleksandar Vidakovic | New structure (Diátaxis) and Simplified Technical English. Content for all engines. | 2026-11-21 | 1.1.0
+|===
+
+[#ai-attribution]
+== AI Attribution
+
+// TODO: after a person reviewed this document, add "R" to the statement after "Hin",
+// change the review icon to certified-review-icon.svg and change the "Review" row.
+:ai-attribution: AIA PAI Nc Hin Claude Opus 5.5 v1.0
+
+AI tools helped to write this document.
+The statement below uses the format of the https://aiattribution.github.io/[AI Attribution Toolkit] from IBM Research.
+
+image:ai-attribution/primarily-ai-icon.svg[Primarily AI,24,24,title="Primarily AI"]
+image:ai-attribution/new-content-icon.svg[New content,24,24,title="New content"]
+image:ai-attribution/human-initiated-icon.svg[Human-initiated,24,24,title="Human-initiated"]
+image:ai-attribution/no-review-icon.svg[Not reviewed,24,24,title="Not reviewed"]
+*{ai-attribution}*
+
+[cols="^.^1a,2,6"]
+|===
+| Icon | Item | Value
+
+| image:ai-attribution/primarily-ai-icon.svg[Primarily AI,24,24]
+| Proportion | Primarily AI (`PAI`): AI generated most of the work.
+| image:ai-attribution/new-content-icon.svg[New content,24,24]
+| Contribution | New content (`Nc`): AI wrote new text, tables and code examples.
+| image:ai-attribution/human-initiated-icon.svg[Human-initiated,24,24]
+| Initiation | Human-initiated (`Hin`): a person prompted the AI for each contribution.
+| image:ai-attribution/no-review-icon.svg[Not reviewed,24,24]
+| Review | Not reviewed: a person did not examine the AI content yet.
+|
+| Application | Claude Opus 5.5 (Anthropic), used through Claude Code.
+|
+| Version | Version 1.0 of the statement format (`v1.0`).
+|===
+
+The icons come from the https://github.com/aiattribution/aiattribution.github.io[AI Attribution Toolkit] (Apache License 2.0).
+
+The facts in this document come from the source code of the libraries.
+AI tools can make errors.
+If this document does not agree with the code, the code is correct.
+Report the error to the maintainers.
+
+toc::[]

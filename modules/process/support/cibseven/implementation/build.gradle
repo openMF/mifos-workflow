@@ -1,0 +1,5 @@
+dependencies {
+    api "org.cibseven.bpm.springboot:cibseven-bpm-spring-boot-starter-4"
+
+    testImplementation project(":mifos-workflow-process-service-dispatch-starter")
+}

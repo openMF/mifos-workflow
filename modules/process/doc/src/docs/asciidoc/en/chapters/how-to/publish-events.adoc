@@ -1,0 +1,51 @@
+[#how-to-publish-events]
+= Send information out of a process
+
+A process sends information to a different system with a usecase.
+
+. Write a usecase that sends the information.
+This example publishes a Spring application event:
++
+[source,java]
+----
+@Component
+@RequiredArgsConstructor
+class LoanApprovedUsecase implements MifosUsecase<LoanApprovedUsecase.Event, LoanApprovedUsecase.Ack> {
+    private final ApplicationEventPublisher publisher;
+
+    @Override
+    public Ack execute(Event event) {
+        publisher.publishEvent(event);
+        return new Ack(event.loanId());
+    }
+
+    record Event(String loanId, BigDecimal amount) implements MifosUsecase.MifosRequest {}
+
+    record Ack(String loanId) implements MifosUsecase.MifosResponse {}
+}
+----
+. Call the usecase from a service task.
+Refer to <<how-to-call-usecase-from-bpmn>> or <<how-to-call-usecase-from-camunda>>.
+. To show the step as a throw event in the diagram, use an execution listener on CIB seven, Operaton, Eximee and Flowable:
++
+[source,xml]
+----
+<intermediateThrowEvent id="loanApproved">
+  <extensionElements>
+    <camunda:executionListener event="start"
+        expression="${mifosAdapter.execute(execution, 'com.acme.LoanApprovedUsecase.Event')}"/>
+  </extensionElements>
+</intermediateThrowEvent>
+----
+. Receive the event in a different bean:
++
+[source,java]
+----
+@EventListener
+void on(LoanApprovedUsecase.Event event) {
+    // send the event to Kafka, a webhook or a different service
+}
+----
+
+On CIB seven, Operaton, Eximee and Flowable, the usecase runs in the transaction of the step.
+To send the information only after the transaction is committed, use `@TransactionalEventListener`.
